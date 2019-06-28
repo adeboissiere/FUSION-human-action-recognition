@@ -27,12 +27,12 @@ def extract_hands(skeleton_rgb, videodata, crop_size):
         hand_crops_s = np.zeros((n_frames, 2, crop_size, crop_size, 3), dtype=np.uint8)
         
         for t in range(n_frames):
-            # Get right/left hand center coordinates
-            left_hand_x = min(int(skeleton_rgb[1, t, Joints.HANDLEFT, s]), max_x)
-            left_hand_y = min(int(skeleton_rgb[0, t, Joints.HANDLEFT, s]), max_y)
+            # Get right/left hand center coordinates            
+            left_hand_x = max(min(int(np.nan_to_num(skeleton_rgb[1, t, Joints.HANDLEFT, s])), max_x), 0)
+            left_hand_y = max(min(int(np.nan_to_num(skeleton_rgb[0, t, Joints.HANDLEFT, s])), max_y), 0)
             
-            right_hand_x = int(skeleton_rgb[1, t, Joints.HANDRIGHT, s])
-            right_hand_y = int(skeleton_rgb[0, t, Joints.HANDRIGHT, s])
+            right_hand_x = max(min(int(np.nan_to_num(skeleton_rgb[1, t, Joints.HANDRIGHT, s])), max_x), 0)
+            right_hand_y = max(min(int(np.nan_to_num(skeleton_rgb[0, t, Joints.HANDRIGHT, s])), max_y), 0)
             
             frame = np.pad(videodata[t], ((offset, offset), (offset, offset), (0, 0)), mode='constant') # shape(1130, 1970, 3)
             

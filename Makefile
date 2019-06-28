@@ -10,6 +10,14 @@ PROFILE = default
 PROJECT_NAME = ntu-rgb-d
 PYTHON_INTERPRETER = python3
 
+# Make features variables
+NTU_RGBD_DATA_PATH = "/media/gnocchi/Seagate Backup Plus Drive/NTU-RGB-D/"
+PROCESSED_DATA :=$(PROJECT_DIR)/data/processed/
+CROP_SIZE = 50
+COMPRESSION = ""
+COMPRESSION_OPTS = 9
+
+
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -28,6 +36,10 @@ requirements: test_environment
 ## Make Dataset
 data: requirements
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+
+# Make Features
+features: requirements
+	$(PYTHON_INTERPRETER) src/features/build_features.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(NTU_RGBD_DATA_PATH) --crop_size=$(CROP_SIZE) --compression=$(COMPRESSION) --compression_opts=$(COMPRESSION_OPTS)
 
 ## Delete all compiled Python files
 clean:
