@@ -4,9 +4,10 @@ import random
 
 
 class DataLoader():
-    def __init__(self, batch_size, data_path, evaluation_type):
+    def __init__(self, batch_size, data_path, evaluation_type, sub_sequence_length):
         self.batch_size = batch_size
         self.evaluation_type = evaluation_type
+        self.sub_sequence_length = sub_sequence_length
 
         # Opens h5 file
         self.dataset = h5py.File(data_path + "datasets.h5", 'r')
@@ -43,6 +44,8 @@ class DataLoader():
         self.training_samples_batch = training_samples.copy()
         self.testing_samples = testing_samples.copy()
 
+        self.n_batch = int(len(training_samples) / batch_size) + int(len(training_samples) % batch_size != 0)
+
     def next_batch(self):
         # Take random samples (1. shuffle training_sample_batch 2. Take first n elements
         # 3. Remove first n elements from training_sample_batch)
@@ -50,6 +53,8 @@ class DataLoader():
         n_elements = min(self.batch_size, len(self.training_samples_batch))
         batch_samples = self.training_samples_batch[:n_elements]
         self.training_samples_batch = self.training_samples_batch[n_elements:]
+
+        print(len(self.training_samples_batch))
 
         skeletons_list = []
         hand_crops_list = []
@@ -64,3 +69,20 @@ class DataLoader():
                 hand_crops = np.concatenate((hand_crops, pad), axis=1)
 
             # Take random subsequence
+            max_frame = hand_crops.shape[0]
+            start = random.randint(0, max_frame - self.sub_sequence_length)
+
+            skeletons_list.append(skeleton[:, start:start+self.sub_sequence_length, :, :])
+            hand_crops_list.append(hand_crops[start:start+self.sub_sequence_length])
+
+        X_skeleton = np.stack(skeletons_list) # shape (batch_size, 3, sub_sequence_length, num_joints, 2)
+        X_hands = np.stack(hand_crops_list) # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
+
+        # Extract class vector
+        Y = [int(x[-3:]) for x in batch_samples]
+
+        # Reset batch when epoch complete
+        if len(self.training_samples_batch) == 0:
+            self.training_samples_batch = self.training_samples.copy()
+
+        return X_skeleton, X_hands, Y

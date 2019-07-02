@@ -1,6 +1,6 @@
 import argparse
 from src.models.data_loader import *
-
+from src.models.models import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train model')
@@ -49,7 +49,8 @@ if __name__ == '__main__':
     print("-> sub_sequence_length : " + str(sub_sequence_length))
 
     # Create dataloader
-    data_loader = DataLoader(batch_size, data_path, evaluation_type)
-    data_loader.next_batch()
-    data_loader.next_batch()
+    data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length)
+
+    # model = STAHandsCNN(60).to(device)
+
     print("-> Done !")
