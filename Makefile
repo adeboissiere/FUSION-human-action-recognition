@@ -10,13 +10,22 @@ PROFILE = default
 PROJECT_NAME = ntu-rgb-d
 PYTHON_INTERPRETER = python3
 
-# Make features variables
+# Make Features variables
 NTU_RGBD_DATA_PATH = "/media/gnocchi/Seagate Backup Plus Drive/NTU-RGB-D/"
 PROCESSED_DATA :=$(PROJECT_DIR)/data/processed/
 CROP_SIZE = 50
 COMPRESSION = ""
 COMPRESSION_OPTS = 9
 
+# Make Train variables
+MODEL_FOLDER :=$(PROJECT_DIR)/models/
+EVALUATION_TYPE = cross_subject
+MODEL_TYPE = STA-HANDS
+OPTIMIZER = SGD
+LEARNING_RATE = 1e-9
+EPOCHS = 30
+BATCH_SIZE = 32
+SUB_SEQUENCE_LENGTH = 20 
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -37,9 +46,15 @@ requirements: test_environment
 data: requirements
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
 
-# Make Features
-features: requirements
-	$(PYTHON_INTERPRETER) src/features/build_features.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(NTU_RGBD_DATA_PATH) --crop_size=$(CROP_SIZE) --compression=$(COMPRESSION) --compression_opts=$(COMPRESSION_OPTS)
+## Make Features
+features: 
+	$(PYTHON_INTERPRETER) src/features/build_features.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(NTU_RGBD_DATA_PATH) --crop_size=$(CROP_SIZE) --compression=$(COMPRESSION) \
+	--compression_opts=$(COMPRESSION_OPTS)
+
+## Make Train
+train: 
+	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
+	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH)
 
 ## Delete all compiled Python files
 clean:

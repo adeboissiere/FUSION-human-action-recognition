@@ -16,6 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', default=1e-9)
     parser.add_argument('--epochs', default=40)
     parser.add_argument('--batch_size', default=64)
+    parser.add_argument('--sub_sequence_length', default=20)
 
     arg = parser.parse_args()
 
@@ -25,9 +26,10 @@ if __name__ == '__main__':
     evaluation_type = arg.evaluation_type
     model_type = arg.model_type
     optimizer = arg.optimizer
-    learning_rate = arg.learning_rate
-    epochs = arg.epochs
-    batch_size = arg.batch_size
+    learning_rate = float(arg.learning_rate)
+    epochs = int(arg.epochs)
+    batch_size = int(arg.batch_size)
+    sub_sequence_length = int(arg.sub_sequence_length)
 
     if evaluation_type not in ["cross_subject", "cross_view"]:
         print("Error : Evaluation type not recognized")
@@ -44,8 +46,10 @@ if __name__ == '__main__':
     print("-> learning rate : " + str(learning_rate))
     print("-> max epochs : " + str(epochs))
     print("-> batch size : " + str(batch_size))
+    print("-> sub_sequence_length : " + str(sub_sequence_length))
 
     # Create dataloader
     data_loader = DataLoader(batch_size, data_path, evaluation_type)
+    data_loader.next_batch()
     data_loader.next_batch()
     print("-> Done !")
