@@ -1,7 +1,3 @@
-# local package
--e .
-
-# external requirements
 alabaster==0.7.12
 arrow==0.14.2
 attrs==19.1.0
@@ -103,4 +99,3 @@ wcwidth==0.1.7
 webencodings==0.5.1
 whichcraft==0.5.2
 widgetsnbextension==3.4.2
-

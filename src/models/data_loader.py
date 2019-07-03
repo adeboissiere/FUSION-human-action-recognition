@@ -54,8 +54,6 @@ class DataLoader():
         batch_samples = self.training_samples_batch[:n_elements]
         self.training_samples_batch = self.training_samples_batch[n_elements:]
 
-        print(len(self.training_samples_batch))
-
         skeletons_list = []
         hand_crops_list = []
         # Access corresponding samples

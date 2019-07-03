@@ -50,7 +50,9 @@ if __name__ == '__main__':
 
     # Create dataloader
     data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length)
+    X_skeleton, X_hands, Y = data_loader.next_batch()
+    model = STAHandsCNN(60).to(device)
+    model.forward(X_skeleton, X_hands)
 
-    # model = STAHandsCNN(60).to(device)
 
     print("-> Done !")
