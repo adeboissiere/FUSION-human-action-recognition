@@ -9,10 +9,8 @@ import time
 
 from src.utils.joints import *
 
-use_cuda = False
-use_cuda = torch.cuda.is_available()
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 
 class Fsk(nn.Module):
@@ -56,10 +54,12 @@ class Fg(nn.Module):
                                          std=[0.229, 0.224, 0.225])
 
         self.transform = transforms.Compose([
-            transforms.Resize(224),
+            transforms.Resize(299),
             transforms.ToTensor(),
             normalize
         ])
+
+        print(self.inception_v3)
 
     def forward(self, X_hands):
         """ Forward propagation of f_g module (inception_v3).
@@ -83,16 +83,31 @@ class Fg(nn.Module):
 
         print("start")
         start = time.time()
-        for b in range(batch_size):
-            for t in range(seq_len):
-                for hand in range(4):
+        hand_crop = None
+
+        for hand in range(1):
+            for t in range(1):
+                batch = []
+
+                for b in range(batch_size):
                     # Transform to PIL format
                     hand_crop = Image.fromarray(X_hands[b, t, hand])
 
                     # Apply transformation
                     hand_crop = self.transform(hand_crop)
+                    batch.append(hand_crop)
+
+                X = torch.stack(batch).to(device)
+                print(X.shape)
+
+                out = self.inception_v3(X)
+                print(out[0].shape)
+                return
+
 
         print("Converting images took : " + str(time.time() - start) + " seconds")
+
+
 
 
 class STAHandsCNN(nn.Module):
