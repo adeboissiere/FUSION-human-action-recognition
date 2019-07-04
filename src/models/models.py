@@ -2,10 +2,9 @@ import torch
 from torch import nn, optim
 import torchvision.transforms as transforms
 import torchvision.models as models
+import torch.nn.functional as F
 
 from PIL import Image
-
-import time
 
 from src.utils.joints import *
 
@@ -159,6 +158,32 @@ class Fp(nn.Module):
         return self.mlp(X)
 
 
+class Fu(nn.Module):
+    def __init__(self):
+        super(Fu, self).__init__()
+        self.linear_ReLU = nn.Sequential(
+            nn.Linear(1024, 1024),
+            nn.ReLU()
+        )
+
+    def forward(self, X):
+        return self.linear_ReLU(X)
+
+
+class FpPrime(nn.Module):
+    def __init__(self):
+        super(FpPrime, self).__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(80 + 1024, 512),
+            nn.Sigmoid(),
+            nn.Linear(512, 20),
+            nn.Sigmoid()
+        )
+
+    def forward(self, X):
+        return self.mlp(X)
+
+
 class STAHandsCNN(nn.Module):
     def __init__(self, n_classes):
         super(STAHandsCNN, self).__init__()
@@ -175,6 +200,15 @@ class STAHandsCNN(nn.Module):
 
         # LSTM cell
         self.lstm = nn.LSTMCell(input_size = 2048, hidden_size = 1024)
+
+        # Feature extractor
+        self.fu = Fu()
+
+        # Temporal attention network
+        self.fp_prime = FpPrime()
+
+        # Output & prediction
+        self.fy = nn.Linear(2048, 60)
 
     def forward(self, X_skeleton, X_hands):
         """ Forward propagation of STAHandsCNN
@@ -210,7 +244,7 @@ class STAHandsCNN(nn.Module):
 
         X = torch.from_numpy(np.float32(X.transpose(0, 3, 1, 2))) # shape (batch_size, 3, seq_len, 330)
 
-        s = self.fsk(X.to(device)) # shape
+        s = self.fsk(X.to(device))  # shape (batch_size, 1024, 1, 1)
 
         # ===== Spatial attention =====
         # 1. Glimpse representation (f_g)
@@ -220,15 +254,46 @@ class STAHandsCNN(nn.Module):
         h_t = torch.zeros(batch_size, 1024).to(device)
         c_t= torch.zeros(batch_size, 1024).to(device)
 
-        for t in range(1):
+        U = []
+        P = []
+
+        for t in range(seq_len):
             # Concatenate # shape (batch_size, 1024, 1, 1) and h_t
             fp_input = torch.cat([s[:, :, 0, 0], h_t], dim = 1)  # shape (batch_size, 2048)
 
             # Compute p_t vector (see paper)
             p_t = self.fp(fp_input) # shape (batch_size, 4)
+            P.append(p_t)
 
             v_tilde_t = (v_tji[:, t, :, :].permute(1, 0, 2) * p_t).permute(1, 0, 2)  # shape (batch_size, 2048, 4)
-            # print(v_tilde_t.shape)
+            v_tilde_t = torch.sum(v_tilde_t, dim = 2)  # shape (batch_size, 2048)
+
+            h_t, c_t = self.lstm(v_tilde_t, (h_t, c_t))
+
+            u_t = self.fu(h_t) # shape (batch_size, 1024)
+            U.append(u_t)
+
+        P = torch.cat(P, dim = 1)  # shape (batch_size, seq_len * 4)
+
+        fp_prime_input = torch.cat([P, s[:, :, 0, 0]], dim = 1)  # shape (batch_size,seq_len * 4 + 1024)
+
+        p_prime = self.fp_prime(fp_prime_input)  # shape (batch_size, seq_len)
+
+        # Compute u_tilde
+        U = torch.stack(U, dim = 2)  # shape (batch_size, 1024, seq_len)
+
+        u_tilde = (U.permute(1, 0, 2) * p_prime).permute(1, 0, 2)  # shape (batch_size, 1024, seq_len) -> need to double check
+        u_tilde = torch.sum(u_tilde, dim = 2)
+
+        # Prediction
+        out = self.fy(torch.cat([u_tilde, s[:, :, 0, 0]], dim = 1))  # shape (batch_size, n_classes)
+        out = F.log_softmax(out, dim = 1)  # shape (batch_size, n_classes)
+
+        return out
+
+
+
+
 
 
 
