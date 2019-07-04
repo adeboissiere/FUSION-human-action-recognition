@@ -10,7 +10,7 @@ import time
 from src.utils.joints import *
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+# device = torch.device("cpu")
 
 
 class Fsk(nn.Module):
@@ -40,26 +40,65 @@ class Fsk(nn.Module):
         out = self.layer1(X)
         out = self.layer2(out)
         out = self.layer3(out)
-        print(out.shape)
 
-        return out
+        return out  # shape (batch_size, 1024, 1, 1)
+
+
+def set_parameter_requires_grad(model, feature_extracting):
+    if feature_extracting:
+        for param in model.parameters():
+            param.requires_grad = False
 
 
 class Fg(nn.Module):
-    def __init__(self):
+    def __init__(self, model_name):
+        """ F_g module (see paper). Only AlexNet and inception_v3 supported for now.
+
+        :param model_name: type of trained model to extract feature of hands
+        - AlexNet : 61 100 840 parameters
+        - ResNet18 : 11 689 512 parameters
+        - VGG11 : 132 863 336 parameters
+        - SqueezeNet1_0 : 1 248 424 parameters
+        - SqueezeNet1_1 : 1 235 496 parameters
+
+        """
         super(Fg, self).__init__()
-        self.inception_v3 = models.inception_v3(pretrained = True)
+        self.trained_cnn = None
+        self.model_name = model_name
+
+        input_size = 224
+        output_size = 2048
+        feature_extract = True
+
+        if model_name == "alexnet":
+            self.trained_cnn = models.alexnet(pretrained=True)
+            set_parameter_requires_grad(self.trained_cnn, feature_extract)
+            num_ftrs = self.trained_cnn.classifier[6].in_features
+            self.trained_cnn.classifier[6] = nn.Linear(num_ftrs, output_size)
+
+        elif model_name == "inception":
+            self.trained_cnn = models.inception_v3(pretrained=True)
+            set_parameter_requires_grad(self.trained_cnn, feature_extract)
+            # Handle the auxilary net
+            num_ftrs = self.trained_cnn.AuxLogits.fc.in_features
+            self.trained_cnn.AuxLogits.fc = nn.Linear(num_ftrs, output_size)
+            # Handle the primary net
+            num_ftrs = self.trained_cnn.fc.in_features
+            self.trained_cnn.fc = nn.Linear(num_ftrs, output_size)
+            input_size = 299
+
+        else:
+            print("Invalid model name for f_g module, exiting...")
+            exit()
 
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
 
         self.transform = transforms.Compose([
-            transforms.Resize(299),
+            transforms.Resize(input_size),
             transforms.ToTensor(),
             normalize
         ])
-
-        print(self.inception_v3)
 
     def forward(self, X_hands):
         """ Forward propagation of f_g module (inception_v3).
@@ -68,25 +107,13 @@ class Fg(nn.Module):
         :param X_hands: shape (batch_size, seq_len, 4, crop_size, crop_size, 3)
         :return:
         """
-        # Apply transform to batch
-        '''
-        image_test = X_hands[0, 0, 0]
-        print(image_test[:, :, 0])
-        image_test = Image.fromarray(image_test)
-        image_test = self.transform(image_test)
-
-        print(image_test.shape)
-        print(image_test[0])
-        '''
         batch_size = X_hands.shape[0]
         seq_len = X_hands.shape[1]
 
-        print("start")
-        start = time.time()
-        hand_crop = None
-
-        for hand in range(1):
-            for t in range(1):
+        v_tji = [] # See paper for notation
+        for hand in range(4):
+            v_tj = []
+            for t in range(seq_len):
                 batch = []
 
                 for b in range(batch_size):
@@ -97,28 +124,57 @@ class Fg(nn.Module):
                     hand_crop = self.transform(hand_crop)
                     batch.append(hand_crop)
 
-                X = torch.stack(batch).to(device)
-                print(X.shape)
+                # Create batch for given hand and fixed t
+                X = torch.stack(batch).to(device)  # shape (batch_size, 3, H, W)
 
-                out = self.inception_v3(X)
-                print(out[0].shape)
-                return
+                # Compute feature vector
+                out = self.trained_cnn(X)  # shape (batch_size, output_size)
+
+                # Append to list
+                if self.model_name == "alexnet":
+                    v_tj.append(out)
+                elif self.model_name == "inception":
+                    v_tj.append(out[0])
+
+            # Stack list to new dimension
+            X = torch.stack(v_tj)  # shape (seq_len, batch_size, output_size)
+            v_tji.append(X)
+
+        X = torch.stack(v_tji)  # shape (4, seq_len, batch_size, output_size)
+
+        return X.permute(2, 1, 3, 0)
 
 
-        print("Converting images took : " + str(time.time() - start) + " seconds")
+class Fp(nn.Module):
+    def __init__(self):
+        super(Fp, self).__init__()
+        self.mlp = nn.Sequential(
+            nn.Linear(2048, 256),
+            nn.Sigmoid(),
+            nn.Linear(256, 4),
+            nn.Sigmoid()
+        )
 
-
+    def forward(self, X):
+        return self.mlp(X)
 
 
 class STAHandsCNN(nn.Module):
     def __init__(self, n_classes):
         super(STAHandsCNN, self).__init__()
         self.n_classes = n_classes
+
+        # Pose network
         self.fsk = Fsk()
 
-        self.fg = Fg()
+        # Glimpse sensor
+        self.fg = Fg("inception")
 
+        # Spatial attention network
+        self.fp = Fp()
 
+        # LSTM cell
+        self.lstm = nn.LSTMCell(input_size = 2048, hidden_size = 1024)
 
     def forward(self, X_skeleton, X_hands):
         """ Forward propagation of STAHandsCNN
@@ -133,7 +189,7 @@ class STAHandsCNN(nn.Module):
         # ===== Convolutional pose features (f_sk) =====
         # 1. Transform X_skeleton into a X_{t, j, k} matrix where t is time, j is joint (x, y, z) and k e {1, 2, 3}
         # for motion, velocity and acceleration. The 2 skeletons are stacked on on the j dimension
-        '''
+
         X_skeleton = X_skeleton.transpose(0, 2, 3, 1, 4) # shape (batch_size, seq_len, n_joints, 3, 2)
         X = np.zeros((batch_size, seq_len, 2 * kinematic_chain.shape[0] * 3, 3))
 
@@ -154,9 +210,26 @@ class STAHandsCNN(nn.Module):
 
         X = torch.from_numpy(np.float32(X.transpose(0, 3, 1, 2))) # shape (batch_size, 3, seq_len, 330)
 
-        out = self.fsk(X.to(device))
-        '''
+        s = self.fsk(X.to(device)) # shape
 
         # ===== Spatial attention =====
         # 1. Glimpse representation (f_g)
-        self.fg(X_hands)
+        # /!\ Computes for all timesteps at once
+        v_tji = self.fg(X_hands) # shape (batch_size, seq_len, output_size = 2048, 4)
+
+        h_t = torch.zeros(batch_size, 1024).to(device)
+        c_t= torch.zeros(batch_size, 1024).to(device)
+
+        for t in range(1):
+            # Concatenate # shape (batch_size, 1024, 1, 1) and h_t
+            fp_input = torch.cat([s[:, :, 0, 0], h_t], dim = 1)  # shape (batch_size, 2048)
+
+            # Compute p_t vector (see paper)
+            p_t = self.fp(fp_input) # shape (batch_size, 4)
+
+            v_tilde_t = (v_tji[:, t, :, :].permute(1, 0, 2) * p_t).permute(1, 0, 2)  # shape (batch_size, 2048, 4)
+            # print(v_tilde_t.shape)
+
+
+
+
