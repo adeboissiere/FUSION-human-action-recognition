@@ -185,9 +185,11 @@ class FpPrime(nn.Module):
 
 
 class STAHandsCNN(nn.Module):
-    def __init__(self, n_classes):
+    def __init__(self, n_classes, include_pose, include_rgb):
         super(STAHandsCNN, self).__init__()
         self.n_classes = n_classes
+        self.include_pose = include_pose
+        self.include_rgb = include_rgb
 
         # Pose network
         self.fsk = Fsk()
@@ -208,7 +210,9 @@ class STAHandsCNN(nn.Module):
         self.fp_prime = FpPrime()
 
         # Output & prediction
-        self.fy = nn.Linear(2048, 60)
+        self.fy_pose = nn.Linear(1024, 60)
+        self.fy_rgb = nn.Linear(1024, 60)
+        self.fy_fuse = nn.Linear(2048, 60)
 
     def forward(self, X_skeleton, X_hands):
         """ Forward propagation of STAHandsCNN
@@ -220,76 +224,95 @@ class STAHandsCNN(nn.Module):
         batch_size = X_skeleton.shape[0]
         seq_len = X_skeleton.shape[2]
 
-        # ===== Convolutional pose features (f_sk) =====
-        # 1. Transform X_skeleton into a X_{t, j, k} matrix where t is time, j is joint (x, y, z) and k e {1, 2, 3}
-        # for motion, velocity and acceleration. The 2 skeletons are stacked on on the j dimension
+        s = torch.zeros((batch_size, 1024, 1, 1)).to(device)
+        u_tilde = None
 
-        X_skeleton = X_skeleton.transpose(0, 2, 3, 1, 4) # shape (batch_size, seq_len, n_joints, 3, 2)
-        X = np.zeros((batch_size, seq_len, 2 * kinematic_chain.shape[0] * 3, 3))
+        if self.include_pose:
+            # ===== Convolutional pose features (f_sk) =====
+            # 1. Transform X_skeleton into a X_{t, j, k} matrix where t is time, j is joint (x, y, z) and k e {1, 2, 3}
+            # for motion, velocity and acceleration. The 2 skeletons are stacked on on the j dimension
 
-        # Populate X
-        i = 0
-        for joint in kinematic_chain:
-            # Subject 1
-            X[:, :, i*3:i*3+3, 0] = X_skeleton[:, :, joint, :, 0]
+            X_skeleton = X_skeleton.transpose(0, 2, 3, 1, 4) # shape (batch_size, seq_len, n_joints, 3, 2)
+            X = np.zeros((batch_size, seq_len, 2 * kinematic_chain.shape[0] * 3, 3))
 
-            # Subject 2
-            X[:, :, 3*len(kinematic_chain)+i*3:3*len(kinematic_chain)+i*3+3, 0] = X_skeleton[:, :, joint, :, 1]
-            i += 1
+            # Populate X
+            i = 0
+            for joint in kinematic_chain:
+                # Subject 1
+                X[:, :, i*3:i*3+3, 0] = X_skeleton[:, :, joint, :, 0]
 
-        # Calculate velocities and and accelerations
-        dt = 1 / 30
-        X[:, 1:, :, 1] = (X[:, :-1, :, 0] - X[:, 1:, :, 0]) / dt # Velocity
-        X[:, 1:, :, 2] = (X[:, :-1, :, 0] - X[:, 1:, :, 0]) / (dt ** 2)  # Acceleration
+                # Subject 2
+                X[:, :, 3*len(kinematic_chain)+i*3:3*len(kinematic_chain)+i*3+3, 0] = X_skeleton[:, :, joint, :, 1]
+                i += 1
 
-        X = torch.from_numpy(np.float32(X.transpose(0, 3, 1, 2))) # shape (batch_size, 3, seq_len, 330)
+            # Calculate velocities and and accelerations
+            dt = 1 / 30
+            X[:, 1:, :, 1] = (X[:, :-1, :, 0] - X[:, 1:, :, 0]) / dt # Velocity
+            X[:, 1:, :, 2] = (X[:, :-1, :, 0] - X[:, 1:, :, 0]) / (dt ** 2)  # Acceleration
 
-        s = self.fsk(X.to(device))  # shape (batch_size, 1024, 1, 1)
+            X = torch.from_numpy(np.float32(X.transpose(0, 3, 1, 2))) # shape (batch_size, 3, seq_len, 330)
 
-        # ===== Spatial attention =====
-        # 1. Glimpse representation (f_g)
-        # /!\ Computes for all timesteps at once
-        v_tji = self.fg(X_hands) # shape (batch_size, seq_len, output_size = 2048, 4)
+            s = self.fsk(X.to(device))  # shape (batch_size, 1024, 1, 1)
 
-        h_t = torch.zeros(batch_size, 1024).to(device)
-        c_t= torch.zeros(batch_size, 1024).to(device)
+        if self.include_rgb:
+            # ===== Spatial attention =====
+            # 1. Glimpse representation (f_g)
+            # /!\ Computes for all timesteps at once
+            v_tji = self.fg(X_hands) # shape (batch_size, seq_len, output_size = 2048, 4)
 
-        U = []
-        P = []
+            h_t = torch.zeros(batch_size, 1024).to(device)
+            c_t= torch.zeros(batch_size, 1024).to(device)
 
-        for t in range(seq_len):
-            # Concatenate # shape (batch_size, 1024, 1, 1) and h_t
-            fp_input = torch.cat([s[:, :, 0, 0], h_t], dim = 1)  # shape (batch_size, 2048)
+            U = []
+            P = []
 
-            # Compute p_t vector (see paper)
-            p_t = self.fp(fp_input) # shape (batch_size, 4)
-            P.append(p_t)
+            for t in range(seq_len):
+                # Concatenate # shape (batch_size, 1024, 1, 1) and h_t
+                fp_input = torch.cat([s[:, :, 0, 0], h_t], dim = 1)  # shape (batch_size, 2048)
 
-            v_tilde_t = (v_tji[:, t, :, :].permute(1, 0, 2) * p_t).permute(1, 0, 2)  # shape (batch_size, 2048, 4)
-            v_tilde_t = torch.sum(v_tilde_t, dim = 2)  # shape (batch_size, 2048)
+                # Compute p_t vector (see paper)
+                p_t = self.fp(fp_input) # shape (batch_size, 4)
+                P.append(p_t)
 
-            h_t, c_t = self.lstm(v_tilde_t, (h_t, c_t))
+                v_tilde_t = (v_tji[:, t, :, :].permute(1, 0, 2) * p_t).permute(1, 0, 2)  # shape (batch_size, 2048, 4)
+                v_tilde_t = torch.sum(v_tilde_t, dim = 2)  # shape (batch_size, 2048)
 
-            u_t = self.fu(h_t) # shape (batch_size, 1024)
-            U.append(u_t)
+                h_t, c_t = self.lstm(v_tilde_t, (h_t, c_t))
 
-        P = torch.cat(P, dim = 1)  # shape (batch_size, seq_len * 4)
+                u_t = self.fu(h_t) # shape (batch_size, 1024)
+                U.append(u_t)
 
-        fp_prime_input = torch.cat([P, s[:, :, 0, 0]], dim = 1)  # shape (batch_size,seq_len * 4 + 1024)
+            P = torch.cat(P, dim = 1)  # shape (batch_size, seq_len * 4)
 
-        p_prime = self.fp_prime(fp_prime_input)  # shape (batch_size, seq_len)
+            fp_prime_input = torch.cat([P, s[:, :, 0, 0]], dim = 1)  # shape (batch_size,seq_len * 4 + 1024)
 
-        # Compute u_tilde
-        U = torch.stack(U, dim = 2)  # shape (batch_size, 1024, seq_len)
+            p_prime = self.fp_prime(fp_prime_input)  # shape (batch_size, seq_len)
 
-        u_tilde = (U.permute(1, 0, 2) * p_prime).permute(1, 0, 2)  # shape (batch_size, 1024, seq_len) -> need to double check
-        u_tilde = torch.sum(u_tilde, dim = 2)
+            # Compute u_tilde
+            U = torch.stack(U, dim = 2)  # shape (batch_size, 1024, seq_len)
+
+            u_tilde = (U.permute(1, 0, 2) * p_prime).permute(1, 0, 2)  # shape (batch_size, 1024, seq_len) -> need to double check
+            u_tilde = torch.sum(u_tilde, dim = 2) # shape (batch_size, 1024
 
         # Prediction
-        out = self.fy(torch.cat([u_tilde, s[:, :, 0, 0]], dim = 1))  # shape (batch_size, n_classes)
-        out = F.log_softmax(out, dim = 1)  # shape (batch_size, n_classes)
+        if self.include_pose and not self.include_rgb:
+            out = self.fy_pose(s[:, :, 0, 0])
+            out = F.log_softmax(out, dim=1)  # shape (batch_size, n_classes)
 
-        return out
+            return out
+
+        elif self.include_pose and self.include_rgb:
+            out = self.fy_fuse(torch.cat([u_tilde, s[:, :, 0, 0]], dim = 1))  # shape (batch_size, n_classes)
+            out = F.log_softmax(out, dim=1)
+
+            return out
+
+        elif self.include_rgb and not self.include_pose:
+            out = self.fy_rgb(u_tilde)
+            out = F.log_softmax(out, dim=1)
+
+            return out
+
 
 
 

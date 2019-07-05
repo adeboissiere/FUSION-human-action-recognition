@@ -2,12 +2,15 @@ import numpy as np
 import h5py
 import random
 
+from src.utils.joints import *
+
 
 class DataLoader():
     def __init__(self, batch_size, data_path, evaluation_type, sub_sequence_length):
         self.batch_size = batch_size
         self.evaluation_type = evaluation_type
         self.sub_sequence_length = sub_sequence_length
+        self.normalize_skeleton = True
 
         # Opens h5 file
         self.dataset = h5py.File(data_path + "datasets.h5", 'r')
@@ -44,7 +47,7 @@ class DataLoader():
         self.training_samples_batch = training_samples.copy()
         self.testing_samples = testing_samples.copy()
 
-        self.n_batch = int(len(training_samples) / batch_size) + int(len(training_samples) % batch_size != 0)
+        self.n_batches = int(len(training_samples) / batch_size) + int(len(training_samples) % batch_size != 0)
 
     def next_batch(self):
         # Take random samples (1. shuffle training_sample_batch 2. Take first n elements
@@ -76,6 +79,11 @@ class DataLoader():
         X_skeleton = np.stack(skeletons_list) # shape (batch_size, 3, sub_sequence_length, num_joints, 2)
         X_hands = np.stack(hand_crops_list) # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
 
+        if self.normalize_skeleton:
+            trans_vector = X_skeleton[:, :, 0, Joints.SPINEMID, :]  # shape (batch_size, 3, 2)
+            # temp shape : (seq_len, n_joints, batch_size, 3, 2)
+            X_skeleton = (X_skeleton.transpose(2, 3, 0, 1, 4) - trans_vector).transpose(2, 3, 0, 1, 4)
+
         # Extract class vector
         Y = [int(x[-3:]) for x in batch_samples]
 
@@ -83,4 +91,4 @@ class DataLoader():
         if len(self.training_samples_batch) == 0:
             self.training_samples_batch = self.training_samples.copy()
 
-        return X_skeleton, X_hands, Y
+        return X_skeleton, X_hands, np.asarray(Y) - 1

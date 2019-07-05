@@ -21,11 +21,13 @@ COMPRESSION_OPTS = 9
 MODEL_FOLDER :=$(PROJECT_DIR)/models/
 EVALUATION_TYPE = cross_subject
 MODEL_TYPE = STA-HANDS
-OPTIMIZER = SGD
-LEARNING_RATE = 1e-9
+OPTIMIZER = ADAM
+LEARNING_RATE = 1e-4
 EPOCHS = 30
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 SUB_SEQUENCE_LENGTH = 20 
+INCLUDE_POSE=True
+INCLUDE_RGB=True
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -54,7 +56,8 @@ features:
 ## Make Train
 train: 
 	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
-	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH)
+	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
+	--include_rgb=$(INCLUDE_RGB)
 
 ## Delete all compiled Python files
 clean:
