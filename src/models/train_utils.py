@@ -58,7 +58,10 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, output_fol
 
             # Accuracy over batch
             accuracy = calculate_accuracy(model, out, Y)
-            print("[" + str(batch_idx) + "/" + str(data_loader.n_batches) + "] Accuracy : " + str(accuracy) + ", loss : " + str(loss.item()))
+            batch_log = open(output_folder + "batch_log.txt", "a+")
+            batch_log.write("[" + str(batch_idx) + "/" + str(data_loader.n_batches) + "] Accuracy : " + str(accuracy) + ", loss : " + str(loss.item()))
+            batch_log.write("\r\n")
+            batch_log.close()
             errors_temp.append(1 - accuracy)
 
             # Training mode
