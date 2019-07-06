@@ -5,6 +5,20 @@ import pickle
 from src.models.models import *
 
 
+def evaluate_accuracy_set(model, samples_list, batch_size, h5_dataset):
+    batch_samples_list = [samples_list[x:x+batch_size] for x in range(0, len(samples_list), batch_size)]
+
+    for batch_samples in batch_samples_list:
+        for sample_name in batch_samples:
+            skeleton = h5_dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
+            hand_crops = h5_dataset[sample_name]["rgb"][:]  # shape (max_frame, n_hands = {2, 4}, crop_size, crop_size, 3)
+
+            # Pad hand_crops if only one subject found
+            if hand_crops.shape[1] == 2:
+                pad = np.zeros(hand_crops.shape, dtype=hand_crops.dtype)
+                hand_crops = np.concatenate((hand_crops, pad), axis=1)
+
+
 def calculate_accuracy(model, Y_hat, Y):
     _, Y_hat = Y_hat.max(1)
     trues = (Y_hat == Y.long()) * 1

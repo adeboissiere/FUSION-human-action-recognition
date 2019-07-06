@@ -41,7 +41,7 @@ class DataLoader():
 
             training_samples = [s for s in samples_names_list if any(xs in s for xs in training_cameras_cxxx)]
 
-        testing_samples = set(samples_names_list) - set(training_samples)
+        testing_samples = list(set(samples_names_list) - set(training_samples))
 
         self.training_samples = training_samples.copy()
         self.training_samples_batch = training_samples.copy()
@@ -61,8 +61,8 @@ class DataLoader():
         hand_crops_list = []
         # Access corresponding samples
         for sample_name in batch_samples:
-            skeleton = self.dataset[sample_name]["skeleton"][:] # shape (3, max_frame, num_joint=25, 2)
-            hand_crops = self.dataset[sample_name]["rgb"][:] # shape (max_frame, n_hands = {2, 4}, crop_size, crop_size, 3)
+            skeleton = self.dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
+            hand_crops = self.dataset[sample_name]["rgb"][:]  # shape (max_frame, n_hands = {2, 4}, crop_size, crop_size, 3)
 
             # Pad hand_crops if only one subject found
             if hand_crops.shape[1] == 2:

@@ -70,10 +70,12 @@ if __name__ == '__main__':
 
     # Create data loader
     data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length)
-    # X_skeleton, X_hands, Y = data_loader.next_batch()
-    model = STAHandsCNN(60, include_pose, include_rgb).to(device)
+    X_skeleton, X_hands, Y = data_loader.next_batch()
+    # model = STAHandsCNN(60, include_pose, include_rgb).to(device)
+    model = FskDeepGRU().to(device)
+    # model(X_skeleton)
     # model(X_skeleton, X_hands)
-
+    # evaluate_accuracy_set(models, data_loader.testing_samples, batch_size, data_loader.dataset)
     train_model(model, data_loader, optimizer, learning_rate, epochs, output_folder)
 
     print("-> Done !")

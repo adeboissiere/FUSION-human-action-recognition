@@ -12,9 +12,9 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
 
 
-class Fsk(nn.Module):
+class FskCNN(nn.Module):
     def __init__(self):
-        super(Fsk, self).__init__()
+        super(FskCNN, self).__init__()
         self.layer1 = nn.Sequential(
             nn.Conv2d(in_channels = 3, out_channels = 1, kernel_size = (9, 3), padding = (4, 1)),
             nn.ReLU(),
@@ -42,6 +42,42 @@ class Fsk(nn.Module):
 
         return out  # shape (batch_size, 1024, 1, 1)
 
+
+class FskDeepGRU(nn.Module):
+    def __init__(self):
+        super(FskDeepGRU, self).__init__()
+        self.gru = nn.GRU(input_size = 25 * 3 * 2,
+                          hidden_size = 150,
+                          num_layers = 3,
+                          batch_first = True,
+                          dropout = 0.5,
+                          bidirectional = False)
+
+        self.fc = nn.Linear(150, 60)
+
+    def forward(self, X_skeleton, X_hands):
+        X_skeleton = X_skeleton.transpose(0, 2, 3, 1, 4)  # shape (batch_size, seq_len, n_joints, 3, 2)
+
+        batch_size = X_skeleton.shape[0]
+        seq_len = X_skeleton.shape[1]
+
+        X_skeleton = X_skeleton.reshape(batch_size, seq_len, 25 * 3 * 2) # shape (batch_size, seq_len, 25 * 3 * 2)
+
+        X_skeleton = torch.from_numpy(X_skeleton).to(device)
+
+        out, _ = self.gru(X_skeleton) # shape (batch_size, seq_len, 150)
+
+        predictions = []
+        for t in range(seq_len):
+            pred_t = self.fc(out[:, t, :])
+            predictions.append(pred_t)
+
+        predictions = torch.stack(predictions, dim = 1)  # shape (batch_size, seq_len, 60)
+        predictions = torch.mean(predictions, dim = 1)  # shape (batch_size, 60)
+
+        out = F.log_softmax(predictions, dim=1)
+
+        return out
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
@@ -192,7 +228,7 @@ class STAHandsCNN(nn.Module):
         self.include_rgb = include_rgb
 
         # Pose network
-        self.fsk = Fsk()
+        self.fsk = FskCNN()
 
         # Glimpse sensor
         self.fg = Fg("inception")
