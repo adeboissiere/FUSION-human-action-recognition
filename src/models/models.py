@@ -61,23 +61,23 @@ class FskDeepGRU(nn.Module):
         batch_size = X_skeleton.shape[0]
         seq_len = X_skeleton.shape[1]
 
-        X_skeleton = X_skeleton.reshape(batch_size, seq_len, 25 * 3 * 2) # shape (batch_size, seq_len, 25 * 3 * 2)
+        X_skeleton = X_skeleton.reshape(batch_size, seq_len, 25 * 3 * 2)  # shape (batch_size, seq_len, 25 * 3 * 2)
 
         X_skeleton = torch.from_numpy(X_skeleton).to(device)
 
-        out, _ = self.gru(X_skeleton) # shape (batch_size, seq_len, 150)
+        out, _ = self.gru(X_skeleton)  # shape (batch_size, seq_len, 150)
 
         predictions = []
         for t in range(seq_len):
-            pred_t = self.fc(out[:, t, :])
+            pred_t = self.fc(out[:, t, :])  # shape (batch_size, 60)
+            pred_t = F.log_softmax(pred_t, dim = 1)  # shape (batch_size, 60)
             predictions.append(pred_t)
 
         predictions = torch.stack(predictions, dim = 1)  # shape (batch_size, seq_len, 60)
-        predictions = torch.mean(predictions, dim = 1)  # shape (batch_size, 60)
-
-        out = F.log_softmax(predictions, dim=1)
+        out = torch.mean(predictions, dim = 1)  # shape (batch_size, 60)
 
         return out
+
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:

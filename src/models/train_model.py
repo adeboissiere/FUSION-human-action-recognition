@@ -58,8 +58,9 @@ if __name__ == '__main__':
     # Print summary
     print("\r\n\n\n========== TRAIN MODEL ==========")
     print("-> h5 dataset folder path : " + data_path)
-    print("-> output folder : " + output_folder)
-    print("-> evaluation type : " + evaluation_type)
+    print("-> output_folder : " + output_folder)
+    print("-> evaluation_type : " + evaluation_type)
+    print("-> model_type : " + str(model_type))
     print("-> optimizer : " + optimizer)
     print("-> learning rate : " + str(learning_rate))
     print("-> max epochs : " + str(epochs))
@@ -71,11 +72,12 @@ if __name__ == '__main__':
     # Create data loader
     data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length)
     X_skeleton, X_hands, Y = data_loader.next_batch()
-    # model = STAHandsCNN(60, include_pose, include_rgb).to(device)
-    model = FskDeepGRU().to(device)
-    # model(X_skeleton)
-    # model(X_skeleton, X_hands)
-    # evaluate_accuracy_set(models, data_loader.testing_samples, batch_size, data_loader.dataset)
+
+    if model_type == "GRU":
+        model = FskDeepGRU().to(device)
+    elif model_type == "STA-HANDS":
+        model = STAHandsCNN(60, include_pose, include_rgb).to(device)
+
     train_model(model, data_loader, optimizer, learning_rate, epochs, output_folder)
 
     print("-> Done !")
