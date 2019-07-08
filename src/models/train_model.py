@@ -22,6 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--sub_sequence_length', default=20)
     parser.add_argument('--include_pose', default=True)
     parser.add_argument('--include_rgb', default=True)
+    parser.add_argument('--continuous_frames', default=True)
 
     arg = parser.parse_args()
 
@@ -37,23 +38,13 @@ if __name__ == '__main__':
     sub_sequence_length = int(arg.sub_sequence_length)
     include_pose = arg.include_pose == "True"
     include_rgb = arg.include_rgb == "True"
+    continuous_frames = arg.continuous_frames == "True"
 
     if evaluation_type not in ["cross_subject", "cross_view"]:
         print("Error : Evaluation type not recognized")
         print("... Returning")
 
         exit()
-
-    # Create folder for output files
-    now = datetime.datetime.now()
-
-    output_folder += str(model_type) + '_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + \
-                    '_' + str(now.hour) + 'h' + str(now.minute) + '_' + evaluation_type + '_'+ str(optimizer) + \
-                    '_lr=' + str(learning_rate) + '_epochs=' + str(epochs) + '_batch=' + str(batch_size) +'_seq_len=' +\
-                     str(sub_sequence_length) + '/'
-
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
 
     # Print summary
     print("\r\n\n\n========== TRAIN MODEL ==========")
@@ -68,15 +59,30 @@ if __name__ == '__main__':
     print("-> sub_sequence_length : " + str(sub_sequence_length))
     print("-> include_pose : " + str(include_pose))
     print("-> include_rgb : " + str(include_rgb))
+    print("-> continuous_frames : " + str(continuous_frames))
 
     # Create data loader
-    data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length)
+    data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames)
     X_skeleton, X_hands, Y = data_loader.next_batch()
 
     if model_type == "GRU":
         model = FskDeepGRU().to(device)
     elif model_type == "STA-HANDS":
         model = STAHandsCNN(60, include_pose, include_rgb).to(device)
+    else:
+        print("Model type not recognized. Exiting")
+        exit()
+
+    # Create folder for output files
+    now = datetime.datetime.now()
+
+    output_folder += str(model_type) + '_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + \
+                    '_' + str(now.hour) + 'h' + str(now.minute) + '_' + evaluation_type + '_'+ str(optimizer) + \
+                    '_lr=' + str(learning_rate) + '_epochs=' + str(epochs) + '_batch=' + str(batch_size) +'_seq_len=' +\
+                     str(sub_sequence_length) + '_cont_frames=' + str(continuous_frames) + '/'
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
     train_model(model, data_loader, optimizer, learning_rate, epochs, output_folder)
 

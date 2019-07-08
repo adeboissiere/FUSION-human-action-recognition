@@ -28,6 +28,7 @@ BATCH_SIZE = 64
 SUB_SEQUENCE_LENGTH = 20 
 INCLUDE_POSE=True
 INCLUDE_RGB=True
+CONTINUOUS_FRAMES=True
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -57,7 +58,7 @@ features:
 train: 
 	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
 	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
-	--include_rgb=$(INCLUDE_RGB)
+	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES)
 
 ## Delete all compiled Python files
 clean:

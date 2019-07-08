@@ -6,10 +6,11 @@ from src.utils.joints import *
 
 
 class DataLoader():
-    def __init__(self, batch_size, data_path, evaluation_type, sub_sequence_length):
+    def __init__(self, batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames):
         self.batch_size = batch_size
         self.evaluation_type = evaluation_type
         self.sub_sequence_length = sub_sequence_length
+        self.continuous_frames = continuous_frames
         self.normalize_skeleton = True
 
         # Opens h5 file
@@ -69,12 +70,35 @@ class DataLoader():
                 pad = np.zeros(hand_crops.shape, dtype=hand_crops.dtype)
                 hand_crops = np.concatenate((hand_crops, pad), axis=1)
 
-            # Take random subsequence
             max_frame = hand_crops.shape[0]
-            start = random.randint(0, max_frame - self.sub_sequence_length)
+            # print()
+            # print(max_frame)
 
-            skeletons_list.append(skeleton[:, start:start+self.sub_sequence_length, :, :])
-            hand_crops_list.append(hand_crops[start:start+self.sub_sequence_length])
+            # Cut sequence into T sub sequences and take a random frame in each
+            if not self.continuous_frames:
+                skeleton_frame = []
+                hand_crops_frame = []
+
+                n_frames_sub_sequence = max_frame / self.sub_sequence_length  # size of each sub sequence
+                for sub_sequence in range(self.sub_sequence_length):
+                    lower_index = int(sub_sequence * n_frames_sub_sequence)
+                    upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
+                    random_frame = random.randint(lower_index, upper_index)
+
+                    # print(str(random_frame) + " in [" + str(lower_index) + "-" + str(upper_index) + "]")
+
+                    skeleton_frame.append(skeleton[:, random_frame, :, :])
+                    hand_crops_frame.append(hand_crops[random_frame])
+
+                skeletons_list.append(np.stack(skeleton_frame, axis = 1))
+                hand_crops_list.append(np.stack(hand_crops_frame, axis = 0))
+
+            # Take a random sub sequence
+            else:
+                start = random.randint(0, max_frame - self.sub_sequence_length)
+
+                skeletons_list.append(skeleton[:, start:start+self.sub_sequence_length, :, :])
+                hand_crops_list.append(hand_crops[start:start+self.sub_sequence_length])
 
         X_skeleton = np.stack(skeletons_list) # shape (batch_size, 3, sub_sequence_length, num_joints, 2)
         X_hands = np.stack(hand_crops_list) # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
