@@ -2,7 +2,7 @@ from click import progressbar
 import time
 import pickle
 
-from src.models.models import *
+from src.models.STA_Hands import *
 
 
 def evaluate_accuracy_set(model, samples_list, batch_size, h5_dataset):

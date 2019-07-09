@@ -4,6 +4,7 @@ import os
 
 from src.models.data_loader import *
 from src.models.train_utils import *
+from src.models.VA_LSTM import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train model')
@@ -23,6 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--include_pose', default=True)
     parser.add_argument('--include_rgb', default=True)
     parser.add_argument('--continuous_frames', default=True)
+    parser.add_argument('--normalize_skeleton', default=True)
 
     arg = parser.parse_args()
 
@@ -39,6 +41,7 @@ if __name__ == '__main__':
     include_pose = arg.include_pose == "True"
     include_rgb = arg.include_rgb == "True"
     continuous_frames = arg.continuous_frames == "True"
+    normalize_skeleton = arg.normalize_skeleton == "True"
 
     if evaluation_type not in ["cross_subject", "cross_view"]:
         print("Error : Evaluation type not recognized")
@@ -60,19 +63,27 @@ if __name__ == '__main__':
     print("-> include_pose : " + str(include_pose))
     print("-> include_rgb : " + str(include_rgb))
     print("-> continuous_frames : " + str(continuous_frames))
+    print("-> normalize_skeleton : " + str(normalize_skeleton))
 
     # Create data loader
-    data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames)
-    X_skeleton, X_hands, Y = data_loader.next_batch()
+    data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames, normalize_skeleton)
 
     if model_type == "GRU":
         model = FskDeepGRU().to(device)
     elif model_type == "STA-HANDS":
         model = STAHandsCNN(60, include_pose, include_rgb).to(device)
+    elif model_type == "VA-LSTM":
+        model = VALSTM(sub_sequence_length).to(device)
     else:
         print("Model type not recognized. Exiting")
         exit()
 
+    '''
+    X_skeleton, X_hands, Y = data_loader.next_batch()
+    model(X_skeleton, X_hands)
+    exit()
+    '''
+    
     # Create folder for output files
     now = datetime.datetime.now()
 

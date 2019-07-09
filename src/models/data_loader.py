@@ -6,12 +6,12 @@ from src.utils.joints import *
 
 
 class DataLoader():
-    def __init__(self, batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames):
+    def __init__(self, batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames, normalize_skeleton):
         self.batch_size = batch_size
         self.evaluation_type = evaluation_type
         self.sub_sequence_length = sub_sequence_length
         self.continuous_frames = continuous_frames
-        self.normalize_skeleton = True
+        self.normalize_skeleton = normalize_skeleton
 
         # Opens h5 file
         self.dataset = h5py.File(data_path + "datasets.h5", 'r')
