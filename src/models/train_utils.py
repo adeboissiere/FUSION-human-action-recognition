@@ -5,21 +5,7 @@ import pickle
 from src.models.STA_Hands import *
 
 
-def evaluate_accuracy_set(model, samples_list, batch_size, h5_dataset):
-    batch_samples_list = [samples_list[x:x+batch_size] for x in range(0, len(samples_list), batch_size)]
-
-    for batch_samples in batch_samples_list:
-        for sample_name in batch_samples:
-            skeleton = h5_dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
-            hand_crops = h5_dataset[sample_name]["rgb"][:]  # shape (max_frame, n_hands = {2, 4}, crop_size, crop_size, 3)
-
-            # Pad hand_crops if only one subject found
-            if hand_crops.shape[1] == 2:
-                pad = np.zeros(hand_crops.shape, dtype=hand_crops.dtype)
-                hand_crops = np.concatenate((hand_crops, pad), axis=1)
-
-
-def calculate_accuracy(model, Y_hat, Y):
+def calculate_accuracy(Y_hat, Y):
     _, Y_hat = Y_hat.max(1)
     trues = (Y_hat == Y.long()) * 1
     trues = trues.cpu().numpy()
@@ -29,7 +15,23 @@ def calculate_accuracy(model, Y_hat, Y):
     return accuracy
 
 
-def train_model(model, data_loader, optimizer, learning_rate, epochs, output_folder):
+def evaluate_test_set(model, data_loader):
+    model.eval()
+    average_accuracy = 0
+
+    for batch_idx in range(data_loader.n_batches_test):
+        X_skeleton, X_hands, Y = data_loader.next_batch_test()
+        Y = torch.from_numpy(Y).to(device)
+
+        out = model(X_skeleton, X_hands)
+
+        accuracy = calculate_accuracy(out, Y)
+        average_accuracy += accuracy * X_skeleton.shape[0]
+
+    return average_accuracy / len(data_loader.testing_samples)
+
+
+def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder):
     # Lists for plotting
     time_batch = []
     time_epoch = [0]
@@ -51,6 +53,7 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, output_fol
 
     for e in range(epochs):
         start = time.time()
+
         model.train()
 
         errors_temp = []
@@ -71,7 +74,7 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, output_fol
             loss_batch.append(loss.item())
 
             # Accuracy over batch
-            accuracy = calculate_accuracy(model, out, Y)
+            accuracy = calculate_accuracy(out, Y)
             batch_log = open(output_folder + "batch_log.txt", "a+")
             batch_log.write("[" + str(e) + " - " + str(batch_idx) + "/" + str(data_loader.n_batches) +
                             "] Accuracy : " + str(accuracy) + ", loss : " + str(loss.item()))
@@ -81,6 +84,9 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, output_fol
 
             # Training mode
             progress_bar.update(1)
+
+        if evaluate_test:
+            test_accuracy = evaluate_test_set(model, data_loader)
 
         # Save loss per epoch
         time_epoch.append(e + 1)
@@ -94,7 +100,7 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, output_fol
         # Log file (open and close after each epoch so we can read realtime
         end = time.time()
         log = open(output_folder + "log.txt", "a+")
-        log.write("Epoch : " + str(e) + ", err train : " + str(np.mean(errors_temp)))
+        log.write("Epoch : " + str(e) + ", err train : " + str(np.mean(errors_temp)) + ", test accuracy : " + str(test_accuracy))
         log.write("In : " + str(end - start) + " seconds")
         log.write("\r\n")
         log.close()

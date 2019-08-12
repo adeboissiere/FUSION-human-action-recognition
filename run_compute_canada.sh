@@ -11,4 +11,4 @@ source $SLURM_TMPDIR/env/bin/activate
 pip install --upgrade pip
 
 make requirements
-make train NTU_RGBD_DATA_PATH="../../" EPOCHS=50 BATCH_SIZE=128 INCLUDE_RGB=False
+make train NTU_RGBD_DATA_PATH="../../../datasets/" EPOCHS=50 BATCH_SIZE=128 INCLUDE_RGB=False

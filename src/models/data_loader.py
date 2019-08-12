@@ -47,17 +47,12 @@ class DataLoader():
         self.training_samples = training_samples.copy()
         self.training_samples_batch = training_samples.copy()
         self.testing_samples = testing_samples.copy()
+        self.testing_samples_batch = testing_samples.copy()
 
         self.n_batches = int(len(training_samples) / batch_size) + int(len(training_samples) % batch_size != 0)
+        self.n_batches_test = int(len(testing_samples) / batch_size) + int(len(testing_samples) % batch_size != 0)
 
-    def next_batch(self):
-        # Take random samples (1. shuffle training_sample_batch 2. Take first n elements
-        # 3. Remove first n elements from training_sample_batch)
-        random.shuffle(self.training_samples_batch)
-        n_elements = min(self.batch_size, len(self.training_samples_batch))
-        batch_samples = self.training_samples_batch[:n_elements]
-        self.training_samples_batch = self.training_samples_batch[n_elements:]
-
+    def _create_arrays_from_batch_samples(self, batch_samples):
         skeletons_list = []
         hand_crops_list = []
         # Access corresponding samples
@@ -71,8 +66,6 @@ class DataLoader():
                 hand_crops = np.concatenate((hand_crops, pad), axis=1)
 
             max_frame = hand_crops.shape[0]
-            # print()
-            # print(max_frame)
 
             # Cut sequence into T sub sequences and take a random frame in each
             if not self.continuous_frames:
@@ -90,18 +83,18 @@ class DataLoader():
                     skeleton_frame.append(skeleton[:, random_frame, :, :])
                     hand_crops_frame.append(hand_crops[random_frame])
 
-                skeletons_list.append(np.stack(skeleton_frame, axis = 1))
-                hand_crops_list.append(np.stack(hand_crops_frame, axis = 0))
+                skeletons_list.append(np.stack(skeleton_frame, axis=1))
+                hand_crops_list.append(np.stack(hand_crops_frame, axis=0))
 
             # Take a random sub sequence
             else:
                 start = random.randint(0, max_frame - self.sub_sequence_length)
 
-                skeletons_list.append(skeleton[:, start:start+self.sub_sequence_length, :, :])
-                hand_crops_list.append(hand_crops[start:start+self.sub_sequence_length])
+                skeletons_list.append(skeleton[:, start:start + self.sub_sequence_length, :, :])
+                hand_crops_list.append(hand_crops[start:start + self.sub_sequence_length])
 
-        X_skeleton = np.stack(skeletons_list) # shape (batch_size, 3, sub_sequence_length, num_joints, 2)
-        X_hands = np.stack(hand_crops_list) # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
+        X_skeleton = np.stack(skeletons_list)  # shape (batch_size, 3, sub_sequence_length, num_joints, 2)
+        X_hands = np.stack(hand_crops_list)  # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
 
         if self.normalize_skeleton:
             trans_vector = X_skeleton[:, :, 0, Joints.SPINEMID, :]  # shape (batch_size, 3, 2)
@@ -111,8 +104,36 @@ class DataLoader():
         # Extract class vector
         Y = [int(x[-3:]) for x in batch_samples]
 
+        return X_skeleton, X_hands, Y
+
+    def next_batch(self):
+        # Take random samples (1. shuffle training_sample_batch 2. Take first n elements
+        # 3. Remove first n elements from training_sample_batch)
+        random.shuffle(self.training_samples_batch)
+        n_elements = min(self.batch_size, len(self.training_samples_batch))
+        batch_samples = self.training_samples_batch[:n_elements]
+        self.training_samples_batch = self.training_samples_batch[n_elements:]
+
+        X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+
         # Reset batch when epoch complete
         if len(self.training_samples_batch) == 0:
             self.training_samples_batch = self.training_samples.copy()
 
         return X_skeleton, X_hands, np.asarray(Y) - 1
+
+    def next_batch_test(self):
+        # Takes first elements of testing_samples_batch
+        n_elements = min(self.batch_size, len(self.testing_samples_batch))
+        batch_samples = self.testing_samples_batch[:n_elements]
+        self.testing_samples_batch = self.testing_samples_batch[n_elements:]
+
+        X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+
+        # Reset batch when epoch complete
+        if len(self.testing_samples_batch) == 0:
+            self.testing_samples_batch = self.testing_samples.copy()
+
+        return X_skeleton, X_hands, np.asarray(Y) - 1
+
+

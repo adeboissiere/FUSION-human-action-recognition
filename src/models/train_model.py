@@ -25,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--include_rgb', default=True)
     parser.add_argument('--continuous_frames', default=True)
     parser.add_argument('--normalize_skeleton', default=True)
+    parser.add_argument('--evaluate_test', default=True)
 
     arg = parser.parse_args()
 
@@ -42,6 +43,7 @@ if __name__ == '__main__':
     include_rgb = arg.include_rgb == "True"
     continuous_frames = arg.continuous_frames == "True"
     normalize_skeleton = arg.normalize_skeleton == "True"
+    evaluate_test = arg.evaluate_test == "True"
 
     if evaluation_type not in ["cross_subject", "cross_view"]:
         print("Error : Evaluation type not recognized")
@@ -64,6 +66,7 @@ if __name__ == '__main__':
     print("-> include_rgb : " + str(include_rgb))
     print("-> continuous_frames : " + str(continuous_frames))
     print("-> normalize_skeleton : " + str(normalize_skeleton))
+    print("-> evaluate_test : " + str(evaluate_test))
 
     # Create data loader
     data_loader = DataLoader(batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames, normalize_skeleton)
@@ -95,6 +98,6 @@ if __name__ == '__main__':
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    train_model(model, data_loader, optimizer, learning_rate, epochs, output_folder)
+    train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder)
 
     print("-> Done !")
