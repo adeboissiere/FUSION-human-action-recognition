@@ -1,7 +1,3 @@
-# local package
--e .
-
-# External requirements
 alabaster==0.7.12
 arrow==0.14.2
 attrs==19.1.0
@@ -52,13 +48,13 @@ nbformat==4.4.0
 networkx==2.3
 notebook==5.7.8
 numpy==1.16.3
-opencv-python==4.1.0.25
 packaging==19.0
 pandocfilters==1.4.2
 parso==0.4.0
 pexpect==4.7.0
 pickleshare==0.7.5
 Pillow==6.0.0
+pip-check-reqs==2.0
 poyo==0.4.2
 prometheus-client==0.7.0
 prompt-toolkit==2.0.9
@@ -89,6 +85,7 @@ sphinxcontrib-htmlhelp==1.0.2
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.2
 sphinxcontrib-serializinghtml==1.1.3
+-e git+https://github.com/gnocchiflette/NTU-RGB-D.git@48c9dbab6ebeeae1c4698ff27bb590c53653f99f#egg=src
 terminado==0.8.2
 testpath==0.4.2
 torch==1.0.1.post2

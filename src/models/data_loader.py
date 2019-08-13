@@ -1,6 +1,7 @@
 import numpy as np
 import h5py
 import random
+import cv2
 
 from src.utils.joints import *
 
@@ -68,35 +69,67 @@ class DataLoader():
             max_frame = hand_crops.shape[0]
 
             # Cut sequence into T sub sequences and take a random frame in each
-            if not self.continuous_frames:
-                skeleton_frame = []
-                hand_crops_frame = []
+            if self.sub_sequence_length != 0:
+                if not self.continuous_frames:
+                    skeleton_frame = []
+                    hand_crops_frame = []
 
-                n_frames_sub_sequence = max_frame / self.sub_sequence_length  # size of each sub sequence
-                for sub_sequence in range(self.sub_sequence_length):
-                    lower_index = int(sub_sequence * n_frames_sub_sequence)
-                    upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
-                    random_frame = random.randint(lower_index, upper_index)
+                    n_frames_sub_sequence = max_frame / self.sub_sequence_length  # size of each sub sequence
+                    for sub_sequence in range(self.sub_sequence_length):
+                        lower_index = int(sub_sequence * n_frames_sub_sequence)
+                        upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
+                        random_frame = random.randint(lower_index, upper_index)
 
-                    # print(str(random_frame) + " in [" + str(lower_index) + "-" + str(upper_index) + "]")
+                        # print(str(random_frame) + " in [" + str(lower_index) + "-" + str(upper_index) + "]")
 
-                    skeleton_frame.append(skeleton[:, random_frame, :, :])
-                    hand_crops_frame.append(hand_crops[random_frame])
+                        skeleton_frame.append(skeleton[:, random_frame, :, :])
+                        hand_crops_frame.append(hand_crops[random_frame])
 
-                skeletons_list.append(np.stack(skeleton_frame, axis=1))
-                hand_crops_list.append(np.stack(hand_crops_frame, axis=0))
+                    skeletons_list.append(np.stack(skeleton_frame, axis=1))
+                    hand_crops_list.append(np.stack(hand_crops_frame, axis=0))
 
-            # Take a random sub sequence
-            else:
-                start = random.randint(0, max_frame - self.sub_sequence_length)
+                # Take a random sub sequence
+                else:
+                    start = random.randint(0, max_frame - self.sub_sequence_length)
 
-                skeletons_list.append(skeleton[:, start:start + self.sub_sequence_length, :, :])
-                hand_crops_list.append(hand_crops[start:start + self.sub_sequence_length])
+                    skeletons_list.append(skeleton[:, start:start + self.sub_sequence_length, :, :])
+                    hand_crops_list.append(hand_crops[start:start + self.sub_sequence_length])
 
-        X_skeleton = np.stack(skeletons_list)  # shape (batch_size, 3, sub_sequence_length, num_joints, 2)
+            # If hyper parameter sub_sequence_length == 0, then take the entire sequence. For CNN testing
+            elif self.sub_sequence_length == 0:
+                # Normalize skeleton according to S-trans (see View Adaptive Network for details)
+                trans_vector = skeleton[:, 0, Joints.SPINEMID, :]
+                skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
+
+                c_min = -4.657
+                c_max = 5.042
+
+                max_frame = skeleton.shape[1]
+                n_joints = skeleton.shape[2]
+
+                # Reshape skeleton coordinates into an image
+                skeleton_image = np.zeros((3, max_frame, 2 * n_joints))
+                skeleton_image[:, :, 0:n_joints] = skeleton[:, :, :, 0]
+                skeleton_image[:, :, n_joints:2*n_joints] = skeleton[:, :, :, 1]
+                skeleton_image = np.transpose(skeleton_image, (0, 2, 1))
+
+                # Normalize
+                skeleton_image = np.floor(255 * (skeleton_image - c_min) / (c_max - c_min)) # shape (3, 2 * n_joints, max_frame)
+
+                # Reshape image for ResNet
+                skeleton_image = cv2.resize(skeleton_image.transpose(1, 2, 0), dsize=(224, 224)).transpose(2, 0, 1)
+                skeletons_list.append(skeleton_image)
+
+                # /!\ TEMPORARY FIX TO AVOID DIMENSION ISSUES ! NOT USABLE /!\
+                hand_crops_list.append(hand_crops[0:10])
+
+        # X_skeleton shape
+        # if sub_sequence_length != 0 : (batch_size, 3, sub_sequence_length, num_joints, 2)
+        # if sub_sequence_length == 0 (CNN) : (batch_size, 3, 224, 224)
+        X_skeleton = np.stack(skeletons_list)
         X_hands = np.stack(hand_crops_list)  # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
 
-        if self.normalize_skeleton:
+        if self.normalize_skeleton and self.sub_sequence_length != 0:
             trans_vector = X_skeleton[:, :, 0, Joints.SPINEMID, :]  # shape (batch_size, 3, 2)
             # temp shape : (seq_len, n_joints, batch_size, 3, 2)
             X_skeleton = (X_skeleton.transpose(2, 3, 0, 1, 4) - trans_vector).transpose(2, 3, 0, 1, 4)

@@ -83,11 +83,11 @@ if __name__ == '__main__':
         print("Model type not recognized. Exiting")
         exit()
 
-    '''
+
     X_skeleton, X_hands, Y = data_loader.next_batch()
     model(X_skeleton, X_hands)
     exit()
-    '''
+
     
     # Create folder for output files
     now = datetime.datetime.now()

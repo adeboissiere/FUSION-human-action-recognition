@@ -7,6 +7,7 @@ import torch.nn.functional as F
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 import numpy as np
+from PIL import Image
 
 
 def set_parameter_requires_grad(model, feature_extracting):
@@ -40,6 +41,26 @@ class VACNN(nn.Module):
             normalize
         ])
 
-    def forward(self, X):
-        None
+    def forward(self, X_skeleton, X_hands):
+        # X_skeleton shape (batch_size, 3, 224, 224)
+        batch_size = X_skeleton.shape[0]
+
+        batch = []
+
+        for b in range(batch_size):
+            # Transform to PIL format
+            skeleton_image_PIL = Image.fromarray(X_skeleton[b].transpose(1, 2, 0).astype(np.uint8))
+
+            # Apply transformation
+            skeleton_image = self.transform(skeleton_image_PIL)
+            batch.append(skeleton_image)
+
+        X = torch.stack(batch).to(device)  # shape (batch_size, 3, H, W)
+
+        out = self.trained_cnn(X) # shape (batch_size, 60)
+        out = F.log_softmax(out, dim=1)
+
+        return out
+
+
 
