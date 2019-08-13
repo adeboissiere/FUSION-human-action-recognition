@@ -3,6 +3,7 @@ import time
 import pickle
 
 from src.models.STA_Hands import *
+from src.models.VA_CNN import *
 
 
 def calculate_accuracy(Y_hat, Y):
@@ -100,7 +101,8 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
         # Log file (open and close after each epoch so we can read realtime
         end = time.time()
         log = open(output_folder + "log.txt", "a+")
-        log.write("Epoch : " + str(e) + ", err train : " + str(np.mean(errors_temp)) + ", test accuracy : " + str(test_accuracy))
+        log.write("Epoch : " + str(e) + ", err train : " + str(np.mean(errors_temp)))
+        log.write(", test accuracy : " + str(test_accuracy) + " ")
         log.write("In : " + str(end - start) + " seconds")
         log.write("\r\n")
         log.close()

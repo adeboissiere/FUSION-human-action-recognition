@@ -77,6 +77,8 @@ if __name__ == '__main__':
         model = STAHandsCNN(60, include_pose, include_rgb).to(device)
     elif model_type == "VA-LSTM":
         model = VALSTM(sub_sequence_length).to(device)
+    elif model_type == "VA-CNN":
+        model = VACNN().to(device)
     else:
         print("Model type not recognized. Exiting")
         exit()
@@ -98,6 +100,6 @@ if __name__ == '__main__':
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder)
+    # train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder)
 
     print("-> Done !")
