@@ -83,11 +83,11 @@ if __name__ == '__main__':
         print("Model type not recognized. Exiting")
         exit()
 
-
+    '''
     X_skeleton, X_hands, Y = data_loader.next_batch()
     model(X_skeleton, X_hands)
     exit()
-
+    '''
     
     # Create folder for output files
     now = datetime.datetime.now()
@@ -100,6 +100,6 @@ if __name__ == '__main__':
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder)
+    train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder)
 
     print("-> Done !")

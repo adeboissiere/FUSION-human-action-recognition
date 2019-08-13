@@ -11,4 +11,4 @@ source $SLURM_TMPDIR/env/bin/activate
 pip install --upgrade pip
 
 make requirements
-make train NTU_RGBD_DATA_PATH="../../../datasets/" EPOCHS=50 BATCH_SIZE=128 INCLUDE_RGB=False
+make train NTU_RGBD_DATA_PATH="../../../datasets/" MODEL_TYPE=VA-CNN LEARNING_RATE=1e-6 BATCH_SIZE=32 SUB_SEQUENCE_LENGTH=0
