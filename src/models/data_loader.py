@@ -156,6 +156,10 @@ class DataLoader():
 
         if self.normalize_skeleton and self.sub_sequence_length != 0:
             trans_vector = X_skeleton[:, :, 0, Joints.SPINEMID, :]  # shape (batch_size, 3, 2)
+
+            if self.normalization_type == "1-COORD-SYS":
+                trans_vector[:, :, 1] = trans_vector[:, :, 0]
+
             # temp shape : (seq_len, n_joints, batch_size, 3, 2)
             X_skeleton = (X_skeleton.transpose(2, 3, 0, 1, 4) - trans_vector).transpose(2, 3, 0, 1, 4)
 
