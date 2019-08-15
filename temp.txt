@@ -48,7 +48,7 @@ nbformat==4.4.0
 networkx==2.3
 notebook==5.7.8
 numpy==1.16.3
-opencv-python==4.1.0.25
+opencv-python==3.4.4.19
 packaging==19.0
 pandocfilters==1.4.2
 parso==0.4.0
@@ -85,7 +85,7 @@ sphinxcontrib-htmlhelp==1.0.2
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.2
 sphinxcontrib-serializinghtml==1.1.3
--e git+https://github.com/gnocchiflette/NTU-RGB-D.git@4d40141d64ec228a4abf1026535b5165481e1b70#egg=src
+-e git+https://github.com/gnocchiflette/NTU-RGB-D.git@4d5793b393cb66fdddbaeda3c76399523a2e2b96#egg=src
 terminado==0.8.2
 testpath==0.4.2
 torch==1.0.1.post2

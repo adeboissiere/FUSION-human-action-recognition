@@ -65,9 +65,6 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
 
         errors_temp = []
 
-        if evaluate_test:
-            test_accuracy = evaluate_test_set(model, data_loader, output_folder)
-
         for batch_idx in range(data_loader.n_batches):
             X_skeleton, X_hands, Y = data_loader.next_batch()
             Y = torch.from_numpy(Y).to(device)
@@ -94,6 +91,9 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
 
             # Training mode
             progress_bar.update(1)
+
+        if evaluate_test:
+            test_accuracy = evaluate_test_set(model, data_loader, output_folder)
 
         # Save loss per epoch
         time_epoch.append(e + 1)

@@ -30,6 +30,7 @@ INCLUDE_POSE=True
 INCLUDE_RGB=True
 CONTINUOUS_FRAMES=True
 NORMALIZE_SKELETON=True
+NORMALIZATION_TYPE= 1-COORD-SYS
 EVALUATE_TEST=True
 
 ifeq (,$(shell which conda))
@@ -60,7 +61,11 @@ features:
 train: 
 	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
 	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
-	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES) --normalize_skeleton=$(NORMALIZE_SKELETON) --evaluate_test=$(EVALUATE_TEST)
+	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES) --normalize_skeleton=$(NORMALIZE_SKELETON) --normalization_type=$(NORMALIZATION_TYPE) --evaluate_test=$(EVALUATE_TEST)
+
+## Make Visualize
+visualize:
+	$(PYTHON_INTERPRETER) src/visualization/play_3d_skeleton.py
 
 ## Delete all compiled Python files
 clean:

@@ -7,12 +7,20 @@ from src.utils.joints import *
 
 
 class DataLoader():
-    def __init__(self, batch_size, data_path, evaluation_type, sub_sequence_length, continuous_frames, normalize_skeleton):
+    def __init__(self, batch_size,
+                 data_path,
+                 evaluation_type,
+                 sub_sequence_length,
+                 continuous_frames,
+                 normalize_skeleton,
+                 normalization_type):
+
         self.batch_size = batch_size
         self.evaluation_type = evaluation_type
         self.sub_sequence_length = sub_sequence_length
         self.continuous_frames = continuous_frames
         self.normalize_skeleton = normalize_skeleton
+        self.normalization_type = normalization_type
 
         # Opens h5 file
         self.dataset = h5py.File(data_path + "datasets.h5", 'r')
@@ -56,6 +64,7 @@ class DataLoader():
     def _create_arrays_from_batch_samples(self, batch_samples):
         skeletons_list = []
         hand_crops_list = []
+
         # Access corresponding samples
         for sample_name in batch_samples:
             skeleton = self.dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
@@ -96,13 +105,29 @@ class DataLoader():
                     hand_crops_list.append(hand_crops[start:start + self.sub_sequence_length])
 
             # If hyper parameter sub_sequence_length == 0, then take the entire sequence. For CNN testing
+            # The skeleton sequence is then transformed into an image
             elif self.sub_sequence_length == 0:
-                # Normalize skeleton according to S-trans (see View Adaptive Network for details)
-                trans_vector = skeleton[:, 0, Joints.SPINEMID, :]
-                skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
+                # See jp notebook 4.0 for values
+                c_min = 0
+                c_max = 0
 
-                c_min = -4.657
-                c_max = 5.042
+                # Normalize skeleton according to S-trans (see View Adaptive Network for details)
+                # Subjects 1 and 2 have their own new coordinates system
+                if self.normalization_type == "2-COORD-SYS":
+                    trans_vector = skeleton[:, 0, Joints.SPINEMID, :]
+                    skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
+
+                    c_min = -4.657
+                    c_max = 5.042
+
+                # Subjects 1 and 2 are transposed into the coordinates system of subject 1
+                elif self.normalization_type == "1-COORD-SYS":
+                    trans_vector = skeleton[:, 0, Joints.SPINEMID, :]
+                    trans_vector[:, 1] = trans_vector[:, 0]
+                    skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
+
+                    c_min = -4.767
+                    c_max = 5.188
 
                 max_frame = skeleton.shape[1]
                 n_joints = skeleton.shape[2]
