@@ -16,6 +16,28 @@ def calculate_accuracy(Y_hat, Y):
     return accuracy
 
 
+def evaluate_validation_set(model, data_loader, output_folder):
+    model.eval()
+    average_accuracy = 0
+
+    for batch_idx in range(data_loader.n_batches_val):
+        X_skeleton, X_hands, Y = data_loader.next_batch_validation()
+        Y = torch.from_numpy(Y).to(device)
+
+        out = model(X_skeleton, X_hands)
+
+        accuracy = calculate_accuracy(out, Y)
+        average_accuracy += accuracy * X_skeleton.shape[0]
+
+        batch_log = open(output_folder + "batch_log.txt", "a+")
+        batch_log.write("[VAL - " + str(batch_idx) + "/" + str(data_loader.n_batches_val) +
+                        "] Accuracy : " + str(accuracy))
+        batch_log.write("\r\n")
+        batch_log.close()
+
+    return average_accuracy / len(data_loader.testing_samples)
+
+
 def evaluate_test_set(model, data_loader, output_folder):
     model.eval()
     average_accuracy = 0
@@ -30,7 +52,7 @@ def evaluate_test_set(model, data_loader, output_folder):
         average_accuracy += accuracy * X_skeleton.shape[0]
 
         batch_log = open(output_folder + "batch_log.txt", "a+")
-        batch_log.write("[VAL - " + str(batch_idx) + "/" + str(data_loader.n_batches_test) +
+        batch_log.write("[TEST - " + str(batch_idx) + "/" + str(data_loader.n_batches_test) +
                         "] Accuracy : " + str(accuracy))
         batch_log.write("\r\n")
         batch_log.close()
@@ -60,6 +82,9 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
 
     for e in range(epochs):
         start = time.time()
+
+        if data_loader.use_validation:
+            validation_accuracy = evaluate_validation_set(model, data_loader, output_folder)
 
         model.train()
 
@@ -108,8 +133,9 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
         end = time.time()
         log = open(output_folder + "log.txt", "a+")
         log.write("Epoch : " + str(e) + ", err train : " + str(np.mean(errors_temp)))
+        log.write(", val accuracy : " + str(validation_accuracy))
         log.write(", test accuracy : " + str(test_accuracy) + " ")
-        log.write("In : " + str(end - start) + " seconds")
+        log.write("in : " + str(end - start) + " seconds")
         log.write("\r\n")
         log.close()
 

@@ -26,6 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--continuous_frames', default=True)
     parser.add_argument('--normalize_skeleton', default=True)
     parser.add_argument('--normalization_type')
+    parser.add_argument('--use_validation', default=True)
     parser.add_argument('--evaluate_test', default=True)
 
     arg = parser.parse_args()
@@ -45,6 +46,7 @@ if __name__ == '__main__':
     continuous_frames = arg.continuous_frames == "True"
     normalize_skeleton = arg.normalize_skeleton == "True"
     normalization_type = arg.normalization_type
+    use_validation = arg.use_validation == "True"
     evaluate_test = arg.evaluate_test == "True"
 
     if evaluation_type not in ["cross_subject", "cross_view"]:
@@ -69,6 +71,7 @@ if __name__ == '__main__':
     print("-> continuous_frames : " + str(continuous_frames))
     print("-> normalize_skeleton : " + str(normalize_skeleton))
     print("-> normalization_type : " + str(normalization_type))
+    print("-> use_validation : " + str(use_validation))
     print("-> evaluate_test : " + str(evaluate_test))
 
     # Create data loader
@@ -78,7 +81,8 @@ if __name__ == '__main__':
                              sub_sequence_length,
                              continuous_frames,
                              normalize_skeleton,
-                             normalization_type)
+                             normalization_type,
+                             use_validation)
 
     if model_type == "GRU":
         model = FskDeepGRU().to(device)

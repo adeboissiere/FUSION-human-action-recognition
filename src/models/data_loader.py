@@ -13,7 +13,8 @@ class DataLoader():
                  sub_sequence_length,
                  continuous_frames,
                  normalize_skeleton,
-                 normalization_type):
+                 normalization_type,
+                 use_validation):
 
         self.batch_size = batch_size
         self.evaluation_type = evaluation_type
@@ -21,6 +22,7 @@ class DataLoader():
         self.continuous_frames = continuous_frames
         self.normalize_skeleton = normalize_skeleton
         self.normalization_type = normalization_type
+        self.use_validation = use_validation
 
         # Opens h5 file
         self.dataset = h5py.File(data_path + "datasets.h5", 'r')
@@ -51,6 +53,7 @@ class DataLoader():
 
             training_samples = [s for s in samples_names_list if any(xs in s for xs in training_cameras_cxxx)]
 
+        # Test set
         testing_samples = list(set(samples_names_list) - set(training_samples))
 
         self.training_samples = training_samples.copy()
@@ -60,6 +63,24 @@ class DataLoader():
 
         self.n_batches = int(len(training_samples) / batch_size) + int(len(training_samples) % batch_size != 0)
         self.n_batches_test = int(len(testing_samples) / batch_size) + int(len(testing_samples) % batch_size != 0)
+
+        print("\r\n===== DATA LOADER SUMMARY =====")
+        print(str(len(training_samples)) + " training samples")
+        print(str(len(testing_samples)) + " testing samples")
+
+        # Validation set (use 5% of training set)
+        if self.use_validation:
+            validation_samples = [training_samples.pop(random.randrange(len(training_samples))) for _ in range(int(0.05 * len(training_samples)))]
+
+            self.validation_samples = validation_samples.copy()
+            self.validation_samples_batch = validation_samples.copy()
+
+            print(str(len(validation_samples)) + " validation samples")
+            self.n_batches_val = int(len(validation_samples) / batch_size) + int(len(validation_samples) % batch_size != 0)
+
+        else:
+            print("0 validation samples")
+
 
     def _create_arrays_from_batch_samples(self, batch_samples):
         skeletons_list = []
@@ -181,6 +202,20 @@ class DataLoader():
         # Reset batch when epoch complete
         if len(self.training_samples_batch) == 0:
             self.training_samples_batch = self.training_samples.copy()
+
+        return X_skeleton, X_hands, np.asarray(Y) - 1
+
+    def next_batch_validation(self):
+        # Takes first elements of testing_samples_batch
+        n_elements = min(self.batch_size, len(self.validation_samples_batch))
+        batch_samples = self.validation_samples_batch[:n_elements]
+        self.validation_samples_batch = self.validation_samples_batch[n_elements:]
+
+        X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+
+        # Reset batch when epoch complete
+        if len(self.validation_samples_batch) == 0:
+            self.validation_samples_batch = self.validation_samples.copy()
 
         return X_skeleton, X_hands, np.asarray(Y) - 1
 
