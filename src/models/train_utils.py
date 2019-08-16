@@ -35,7 +35,7 @@ def evaluate_validation_set(model, data_loader, output_folder):
         batch_log.write("\r\n")
         batch_log.close()
 
-    return average_accuracy / len(data_loader.testing_samples)
+    return average_accuracy / len(data_loader.validation_samples)
 
 
 def evaluate_test_set(model, data_loader, output_folder):
