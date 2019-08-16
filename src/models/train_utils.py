@@ -83,9 +83,6 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
     for e in range(epochs):
         start = time.time()
 
-        if data_loader.use_validation:
-            validation_accuracy = evaluate_validation_set(model, data_loader, output_folder)
-
         model.train()
 
         errors_temp = []
@@ -116,6 +113,9 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
 
             # Training mode
             progress_bar.update(1)
+
+        if data_loader.use_validation:
+            validation_accuracy = evaluate_validation_set(model, data_loader, output_folder)
 
         if evaluate_test:
             test_accuracy = evaluate_test_set(model, data_loader, output_folder)
