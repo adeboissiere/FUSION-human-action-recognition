@@ -14,6 +14,7 @@ class DataLoader():
                  continuous_frames,
                  normalize_skeleton,
                  normalization_type,
+                 augment_data,
                  use_validation):
 
         self.batch_size = batch_size
@@ -22,6 +23,7 @@ class DataLoader():
         self.continuous_frames = continuous_frames
         self.normalize_skeleton = normalize_skeleton
         self.normalization_type = normalization_type
+        self.augment_data = augment_data
         self.use_validation = use_validation
 
         # Opens h5 file
@@ -80,7 +82,6 @@ class DataLoader():
 
         else:
             print("0 validation samples")
-
 
     def _create_arrays_from_batch_samples(self, batch_samples):
         skeletons_list = []
