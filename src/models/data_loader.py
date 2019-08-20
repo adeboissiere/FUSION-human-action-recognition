@@ -4,6 +4,7 @@ import random
 import cv2
 
 from src.utils.joints import *
+from src.models.data_augmentation import *
 
 
 class DataLoader():
@@ -92,6 +93,32 @@ class DataLoader():
             skeleton = self.dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
             hand_crops = self.dataset[sample_name]["rgb"][:]  # shape (max_frame, n_hands = {2, 4}, crop_size, crop_size, 3)
 
+            # See jp notebook 4.0 for values
+            c_min = 0
+            c_max = 0
+
+            if self.normalize_skeleton:
+                # Normalize skeleton according to S-trans (see View Adaptive Network for details)
+                # Subjects 1 and 2 have their own new coordinates system
+                trans_vector = skeleton[:, 0, Joints.SPINEMID, :]
+
+                if self.normalization_type == "2-COORD-SYS":
+                    c_min = -4.657
+                    c_max = 5.042
+
+                # Subjects 1 and 2 are transposed into the coordinates system of subject 1
+                elif self.normalization_type == "1-COORD-SYS":
+                    trans_vector[:, 1] = trans_vector[:, 0]
+
+                    c_min = -4.767
+                    c_max = 5.188
+
+                skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
+
+            # Data augmentation : rotation around x, y, z axis (see data_augmentation.py for values)
+            if self.augment_data:
+                skeleton = rotate_skeleton(skeleton)
+
             # Pad hand_crops if only one subject found
             if hand_crops.shape[1] == 2:
                 pad = np.zeros(hand_crops.shape, dtype=hand_crops.dtype)
@@ -99,7 +126,7 @@ class DataLoader():
 
             max_frame = hand_crops.shape[0]
 
-            # Cut sequence into T sub sequences and take a random frame in each
+            # Cut sequence into T sub sequences and take a random frame in each (for RNNs)
             if self.sub_sequence_length != 0:
                 if not self.continuous_frames:
                     skeleton_frame = []
@@ -126,31 +153,9 @@ class DataLoader():
                     skeletons_list.append(skeleton[:, start:start + self.sub_sequence_length, :, :])
                     hand_crops_list.append(hand_crops[start:start + self.sub_sequence_length])
 
-            # If hyper parameter sub_sequence_length == 0, then take the entire sequence. For CNN testing
+            # If hyper parameter sub_sequence_length == 0, then take the entire sequence (for CNNs)
             # The skeleton sequence is then transformed into an image
             elif self.sub_sequence_length == 0:
-                # See jp notebook 4.0 for values
-                c_min = 0
-                c_max = 0
-
-                # Normalize skeleton according to S-trans (see View Adaptive Network for details)
-                # Subjects 1 and 2 have their own new coordinates system
-                if self.normalization_type == "2-COORD-SYS":
-                    trans_vector = skeleton[:, 0, Joints.SPINEMID, :]
-                    skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
-
-                    c_min = -4.657
-                    c_max = 5.042
-
-                # Subjects 1 and 2 are transposed into the coordinates system of subject 1
-                elif self.normalization_type == "1-COORD-SYS":
-                    trans_vector = skeleton[:, 0, Joints.SPINEMID, :]
-                    trans_vector[:, 1] = trans_vector[:, 0]
-                    skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
-
-                    c_min = -4.767
-                    c_max = 5.188
-
                 max_frame = skeleton.shape[1]
                 n_joints = skeleton.shape[2]
 
@@ -176,23 +181,16 @@ class DataLoader():
         X_skeleton = np.stack(skeletons_list)
         X_hands = np.stack(hand_crops_list)  # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
 
-        if self.normalize_skeleton and self.sub_sequence_length != 0:
-            trans_vector = X_skeleton[:, :, 0, Joints.SPINEMID, :]  # shape (batch_size, 3, 2)
-
-            if self.normalization_type == "1-COORD-SYS":
-                trans_vector[:, :, 1] = trans_vector[:, :, 0]
-
-            # temp shape : (seq_len, n_joints, batch_size, 3, 2)
-            X_skeleton = (X_skeleton.transpose(2, 3, 0, 1, 4) - trans_vector).transpose(2, 3, 0, 1, 4)
-
         # Extract class vector
         Y = [int(x[-3:]) for x in batch_samples]
 
         return X_skeleton, X_hands, Y
 
     def next_batch(self):
-        # Take random samples (1. shuffle training_sample_batch 2. Take first n elements
-        # 3. Remove first n elements from training_sample_batch)
+        # Take random samples
+        # 1. shuffle training_sample_batch
+        # 2. Take first n elements
+        # 3. Remove first n elements from training_sample_batch
         random.shuffle(self.training_samples_batch)
         n_elements = min(self.batch_size, len(self.training_samples_batch))
         batch_samples = self.training_samples_batch[:n_elements]
@@ -212,7 +210,12 @@ class DataLoader():
         batch_samples = self.validation_samples_batch[:n_elements]
         self.validation_samples_batch = self.validation_samples_batch[n_elements:]
 
+        aug_data = self.augment_data
+        self.augment_data = False
+
         X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+
+        self.augment_data = aug_data
 
         # Reset batch when epoch complete
         if len(self.validation_samples_batch) == 0:
@@ -226,7 +229,12 @@ class DataLoader():
         batch_samples = self.testing_samples_batch[:n_elements]
         self.testing_samples_batch = self.testing_samples_batch[n_elements:]
 
+        aug_data = self.augment_data
+        self.augment_data = False
+
         X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+
+        self.augment_data = aug_data
 
         # Reset batch when epoch complete
         if len(self.testing_samples_batch) == 0:

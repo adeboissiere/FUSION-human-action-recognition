@@ -63,7 +63,7 @@ features:
 train: 
 	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
 	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
-	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES) --normalize_skeleton=$(NORMALIZE_SKELETON) --normalization_type=$(NORMALIZATION_TYPE) --augment_data=$(AUGMENT_DATA=True) \
+	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES) --normalize_skeleton=$(NORMALIZE_SKELETON) --normalization_type=$(NORMALIZATION_TYPE) --augment_data=$(AUGMENT_DATA) \
 	--use_validation=$(USE_VALIDATION) --evaluate_test=$(EVALUATE_TEST)
 
 ## Make Visualize
