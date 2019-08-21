@@ -8,7 +8,9 @@ from src.models.data_augmentation import *
 
 
 class DataLoader():
-    def __init__(self, batch_size,
+    def __init__(self,
+                 model_type,
+                 batch_size,
                  data_path,
                  evaluation_type,
                  sub_sequence_length,
@@ -18,6 +20,7 @@ class DataLoader():
                  augment_data,
                  use_validation):
 
+        self.model_type = model_type
         self.batch_size = batch_size
         self.evaluation_type = evaluation_type
         self.sub_sequence_length = sub_sequence_length
@@ -84,6 +87,23 @@ class DataLoader():
         else:
             print("0 validation samples")
 
+    def _gen_non_continuous_sample(self, hand_crops, skeleton, max_frame):
+        skeleton_frame = []
+        hand_crops_frame = []
+
+        n_frames_sub_sequence = max_frame / self.sub_sequence_length  # size of each sub sequence
+        for sub_sequence in range(self.sub_sequence_length):
+            lower_index = int(sub_sequence * n_frames_sub_sequence)
+            upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
+            random_frame = random.randint(lower_index, upper_index)
+
+            # print(str(random_frame) + " in [" + str(lower_index) + "-" + str(upper_index) + "]")
+
+            skeleton_frame.append(skeleton[:, random_frame, :, :])
+            hand_crops_frame.append(hand_crops[random_frame])
+
+        return skeleton_frame, hand_crops_frame
+
     def _create_arrays_from_batch_samples(self, batch_samples):
         skeletons_list = []
         hand_crops_list = []
@@ -126,22 +146,10 @@ class DataLoader():
 
             max_frame = hand_crops.shape[0]
 
-            # Cut sequence into T sub sequences and take a random frame in each (for RNNs)
-            if self.sub_sequence_length != 0:
+            if self.model_type in ['GRU', 'VA-LSTM']:
+                # Cut sequence into T sub sequences and take a random frame in each (for RNNs)
                 if not self.continuous_frames:
-                    skeleton_frame = []
-                    hand_crops_frame = []
-
-                    n_frames_sub_sequence = max_frame / self.sub_sequence_length  # size of each sub sequence
-                    for sub_sequence in range(self.sub_sequence_length):
-                        lower_index = int(sub_sequence * n_frames_sub_sequence)
-                        upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
-                        random_frame = random.randint(lower_index, upper_index)
-
-                        # print(str(random_frame) + " in [" + str(lower_index) + "-" + str(upper_index) + "]")
-
-                        skeleton_frame.append(skeleton[:, random_frame, :, :])
-                        hand_crops_frame.append(hand_crops[random_frame])
+                    skeleton_frame, hand_crops_frame = self._gen_non_continuous_sample(hand_crops, skeleton, max_frame)
 
                     skeletons_list.append(np.stack(skeleton_frame, axis=1))
                     hand_crops_list.append(np.stack(hand_crops_frame, axis=0))
@@ -155,7 +163,7 @@ class DataLoader():
 
             # If hyper parameter sub_sequence_length == 0, then take the entire sequence (for CNNs)
             # The skeleton sequence is then transformed into an image
-            elif self.sub_sequence_length == 0:
+            elif self.model_type in ['VA-CNN', 'STA-HANDS']:
                 max_frame = skeleton.shape[1]
                 n_joints = skeleton.shape[2]
 
@@ -172,8 +180,10 @@ class DataLoader():
                 skeleton_image = cv2.resize(skeleton_image.transpose(1, 2, 0), dsize=(224, 224)).transpose(2, 0, 1)
                 skeletons_list.append(skeleton_image)
 
-                # /!\ TEMPORARY FIX TO AVOID DIMENSION ISSUES ! NOT USABLE /!\
-                hand_crops_list.append(hand_crops[0:10])
+                # Divide hands sequence into T=self.sub_sequence_length even sub sequences, then take one random frame
+                # per sub sequence
+                _, hand_crops_frame = self._gen_non_continuous_sample(hand_crops, skeleton, max_frame)
+                hand_crops_list.append(np.stack(hand_crops_frame, axis=0))
 
         # X_skeleton shape
         # if sub_sequence_length != 0 : (batch_size, 3, sub_sequence_length, num_joints, 2)

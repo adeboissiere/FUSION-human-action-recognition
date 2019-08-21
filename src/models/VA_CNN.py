@@ -60,6 +60,13 @@ class VACNN(nn.Module):
         out = self.trained_cnn(X) # shape (batch_size, 60)
         out = F.log_softmax(out, dim=1)
 
+        '''
+        res50_conv = nn.Sequential(*list(self.trained_cnn.children())[:-1])
+        print(res50_conv)
+        test = res50_conv(X)
+        print(test.shape)
+        '''
+
         return out
 
 

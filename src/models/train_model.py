@@ -77,7 +77,8 @@ if __name__ == '__main__':
     print("-> evaluate_test : " + str(evaluate_test))
 
     # Create data loader
-    data_loader = DataLoader(batch_size,
+    data_loader = DataLoader(model_type,
+                             batch_size,
                              data_path,
                              evaluation_type,
                              sub_sequence_length,

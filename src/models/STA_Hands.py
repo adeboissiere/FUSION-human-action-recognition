@@ -10,6 +10,12 @@ from src.utils.joints import *
 from src.models.device import *
 
 
+def set_parameter_requires_grad(model, feature_extracting):
+    if feature_extracting:
+        for param in model.parameters():
+            param.requires_grad = False
+
+
 class FskCNN(nn.Module):
     def __init__(self):
         super(FskCNN, self).__init__()
@@ -76,12 +82,6 @@ class FskDeepGRU(nn.Module):
         return out
 
 
-def set_parameter_requires_grad(model, feature_extracting):
-    if feature_extracting:
-        for param in model.parameters():
-            param.requires_grad = False
-
-
 class Fg(nn.Module):
     def __init__(self, model_name):
         """ F_g module (see paper). Only AlexNet and inception_v3 supported for now.
@@ -99,17 +99,21 @@ class Fg(nn.Module):
         self.model_name = model_name
 
         input_size = 224
-        output_size = 2048
+        output_size = 512
         feature_extract = True
 
         if model_name == "alexnet":
             self.trained_cnn = models.alexnet(pretrained=True)
+
+            # When feature_extracting = False, sets model to finetuning. Else to feature extraction
             set_parameter_requires_grad(self.trained_cnn, feature_extract)
             num_ftrs = self.trained_cnn.classifier[6].in_features
             self.trained_cnn.classifier[6] = nn.Linear(num_ftrs, output_size)
 
         elif model_name == "inception":
             self.trained_cnn = models.inception_v3(pretrained=True)
+
+            # When feature_extracting = False, sets model to finetuning. Else to feature extraction
             set_parameter_requires_grad(self.trained_cnn, feature_extract)
             # Handle the auxilary net
             num_ftrs = self.trained_cnn.AuxLogits.fc.in_features
@@ -118,6 +122,15 @@ class Fg(nn.Module):
             num_ftrs = self.trained_cnn.fc.in_features
             self.trained_cnn.fc = nn.Linear(num_ftrs, output_size)
             input_size = 299
+
+        elif model_name == "resnet":
+            self.trained_cnn = models.resnet18(pretrained=True)
+
+            # When feature_extracting = False, sets model to finetuning. Else to feature extraction
+            set_parameter_requires_grad(self.trained_cnn, feature_extract)
+            num_ftrs = self.trained_cnn.fc.in_features
+            self.trained_cnn.fc = nn.Linear(num_ftrs, output_size)
+            input_size = 224
 
         else:
             print("Invalid model name for f_g module, exiting...")
@@ -163,7 +176,7 @@ class Fg(nn.Module):
                 out = self.trained_cnn(X)  # shape (batch_size, output_size)
 
                 # Append to list
-                if self.model_name == "alexnet":
+                if self.model_name in ["alexnet", "resnet"]:
                     v_tj.append(out)
                 elif self.model_name == "inception":
                     v_tj.append(out[0])
@@ -174,16 +187,16 @@ class Fg(nn.Module):
 
         X = torch.stack(v_tji)  # shape (4, seq_len, batch_size, output_size)
 
-        return X.permute(2, 1, 3, 0)
+        return X.permute(2, 1, 3, 0) # shape (batch_size, seq_len, output_size, 4)
 
 
 class Fp(nn.Module):
     def __init__(self):
         super(Fp, self).__init__()
         self.mlp = nn.Sequential(
-            nn.Linear(2048, 256),
-            nn.Sigmoid(),
-            nn.Linear(256, 4),
+            nn.Linear(1024, 512),
+            nn.ReLU(),
+            nn.Linear(512, 4),
             nn.Sigmoid()
         )
 
@@ -195,7 +208,7 @@ class Fu(nn.Module):
     def __init__(self):
         super(Fu, self).__init__()
         self.linear_ReLU = nn.Sequential(
-            nn.Linear(1024, 1024),
+            nn.Linear(512, 512),
             nn.ReLU()
         )
 
@@ -207,9 +220,9 @@ class FpPrime(nn.Module):
     def __init__(self):
         super(FpPrime, self).__init__()
         self.mlp = nn.Sequential(
-            nn.Linear(80 + 1024, 512),
+            nn.Linear(80 + 512, 256),
             nn.Sigmoid(),
-            nn.Linear(512, 20),
+            nn.Linear(256, 20),
             nn.Sigmoid()
         )
 
@@ -234,7 +247,7 @@ class STAHandsCNN(nn.Module):
         self.fp = Fp()
 
         # LSTM cell
-        self.lstm = nn.LSTMCell(input_size = 2048, hidden_size = 1024)
+        self.lstm = nn.LSTMCell(input_size = 512, hidden_size = 512)
 
         # Feature extractor
         self.fu = Fu()
@@ -243,9 +256,9 @@ class STAHandsCNN(nn.Module):
         self.fp_prime = FpPrime()
 
         # Output & prediction
-        self.fy_pose = nn.Linear(1024, 60)
-        self.fy_rgb = nn.Linear(1024, 60)
-        self.fy_fuse = nn.Linear(2048, 60)
+        self.fy_pose = nn.Linear(512, 60)
+        self.fy_rgb = nn.Linear(512, 60)
+        self.fy_fuse = nn.Linear(512, 60)
 
     def forward(self, X_skeleton, X_hands):
         """ Forward propagation of STAHandsCNN
@@ -254,38 +267,15 @@ class STAHandsCNN(nn.Module):
         :param X_hands: shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
         :return:
         """
-        batch_size = X_skeleton.shape[0]
-        seq_len = X_skeleton.shape[2]
+        batch_size = X_hands.shape[0]
+        seq_len = X_hands.shape[1]
 
-        s = torch.zeros((batch_size, 1024, 1, 1)).to(device)
+        s = torch.zeros((batch_size, 512, 1, 1)).to(device)
         u_tilde = None
 
         if self.include_pose:
             # ===== Convolutional pose features (f_sk) =====
-            # 1. Transform X_skeleton into a X_{t, j, k} matrix where t is time, j is joint (x, y, z) and k e {1, 2, 3}
-            # for motion, velocity and acceleration. The 2 skeletons are stacked on on the j dimension
-
-            X_skeleton = X_skeleton.transpose(0, 2, 3, 1, 4) # shape (batch_size, seq_len, n_joints, 3, 2)
-            X = np.zeros((batch_size, seq_len, 2 * kinematic_chain.shape[0] * 3, 3))
-
-            # Populate X
-            i = 0
-            for joint in kinematic_chain:
-                # Subject 1
-                X[:, :, i*3:i*3+3, 0] = X_skeleton[:, :, joint, :, 0]
-
-                # Subject 2
-                X[:, :, 3*len(kinematic_chain)+i*3:3*len(kinematic_chain)+i*3+3, 0] = X_skeleton[:, :, joint, :, 1]
-                i += 1
-
-            # Calculate velocities and and accelerations
-            dt = 1 / 30
-            X[:, 1:, :, 1] = (X[:, :-1, :, 0] - X[:, 1:, :, 0]) / dt # Velocity
-            X[:, 1:, :, 2] = (X[:, :-1, :, 0] - X[:, 1:, :, 0]) / (dt ** 2)  # Acceleration
-
-            X = torch.from_numpy(np.float32(X.transpose(0, 3, 1, 2))) # shape (batch_size, 3, seq_len, 330)
-
-            s = self.fsk(X.to(device))  # shape (batch_size, 1024, 1, 1)
+            None
 
         if self.include_rgb:
             # ===== Spatial attention =====
@@ -293,39 +283,39 @@ class STAHandsCNN(nn.Module):
             # /!\ Computes for all timesteps at once
             v_tji = self.fg(X_hands) # shape (batch_size, seq_len, output_size = 2048, 4)
 
-            h_t = torch.zeros(batch_size, 1024).to(device)
-            c_t= torch.zeros(batch_size, 1024).to(device)
+            h_t = torch.zeros(batch_size, 512).to(device)
+            c_t= torch.zeros(batch_size, 512).to(device)
 
             U = []
             P = []
 
             for t in range(seq_len):
-                # Concatenate # shape (batch_size, 1024, 1, 1) and h_t
-                fp_input = torch.cat([s[:, :, 0, 0], h_t], dim = 1)  # shape (batch_size, 2048)
+                # Concatenate # shape (batch_size, 512, 1, 1) and h_t
+                fp_input = torch.cat([s[:, :, 0, 0], h_t], dim = 1)  # shape (batch_size, 2 * 512)
 
                 # Compute p_t vector (see paper)
                 p_t = self.fp(fp_input) # shape (batch_size, 4)
                 P.append(p_t)
 
-                v_tilde_t = (v_tji[:, t, :, :].permute(1, 0, 2) * p_t).permute(1, 0, 2)  # shape (batch_size, 2048, 4)
-                v_tilde_t = torch.sum(v_tilde_t, dim = 2)  # shape (batch_size, 2048)
+                v_tilde_t = (v_tji[:, t, :, :].permute(1, 0, 2) * p_t).permute(1, 0, 2)  # shape (batch_size, 512, 4)
+                v_tilde_t = torch.sum(v_tilde_t, dim = 2)  # shape (batch_size, 512)
 
                 h_t, c_t = self.lstm(v_tilde_t, (h_t, c_t))
 
-                u_t = self.fu(h_t) # shape (batch_size, 1024)
+                u_t = self.fu(h_t) # shape (batch_size, 512)
                 U.append(u_t)
 
             P = torch.cat(P, dim = 1)  # shape (batch_size, seq_len * 4)
 
-            fp_prime_input = torch.cat([P, s[:, :, 0, 0]], dim = 1)  # shape (batch_size,seq_len * 4 + 1024)
+            fp_prime_input = torch.cat([P, s[:, :, 0, 0]], dim = 1)  # shape (batch_size,seq_len * 4 + 512)
 
             p_prime = self.fp_prime(fp_prime_input)  # shape (batch_size, seq_len)
 
             # Compute u_tilde
-            U = torch.stack(U, dim = 2)  # shape (batch_size, 1024, seq_len)
+            U = torch.stack(U, dim = 2)  # shape (batch_size, 512, seq_len)
 
-            u_tilde = (U.permute(1, 0, 2) * p_prime).permute(1, 0, 2)  # shape (batch_size, 1024, seq_len) -> need to double check
-            u_tilde = torch.sum(u_tilde, dim = 2) # shape (batch_size, 1024
+            u_tilde = (U.permute(1, 0, 2) * p_prime).permute(1, 0, 2)  # shape (batch_size, 512, seq_len) -> need to double check
+            u_tilde = torch.sum(u_tilde, dim = 2) # shape (batch_size, 512)
 
         # Prediction
         if self.include_pose and not self.include_rgb:

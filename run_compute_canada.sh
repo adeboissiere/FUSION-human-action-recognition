@@ -12,12 +12,16 @@ pip install --upgrade pip
 
 make requirements
 make train NTU_RGBD_DATA_PATH="../../../datasets/" EVALUATION_TYPE=cross_subject \
-													MODEL_TYPE=VA-CNN OPTIMIZER=ADAM \
-													LEARNING_RATE=1e-6 \
-													EPOCHS=50 BATCH_SIZE=32 \
-													SUB_SEQUENCE_LENGTH=0 \
-													NORMALIZE_SKELETON=True \
-													NORMALIZATION_TYPE=1-COORD-SYS \
-													AUGMENT_DATA=True \
-													USE_VALIDATION=True \
-													EVALUATE_TEST=True
+			MODEL_TYPE=STA-HANDS \
+			LEARNING_RATE=1e-4 \
+			EPOCHS=50 \
+			BATCH_SIZE=64 \
+			SUB_SEQUENCE_LENGTH=20 \
+			INCLUDE_POSE=False \
+			INCLUDE_RGB=True \
+			CONTINUOUS_FRAMES=False \
+			NORMALIZE_SKELETON=True \
+			NORMALIZATION_TYPE=1-COORD-SYS \
+			AUGMENT_DATA=False \
+			USE_VALIDATION=True \
+			EVALUATE_TEST=True
