@@ -4,7 +4,6 @@ import os
 
 from src.models.data_loader import *
 from src.models.train_utils import *
-from src.models.VA_LSTM import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train model')
@@ -119,4 +118,5 @@ if __name__ == '__main__':
 
     train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder)
 
+    # echo -en "\e[?25h"
     print("-> Done !")

@@ -2,9 +2,9 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 import numpy as np
+
+from src.models.device import *
 
 
 class VALSTM(nn.Module):

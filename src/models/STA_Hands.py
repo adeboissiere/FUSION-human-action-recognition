@@ -7,9 +7,7 @@ import torch.nn.functional as F
 from PIL import Image
 
 from src.utils.joints import *
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# device = torch.device("cpu")
+from src.models.device import *
 
 
 class FskCNN(nn.Module):
@@ -56,13 +54,12 @@ class FskDeepGRU(nn.Module):
         self.fc = nn.Linear(150, 60)
 
     def forward(self, X_skeleton, X_hands):
-        X_skeleton = X_skeleton.transpose(0, 2, 3, 1, 4)  # shape (batch_size, seq_len, n_joints, 3, 2)
+        X_skeleton = np.float32(X_skeleton.transpose(0, 2, 3, 1, 4))  # shape (batch_size, seq_len, n_joints, 3, 2)
 
         batch_size = X_skeleton.shape[0]
         seq_len = X_skeleton.shape[1]
 
         X_skeleton = X_skeleton.reshape(batch_size, seq_len, 25 * 3 * 2)  # shape (batch_size, seq_len, 25 * 3 * 2)
-
         X_skeleton = torch.from_numpy(X_skeleton).to(device)
 
         out, _ = self.gru(X_skeleton)  # shape (batch_size, seq_len, 150)

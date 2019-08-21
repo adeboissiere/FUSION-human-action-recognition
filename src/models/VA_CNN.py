@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 import torch.nn.functional as F
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+from src.models.device import *
 
 import numpy as np
 from PIL import Image

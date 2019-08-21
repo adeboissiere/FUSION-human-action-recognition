@@ -4,6 +4,7 @@ import pickle
 
 from src.models.STA_Hands import *
 from src.models.VA_CNN import *
+from src.models.VA_LSTM import *
 
 
 def calculate_accuracy(Y_hat, Y):
