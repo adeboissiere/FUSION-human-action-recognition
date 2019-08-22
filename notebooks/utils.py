@@ -1,5 +1,5 @@
 # Hyper parameters
-crop_size = 50
+crop_size = 100
 
 import numpy as np
 from joints import *

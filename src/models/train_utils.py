@@ -83,7 +83,6 @@ def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_t
 
     for e in range(epochs):
         start = time.time()
-
         model.train()
 
         errors_temp = []

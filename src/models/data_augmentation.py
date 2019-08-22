@@ -16,8 +16,8 @@ import numpy as np
 import math
 
 # Global variables
-x_rot_low = -45.0
-x_rot_high = 45.0
+x_rot_low = -90.0
+x_rot_high = 90.0
 y_rot_low = -90.0
 y_rot_high = 90.0
 z_rot_low = -10.0

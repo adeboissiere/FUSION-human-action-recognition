@@ -12,8 +12,7 @@ pip install --upgrade pip
 
 make requirements
 make train NTU_RGBD_DATA_PATH="../../../datasets/" EVALUATION_TYPE=cross_subject \
-			MODEL_TYPE=STA-HANDS \
-			LEARNING_RATE=1e-4 \
+			LEARNING_RATE=3e-5 \
 			EPOCHS=50 \
 			BATCH_SIZE=64 \
 			SUB_SEQUENCE_LENGTH=20 \

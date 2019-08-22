@@ -16,37 +16,6 @@ def set_parameter_requires_grad(model, feature_extracting):
             param.requires_grad = False
 
 
-class FskCNN(nn.Module):
-    def __init__(self):
-        super(FskCNN, self).__init__()
-        self.layer1 = nn.Sequential(
-            nn.Conv2d(in_channels = 3, out_channels = 1, kernel_size = (9, 3), padding = (4, 1)),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size = 2, stride = 2)
-        )
-        self.layer2 = nn.Sequential(
-            nn.Conv2d(in_channels = 1, out_channels = 1, kernel_size = (9, 3), padding = (4, 1)),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2)
-        )
-        self.layer3 = nn.Sequential(
-            nn.Conv2d(in_channels = 1, out_channels = 1024, kernel_size = (5, 82)),
-            nn.ReLU()
-        )
-
-    def forward(self, X):
-        """ Forward propagation of f_sk module
-
-        :param X: shape (batch_size, 3, seq_len, 330)
-        :return: 1x1x1024 feature map
-        """
-        out = self.layer1(X)
-        out = self.layer2(out)
-        out = self.layer3(out)
-
-        return out  # shape (batch_size, 1024, 1, 1)
-
-
 class FskDeepGRU(nn.Module):
     def __init__(self):
         super(FskDeepGRU, self).__init__()
@@ -217,12 +186,12 @@ class Fu(nn.Module):
 
 
 class FpPrime(nn.Module):
-    def __init__(self):
+    def __init__(self, seq_len):
         super(FpPrime, self).__init__()
         self.mlp = nn.Sequential(
-            nn.Linear(80 + 512, 256),
+            nn.Linear(4 * seq_len + 512, 256),
             nn.Sigmoid(),
-            nn.Linear(256, 20),
+            nn.Linear(256, seq_len),
             nn.Sigmoid()
         )
 
@@ -231,14 +200,14 @@ class FpPrime(nn.Module):
 
 
 class STAHandsCNN(nn.Module):
-    def __init__(self, n_classes, include_pose, include_rgb):
+    def __init__(self, seq_len, include_pose, include_rgb):
         super(STAHandsCNN, self).__init__()
-        self.n_classes = n_classes
+        self.seq_len = seq_len
         self.include_pose = include_pose
         self.include_rgb = include_rgb
 
         # Pose network
-        self.fsk = FskCNN()
+        self.fsk = None
 
         # Glimpse sensor
         self.fg = Fg("resnet")
@@ -253,7 +222,7 @@ class STAHandsCNN(nn.Module):
         self.fu = Fu()
 
         # Temporal attention network
-        self.fp_prime = FpPrime()
+        self.fp_prime = FpPrime(self.seq_len)
 
         # Output & prediction
         self.fy_pose = nn.Linear(512, 60)
