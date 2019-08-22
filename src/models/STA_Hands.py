@@ -100,7 +100,7 @@ class Fg(nn.Module):
 
         input_size = 224
         output_size = 512
-        feature_extract = True
+        feature_extract = False
 
         if model_name == "alexnet":
             self.trained_cnn = models.alexnet(pretrained=True)
@@ -241,7 +241,7 @@ class STAHandsCNN(nn.Module):
         self.fsk = FskCNN()
 
         # Glimpse sensor
-        self.fg = Fg("inception")
+        self.fg = Fg("resnet")
 
         # Spatial attention network
         self.fp = Fp()

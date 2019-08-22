@@ -18,7 +18,7 @@ def calculate_accuracy(Y_hat, Y):
 
 
 def evaluate_validation_set(model, data_loader, output_folder):
-    model.eval()
+    model.train()
     average_accuracy = 0
 
     for batch_idx in range(data_loader.n_batches_val):
