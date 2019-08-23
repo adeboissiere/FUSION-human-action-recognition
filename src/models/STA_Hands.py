@@ -136,6 +136,7 @@ class Fg(nn.Module):
 
                     # Apply transformation
                     hand_crop = self.transform(hand_crop)
+                    print(hand_crop)
                     batch.append(hand_crop)
 
                 # Create batch for given hand and fixed t

@@ -96,6 +96,8 @@ if __name__ == '__main__':
         model = VALSTM(sub_sequence_length).to(device)
     elif model_type == "VA-CNN":
         model = VACNN().to(device)
+    elif model_type == "RGB":
+        model = RGB_Classifier().to(device)
     else:
         print("Model type not recognized. Exiting")
         exit()
