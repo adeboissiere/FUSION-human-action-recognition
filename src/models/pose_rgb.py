@@ -146,8 +146,9 @@ class TemporalAttention(nn.Module):
 
 
 class PoseRGB(nn.Module):
-    def __init__(self, seq_len):
+    def __init__(self, seq_len, include_pose):
         super(PoseRGB, self).__init__()
+        self.include_pose = include_pose
 
         self.trained_pose_network = TrainedPoseNetwork()
         self.trained_rgb_network = TrainedRGBNetwork()
@@ -179,7 +180,10 @@ class PoseRGB(nn.Module):
         seq_len = X_hands.shape[1]
         n_hands = X_hands.shape[2]
 
-        pose_features = self.trained_pose_network(X_skeleton) # shape (batch_size, n_features)
+        if self.include_pose == True:
+            pose_features = self.trained_pose_network(X_skeleton) # shape (batch_size, n_features)
+        else:
+            pose_features = torch.zeros((batch_size, 512)).to(device)
         rgb_features = self.trained_rgb_network(X_hands) # shape (batch_size, seq_len, n_features, n_hands)
 
         # Concat rgb_features shape (batch_size, seq_len, n_features * n_hands)

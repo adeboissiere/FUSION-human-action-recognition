@@ -97,7 +97,7 @@ if __name__ == '__main__':
     elif model_type == "VA-CNN":
         model = VACNN().to(device)
     elif model_type == "POSE-RGB":
-        model = PoseRGB(sub_sequence_length).to(device)
+        model = PoseRGB(sub_sequence_length, include_pose).to(device)
     else:
         print("Model type not recognized. Exiting")
         exit()
