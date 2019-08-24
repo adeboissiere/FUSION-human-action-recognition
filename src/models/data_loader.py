@@ -163,7 +163,7 @@ class DataLoader():
 
             # If hyper parameter sub_sequence_length == 0, then take the entire sequence (for CNNs)
             # The skeleton sequence is then transformed into an image
-            elif self.model_type in ['VA-CNN', 'STA-HANDS', 'RGB']:
+            elif self.model_type in ['VA-CNN', 'STA-HANDS', 'POSE-RGB']:
                 max_frame = skeleton.shape[1]
                 n_joints = skeleton.shape[2]
 

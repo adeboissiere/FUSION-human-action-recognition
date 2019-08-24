@@ -115,7 +115,7 @@ class Fg(nn.Module):
         ])
 
     def forward(self, X_hands):
-        """ Forward propagation of f_g module (inception_v3).
+        """ Forward propagation of f_g module.
         It takes about 4.5s to apply transformation to all images for batch_size = 32, seq_len = 20
 
         :param X_hands: shape (batch_size, seq_len, 4, crop_size, crop_size, 3)

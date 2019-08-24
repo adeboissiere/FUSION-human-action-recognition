@@ -12,13 +12,11 @@ pip install --upgrade pip
 
 make requirements
 make train NTU_RGBD_DATA_PATH="../../../datasets/" EVALUATION_TYPE=cross_subject \
-			MODEL_TYPE=RGB \
-			LEARNING_RATE=3e-5 \
+			MODEL_TYPE=POSE-RGB \
+			LEARNING_RATE=1e-5 \
 			EPOCHS=50 \
 			BATCH_SIZE=32 \
-			SUB_SEQUENCE_LENGTH=20 \
-			INCLUDE_POSE=False \
-			INCLUDE_RGB=True \
+			SUB_SEQUENCE_LENGTH=10 \
 			CONTINUOUS_FRAMES=False \
 			NORMALIZE_SKELETON=True \
 			NORMALIZATION_TYPE=1-COORD-SYS \

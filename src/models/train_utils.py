@@ -5,7 +5,7 @@ import pickle
 from src.models.STA_Hands import *
 from src.models.VA_CNN import *
 from src.models.VA_LSTM import *
-from src.models.rgb_test import *
+from src.models.pose_rgb import *
 
 
 def calculate_accuracy(Y_hat, Y):
@@ -60,6 +60,29 @@ def evaluate_test_set(model, data_loader, output_folder):
         batch_log.close()
 
     return average_accuracy / len(data_loader.testing_samples)
+
+
+def confusion_test_set(model, data_loader):
+    model.eval()
+    y_true = []
+    y_pred = []
+
+    for batch_idx in range(data_loader.n_batches_test):
+        print(str(batch_idx) + " / " + str(data_loader.n_batches_test))
+        X_skeleton, X_hands, Y = data_loader.next_batch_test()
+        Y = torch.from_numpy(Y).to(device)
+
+        Y_hat = model(X_skeleton, X_hands)
+        _, Y_hat = Y_hat.max(1)
+
+        # Appends np arrays of shape (batch_size, )
+        y_true.append(Y.cpu().numpy())
+        y_pred.append(Y_hat.cpu().numpy())
+
+        print(Y.cpu().numpy())
+        print(Y_hat.cpu().numpy())
+
+    return y_true, y_pred
 
 
 def train_model(model, data_loader, optimizer, learning_rate, epochs, evaluate_test, output_folder):
