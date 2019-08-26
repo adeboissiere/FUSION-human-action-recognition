@@ -15,11 +15,10 @@ class TrainedPoseNetwork(nn.Module):
         super(TrainedPoseNetwork, self).__init__()
 
         self.pose_network = VACNN()
-        self.pose_network.load_state_dict(torch.load("./models/VA_CNN.pt"))
         self.pose_network = nn.Sequential(*list(self.pose_network.trained_cnn.children()))[:-1]
 
         # When feature_extracting = False, sets model to finetuning. Else to feature extraction
-        set_parameter_requires_grad(self.pose_network, feature_extracting=True)
+        set_parameter_requires_grad(self.pose_network, feature_extracting=False)
 
         input_size = 224
 
