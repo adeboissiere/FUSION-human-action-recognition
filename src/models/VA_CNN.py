@@ -21,13 +21,13 @@ class VACNN(nn.Module):
         super(VACNN, self).__init__()
 
         # Pretrained model
-        self.trained_cnn = models.resnet18(pretrained=True)
+        self.trained_cnn = models.resnet50(pretrained=True)
 
         # When feature_extracting = False, sets model to finetuning. Else to feature extraction
         set_parameter_requires_grad(self.trained_cnn, feature_extracting=False)
 
         # Reshapes output
-        self.trained_cnn.fc = nn.Linear(512, 60)
+        self.trained_cnn.fc = nn.Linear(2048, 60)
 
         input_size = 224
 

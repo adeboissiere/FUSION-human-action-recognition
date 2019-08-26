@@ -19,18 +19,19 @@ COMPRESSION_OPTS = 9
 
 # Make Train variables
 MODEL_FOLDER :=$(PROJECT_DIR)/models/
-EVALUATION_TYPE = cross_subject
-MODEL_TYPE = STA-HANDS
-OPTIMIZER = ADAM
-LEARNING_RATE = 1e-4
-EPOCHS = 30
-BATCH_SIZE = 8
-SUB_SEQUENCE_LENGTH = 20 
+EVALUATION_TYPE=cross_subject
+MODEL_TYPE=STA-HANDS
+OPTIMIZER=ADAM
+LEARNING_RATE=1e-4
+WEIGHT_DECAY=0
+EPOCHS=30
+BATCH_SIZE=8
+SUB_SEQUENCE_LENGTH=20 
 INCLUDE_POSE=True
 INCLUDE_RGB=True
 CONTINUOUS_FRAMES=False
 NORMALIZE_SKELETON=True
-NORMALIZATION_TYPE= 1-COORD-SYS
+NORMALIZATION_TYPE=1-COORD-SYS
 AUGMENT_DATA=True
 USE_VALIDATION=True
 EVALUATE_TEST=True
@@ -62,7 +63,7 @@ features:
 ## Make Train
 train: 
 	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
-	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
+	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --weight_decay=$(WEIGHT_DECAY) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
 	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES) --normalize_skeleton=$(NORMALIZE_SKELETON) --normalization_type=$(NORMALIZATION_TYPE) --augment_data=$(AUGMENT_DATA) \
 	--use_validation=$(USE_VALIDATION) --evaluate_test=$(EVALUATE_TEST)
 
