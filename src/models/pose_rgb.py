@@ -15,6 +15,7 @@ class TrainedPoseNetwork(nn.Module):
         super(TrainedPoseNetwork, self).__init__()
 
         self.pose_network = VACNN()
+        # self.pose_network.load_state_dict(torch.load("./models/VA_CNN.pt"))
         self.pose_network = nn.Sequential(*list(self.pose_network.trained_cnn.children()))[:-1]
 
         # When feature_extracting = False, sets model to finetuning. Else to feature extraction
@@ -60,7 +61,7 @@ class TrainedRGBNetwork(nn.Module):
         # RGB network - set to feature extract (no backprop)
         self.rgb_network = models.resnet18(pretrained=True)
         self.rgb_network = nn.Sequential(*list(self.rgb_network.children()))[:-1]
-        set_parameter_requires_grad(self.rgb_network, feature_extracting=True)
+        set_parameter_requires_grad(self.rgb_network, feature_extracting=False)
 
         input_size = 224
 
