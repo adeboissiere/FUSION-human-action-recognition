@@ -32,6 +32,7 @@ INCLUDE_RGB=True
 CONTINUOUS_FRAMES=False
 NORMALIZE_SKELETON=True
 NORMALIZATION_TYPE=1-COORD-SYS
+KINEMATIC_CHAIN_SKELETON=False
 AUGMENT_DATA=True
 USE_VALIDATION=True
 EVALUATE_TEST=True
@@ -62,10 +63,25 @@ features:
 
 ## Make Train
 train: 
-	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
-	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --weight_decay=$(WEIGHT_DECAY) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
-	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES) --normalize_skeleton=$(NORMALIZE_SKELETON) --normalization_type=$(NORMALIZATION_TYPE) --augment_data=$(AUGMENT_DATA) \
-	--use_validation=$(USE_VALIDATION) --evaluate_test=$(EVALUATE_TEST)
+	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) \
+	--output_folder=$(MODEL_FOLDER) \
+	--evaluation_type=$(EVALUATION_TYPE) \
+	--model_type=$(MODEL_TYPE) \
+	--optimizer=$(OPTIMIZER) \
+	--learning_rate=$(LEARNING_RATE) \
+	--weight_decay=$(WEIGHT_DECAY) \
+	--epochs=$(EPOCHS) \
+	--batch_size=$(BATCH_SIZE) \
+	--sub_sequence_length=$(SUB_SEQUENCE_LENGTH) \
+	--include_pose=$(INCLUDE_POSE) \
+	--include_rgb=$(INCLUDE_RGB) \
+	--continuous_frames=$(CONTINUOUS_FRAMES) \
+	--normalize_skeleton=$(NORMALIZE_SKELETON) \
+	--normalization_type=$(NORMALIZATION_TYPE) \
+	--kinematic_chain_skeleton=$(KINEMATIC_CHAIN_SKELETON) \
+	--augment_data=$(AUGMENT_DATA) \
+	--use_validation=$(USE_VALIDATION) \
+	--evaluate_test=$(EVALUATE_TEST)
 
 ## Make Visualize
 confusion_matrix:

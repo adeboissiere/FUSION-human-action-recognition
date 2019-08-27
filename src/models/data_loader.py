@@ -17,6 +17,7 @@ class DataLoader():
                  continuous_frames,
                  normalize_skeleton,
                  normalization_type,
+                 kinematic_chain_skeleton,
                  augment_data,
                  use_validation):
 
@@ -27,6 +28,7 @@ class DataLoader():
         self.continuous_frames = continuous_frames
         self.normalize_skeleton = normalize_skeleton
         self.normalization_type = normalization_type
+        self.kinematic_chain_skeleton = kinematic_chain_skeleton
         self.augment_data = augment_data
         self.use_validation = use_validation
 
@@ -35,6 +37,12 @@ class DataLoader():
 
         # Creates a list of all sample names
         samples_names_list = [line.rstrip('\n') for line in open(data_path + "samples_names.txt")]
+
+        # Create list of samples without skeleton
+        missing_skeletons_list = [line.rstrip('\n') for line in open(data_path + "missing_skeleton.txt")]
+
+        # Remove missing skeletons from sample_names_list
+        samples_names_list = list(set(samples_names_list) - set(missing_skeletons_list))
 
         # Contains all training sample names
         training_samples = []
@@ -87,6 +95,17 @@ class DataLoader():
         else:
             print("0 validation samples")
 
+    def _skeleton_to_kinematic_chain(self, skeleton):
+        # skeleton shape (3, max_frame, num_joint=25, 2)
+        max_frame = skeleton.shape[1]
+
+        kinematic_skeleton = np.zeros((3, max_frame, kinematic_chain.shape[0], 2))
+
+        for i in range(kinematic_chain.shape[0]):
+            kinematic_skeleton[:, :, i, :] = skeleton[:, :, kinematic_chain[i], :]
+
+        return kinematic_skeleton
+
     def _gen_non_continuous_sample(self, hand_crops, skeleton, max_frame):
         skeleton_frame = []
         hand_crops_frame = []
@@ -138,6 +157,10 @@ class DataLoader():
             # Data augmentation : rotation around x, y, z axis (see data_augmentation.py for values)
             if self.augment_data:
                 skeleton = rotate_skeleton(skeleton)
+
+            # Transform skeleton to place joints adjacently to model spatial dependency
+            if self.kinematic_chain_skeleton:
+                skeleton = self._skeleton_to_kinematic_chain(skeleton)
 
             # Pad hand_crops if only one subject found
             if hand_crops.shape[1] == 2:

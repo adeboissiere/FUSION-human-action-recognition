@@ -26,6 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--continuous_frames', default=True)
     parser.add_argument('--normalize_skeleton', default=True)
     parser.add_argument('--normalization_type')
+    parser.add_argument('--kinematic_chain_skeleton', default=False)
     parser.add_argument('--augment_data', default=True)
     parser.add_argument('--use_validation', default=True)
     parser.add_argument('--evaluate_test', default=True)
@@ -48,6 +49,7 @@ if __name__ == '__main__':
     continuous_frames = arg.continuous_frames == "True"
     normalize_skeleton = arg.normalize_skeleton == "True"
     normalization_type = arg.normalization_type
+    kinematic_chain_skeleton = arg.kinematic_chain_skeleton == "True"
     augment_data = arg.augment_data == "True"
     use_validation = arg.use_validation == "True"
     evaluate_test = arg.evaluate_test == "True"
@@ -75,6 +77,7 @@ if __name__ == '__main__':
     print("-> continuous_frames : " + str(continuous_frames))
     print("-> normalize_skeleton : " + str(normalize_skeleton))
     print("-> normalization_type : " + str(normalization_type))
+    print("-> kinematic chain skeleton : " + str(kinematic_chain_skeleton))
     print("-> augment_data : " + str(augment_data))
     print("-> use_validation : " + str(use_validation))
     print("-> evaluate_test : " + str(evaluate_test))
@@ -88,6 +91,7 @@ if __name__ == '__main__':
                              continuous_frames,
                              normalize_skeleton,
                              normalization_type,
+                             kinematic_chain_skeleton,
                              augment_data,
                              use_validation)
 
