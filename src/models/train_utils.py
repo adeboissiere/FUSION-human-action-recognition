@@ -85,7 +85,15 @@ def confusion_test_set(model, data_loader):
     return y_true, y_pred
 
 
-def train_model(model, data_loader, optimizer, learning_rate, weight_decay, epochs, evaluate_test, output_folder):
+def train_model(model,
+                data_loader,
+                optimizer,
+                learning_rate,
+                weight_decay,
+                gradient_threshold,
+                epochs,
+                evaluate_test,
+                output_folder):
     # Lists for plotting
     time_batch = []
     time_epoch = [0]
@@ -119,6 +127,10 @@ def train_model(model, data_loader, optimizer, learning_rate, weight_decay, epoc
 
             loss = F.cross_entropy(out, Y.long())
             loss.backward()
+
+            # Gradient clipping
+            if gradient_threshold > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_threshold)
 
             optimizer.step()
 

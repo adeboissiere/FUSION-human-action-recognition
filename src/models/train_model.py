@@ -18,6 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--optimizer', default="ADAM")
     parser.add_argument('--learning_rate', default=1e-4)
     parser.add_argument('--weight_decay', default=0)
+    parser.add_argument('--gradient_threshold', default=0)
     parser.add_argument('--epochs', default=40)
     parser.add_argument('--batch_size', default=64)
     parser.add_argument('--sub_sequence_length', default=20)
@@ -41,6 +42,7 @@ if __name__ == '__main__':
     optimizer = arg.optimizer
     learning_rate = float(arg.learning_rate)
     weight_decay = float(arg.weight_decay)
+    gradient_threshold = float(arg.gradient_threshold)
     epochs = int(arg.epochs)
     batch_size = int(arg.batch_size)
     sub_sequence_length = int(arg.sub_sequence_length)
@@ -69,6 +71,7 @@ if __name__ == '__main__':
     print("-> optimizer : " + optimizer)
     print("-> learning rate : " + str(learning_rate))
     print("-> weight decay : " + str(weight_decay))
+    print("-> gradient threshold : " + str(gradient_threshold))
     print("-> max epochs : " + str(epochs))
     print("-> batch size : " + str(batch_size))
     print("-> sub_sequence_length : " + str(sub_sequence_length))
@@ -119,10 +122,17 @@ if __name__ == '__main__':
     now = datetime.datetime.now()
 
     output_folder += str(model_type) + '_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + \
-                    '_' + str(now.hour) + 'h' + str(now.minute) + '_' + evaluation_type + '_'+ str(optimizer) + \
+                    '_' + str(now.hour) + 'h' + str(now.minute) + '_' + \
+                     evaluation_type + '_'+ str(optimizer) + \
                     '_lr=' + str(learning_rate) +\
-                     '_wd=' + str(weight_decay) + '_epochs=' + str(epochs) + '_batch=' + str(batch_size) +'_seq_len=' +\
-                     str(sub_sequence_length) + '_cont_frames=' + str(continuous_frames) + '/'
+                     '_wd=' + str(weight_decay) + \
+                    '_gt=' + str(gradient_threshold) + \
+                     '_epochs=' + str(epochs) + \
+                     '_batch=' + str(batch_size) + \
+                     '_seq_len=' +\
+                     str(sub_sequence_length) + \
+                     '_cont_frames=' + \
+                     str(continuous_frames) + '/'
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -132,6 +142,7 @@ if __name__ == '__main__':
                 optimizer,
                 learning_rate,
                 weight_decay,
+                gradient_threshold,
                 epochs,
                 evaluate_test,
                 output_folder)

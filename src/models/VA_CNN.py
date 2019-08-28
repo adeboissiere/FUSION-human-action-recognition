@@ -31,6 +31,8 @@ class VASubCNN(nn.Module):
         )
 
         self.va_subnetwork_linear = nn.Linear(128, 6)
+        torch.nn.init.zeros_(self.va_subnetwork_linear.weight)
+        torch.nn.init.zeros_(self.va_subnetwork_linear.bias)
 
     def forward(self, X_skeleton):
         out = self.va_subnetwork_cnn(X_skeleton) # shape (batch_size, 128, 1, 1)

@@ -24,6 +24,7 @@ MODEL_TYPE=STA-HANDS
 OPTIMIZER=ADAM
 LEARNING_RATE=1e-4
 WEIGHT_DECAY=0
+GRADIENT_THRESHOLD=0
 EPOCHS=30
 BATCH_SIZE=8
 SUB_SEQUENCE_LENGTH=20 
@@ -70,6 +71,7 @@ train:
 	--optimizer=$(OPTIMIZER) \
 	--learning_rate=$(LEARNING_RATE) \
 	--weight_decay=$(WEIGHT_DECAY) \
+	--gradient_threshold=$(GRADIENT_THRESHOLD) \
 	--epochs=$(EPOCHS) \
 	--batch_size=$(BATCH_SIZE) \
 	--sub_sequence_length=$(SUB_SEQUENCE_LENGTH) \
