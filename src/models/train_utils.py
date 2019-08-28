@@ -157,8 +157,10 @@ def train_model(model, data_loader, optimizer, learning_rate, weight_decay, epoc
         end = time.time()
         log = open(output_folder + "log.txt", "a+")
         log.write("Epoch : " + str(e) + ", err train : " + str(np.mean(errors_temp)))
-        log.write(", val accuracy : " + str(validation_accuracy))
-        log.write(", test accuracy : " + str(test_accuracy) + " ")
+        if data_loader.use_validation:
+            log.write(", val accuracy : " + str(validation_accuracy))
+        if evaluate_test:
+            log.write(", test accuracy : " + str(test_accuracy) + " ")
         log.write("in : " + str(end - start) + " seconds")
         log.write("\r\n")
         log.close()
