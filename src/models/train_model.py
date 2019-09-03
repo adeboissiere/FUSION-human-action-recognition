@@ -98,26 +98,20 @@ if __name__ == '__main__':
                              augment_data,
                              use_validation)
 
-    if model_type == "GRU":
-        model = FskDeepGRU().to(device)
-    elif model_type == "STA-HANDS":
-        model = STAHandsCNN(sub_sequence_length, include_pose, include_rgb).to(device)
-    elif model_type == "VA-LSTM":
-        model = VALSTM(sub_sequence_length).to(device)
-    elif model_type == "VA-CNN":
+    if model_type == "VA-CNN":
         model = VACNN().to(device)
-    elif model_type == "POSE-RGB":
-        model = PoseRGB(sub_sequence_length, include_pose).to(device)
+    elif model_type == "AS-CNN":
+        model = ASCNN().to(device)
     else:
         print("Model type not recognized. Exiting")
         exit()
 
     '''
-    X_skeleton, X_hands, Y = data_loader.next_batch()
-    model(X_skeleton, X_hands)
+    X, Y = data_loader.next_batch()
+    model(X)
     exit()
     '''
-    
+
     # Create folder for output files
     now = datetime.datetime.now()
 

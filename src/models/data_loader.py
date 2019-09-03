@@ -1,10 +1,9 @@
 import numpy as np
 import h5py
 import random
-import cv2
 
 from src.utils.joints import *
-from src.models.data_augmentation import *
+from src.models.data_loader_utils import *
 
 
 class DataLoader():
@@ -95,42 +94,13 @@ class DataLoader():
         else:
             print("0 validation samples")
 
-    def _skeleton_to_kinematic_chain(self, skeleton):
-        # skeleton shape (3, max_frame, num_joint=25, 2)
-        max_frame = skeleton.shape[1]
-
-        kinematic_skeleton = np.zeros((3, max_frame, kinematic_chain.shape[0], 2))
-
-        for i in range(kinematic_chain.shape[0]):
-            kinematic_skeleton[:, :, i, :] = skeleton[:, :, kinematic_chain[i], :]
-
-        return kinematic_skeleton
-
-    def _gen_non_continuous_sample(self, hand_crops, skeleton, max_frame):
-        skeleton_frame = []
-        hand_crops_frame = []
-
-        n_frames_sub_sequence = max_frame / self.sub_sequence_length  # size of each sub sequence
-        for sub_sequence in range(self.sub_sequence_length):
-            lower_index = int(sub_sequence * n_frames_sub_sequence)
-            upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
-            random_frame = random.randint(lower_index, upper_index)
-
-            # print(str(random_frame) + " in [" + str(lower_index) + "-" + str(upper_index) + "]")
-
-            skeleton_frame.append(skeleton[:, random_frame, :, :])
-            hand_crops_frame.append(hand_crops[random_frame])
-
-        return skeleton_frame, hand_crops_frame
-
     def _create_arrays_from_batch_samples(self, batch_samples):
         skeletons_list = []
-        hand_crops_list = []
+        avg_bone_length_list = []
 
         # Access corresponding samples
         for sample_name in batch_samples:
             skeleton = self.dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
-            hand_crops = self.dataset[sample_name]["rgb"][:]  # shape (max_frame, n_hands = {2, 4}, crop_size, crop_size, 3)
 
             # See jp notebook 4.0 for values
             c_min = 0
@@ -154,70 +124,43 @@ class DataLoader():
 
                 skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
 
-            # Data augmentation : rotation around x, y, z axis (see data_augmentation.py for values)
+            # Data augmentation : rotation around x, y, z axis (see data_loader_utils.py for values)
             if self.augment_data:
                 skeleton = rotate_skeleton(skeleton)
 
-            # Transform skeleton to place joints adjacently to model spatial dependency
-            if self.kinematic_chain_skeleton:
-                skeleton = self._skeleton_to_kinematic_chain(skeleton)
-
-            # Pad hand_crops if only one subject found
-            if hand_crops.shape[1] == 2:
-                pad = np.zeros(hand_crops.shape, dtype=hand_crops.dtype)
-                hand_crops = np.concatenate((hand_crops, pad), axis=1)
-
-            max_frame = hand_crops.shape[0]
-
-            if self.model_type in ['GRU', 'VA-LSTM']:
-                # Cut sequence into T sub sequences and take a random frame in each (for RNNs)
-                if not self.continuous_frames:
-                    skeleton_frame, hand_crops_frame = self._gen_non_continuous_sample(hand_crops, skeleton, max_frame)
-
-                    skeletons_list.append(np.stack(skeleton_frame, axis=1))
-                    hand_crops_list.append(np.stack(hand_crops_frame, axis=0))
-
-                # Take a random sub sequence
-                else:
-                    start = random.randint(0, max_frame - self.sub_sequence_length)
-
-                    skeletons_list.append(skeleton[:, start:start + self.sub_sequence_length, :, :])
-                    hand_crops_list.append(hand_crops[start:start + self.sub_sequence_length])
-
-            # If hyper parameter sub_sequence_length == 0, then take the entire sequence (for CNNs)
-            # The skeleton sequence is then transformed into an image
-            elif self.model_type in ['VA-CNN', 'STA-HANDS', 'POSE-RGB']:
-                max_frame = skeleton.shape[1]
-                n_joints = skeleton.shape[2]
-
-                # Reshape skeleton coordinates into an image
-                skeleton_image = np.zeros((3, max_frame, 2 * n_joints))
-                skeleton_image[:, :, 0:n_joints] = skeleton[:, :, :, 0]
-                skeleton_image[:, :, n_joints:2*n_joints] = skeleton[:, :, :, 1]
-                skeleton_image = np.transpose(skeleton_image, (0, 2, 1))
-
-                # Normalize
-                skeleton_image = np.floor(255 * (skeleton_image - c_min) / (c_max - c_min)) # shape (3, 2 * n_joints, max_frame)
-
-                # Reshape image for ResNet
-                skeleton_image = cv2.resize(skeleton_image.transpose(1, 2, 0), dsize=(224, 224)).transpose(2, 0, 1)
+            # Each model has its specific data streams
+            if self.model_type in ['VA-CNN']:
+                skeleton_image = create_image_from_skeleton_sequence(skeleton, c_min, c_max)
                 skeletons_list.append(skeleton_image)
 
-                # Divide hands sequence into T=self.sub_sequence_length even sub sequences, then take one random frame
-                # per sub sequence
-                _, hand_crops_frame = self._gen_non_continuous_sample(hand_crops, skeleton, max_frame)
-                hand_crops_list.append(np.stack(hand_crops_frame, axis=0))
+            elif self.model_type in ['AS-CNN']:
+                # shape (3, 224, 224)
+                skeleton_image = create_image_from_skeleton_sequence(skeleton, c_min, c_max)
+                skeletons_list.append(skeleton_image)
 
-        # X_skeleton shape
-        # if sub_sequence_length != 0 : (batch_size, 3, sub_sequence_length, num_joints, 2)
-        # if sub_sequence_length == 0 (CNN) : (batch_size, 3, 224, 224)
-        X_skeleton = np.stack(skeletons_list)
-        X_hands = np.stack(hand_crops_list)  # shape (batch_size, sub_sequence_length, 4, crop_size, crop_size, 3)
+                # shape (n_neighbors * n_subjects = 2 * 24, )
+                avg_bone_length = compute_avg_bone_length(skeleton)
+                avg_bone_length_list.append(avg_bone_length)
 
         # Extract class vector
         Y = [int(x[-3:]) for x in batch_samples]
 
-        return X_skeleton, X_hands, Y
+        if self.model_type in ['VA-CNN']:
+            # X_skeleton shape (batch_size, 3, 224, 224)
+            X_skeleton = np.stack(skeletons_list)
+
+            return [X_skeleton], Y
+
+        elif self.model_type in ['AS-CNN']:
+            # X_skeleton shape (batch_size, 3, 224, 224)
+            X_skeleton = np.stack(skeletons_list)
+
+            # X_bone_length shape (batch_size, n_neighbors * n_subjects = 2 * 24)
+            X_bone_length = np.stack(avg_bone_length_list)
+
+            print(X_bone_length.shape)
+
+            return [X_skeleton, X_bone_length], Y
 
     def next_batch(self):
         # Take random samples
@@ -229,13 +172,13 @@ class DataLoader():
         batch_samples = self.training_samples_batch[:n_elements]
         self.training_samples_batch = self.training_samples_batch[n_elements:]
 
-        X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+        X, Y = self._create_arrays_from_batch_samples(batch_samples)
 
         # Reset batch when epoch complete
         if len(self.training_samples_batch) == 0:
             self.training_samples_batch = self.training_samples.copy()
 
-        return X_skeleton, X_hands, np.asarray(Y) - 1
+        return X, np.asarray(Y) - 1
 
     def next_batch_validation(self):
         # Takes first elements of testing_samples_batch
@@ -246,7 +189,7 @@ class DataLoader():
         aug_data = self.augment_data
         self.augment_data = False
 
-        X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+        X, Y = self._create_arrays_from_batch_samples(batch_samples)
 
         self.augment_data = aug_data
 
@@ -254,7 +197,7 @@ class DataLoader():
         if len(self.validation_samples_batch) == 0:
             self.validation_samples_batch = self.validation_samples.copy()
 
-        return X_skeleton, X_hands, np.asarray(Y) - 1
+        return X, np.asarray(Y) - 1
 
     def next_batch_test(self):
         # Takes first elements of testing_samples_batch
@@ -265,7 +208,7 @@ class DataLoader():
         aug_data = self.augment_data
         self.augment_data = False
 
-        X_skeleton, X_hands, Y = self._create_arrays_from_batch_samples(batch_samples)
+        X, Y = self._create_arrays_from_batch_samples(batch_samples)
 
         self.augment_data = aug_data
 
@@ -273,6 +216,6 @@ class DataLoader():
         if len(self.testing_samples_batch) == 0:
             self.testing_samples_batch = self.testing_samples.copy()
 
-        return X_skeleton, X_hands, np.asarray(Y) - 1
+        return X, np.asarray(Y) - 1
 
 

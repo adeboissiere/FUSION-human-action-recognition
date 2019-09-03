@@ -1,13 +1,11 @@
 import torch
 from torch import nn
-import torchvision.transforms as transforms
 import torchvision.models as models
 import torch.nn.functional as F
 
 from src.models.device import *
 
 import numpy as np
-from PIL import Image
 
 
 def set_parameter_requires_grad(model, feature_extracting):
@@ -57,13 +55,14 @@ class VACNN(nn.Module):
         # Reshapes output
         self.trained_cnn.fc = nn.Linear(2048, 60)
 
-    def forward(self, X_skeleton, X_hands):
+    def forward(self, X):
+        X = X[0]
         c_min = -4.767
         c_max = 5.188
 
         # X_skeleton shape (batch_size, 3, 224, 224)
-        batch_size, _, H, W = X_skeleton.shape
-        X = torch.from_numpy(np.float32(X_skeleton)).to(device)
+        batch_size, _, H, W = X.shape
+        X = torch.from_numpy(np.float32(X)).to(device)
 
         # Computes transformation parameters
         transform_params = self.va_subnetwork(X / 255) # shape (batch_size, 6)

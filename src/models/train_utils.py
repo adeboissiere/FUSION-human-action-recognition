@@ -1,11 +1,8 @@
 from click import progressbar
 import time
-import pickle
 
-from src.models.STA_Hands import *
 from src.models.VA_CNN import *
-from src.models.VA_LSTM import *
-from src.models.pose_rgb import *
+from src.models.AS_CNN import *
 
 
 def calculate_accuracy(Y_hat, Y):
@@ -23,13 +20,13 @@ def evaluate_validation_set(model, data_loader, output_folder):
     average_accuracy = 0
 
     for batch_idx in range(data_loader.n_batches_val):
-        X_skeleton, X_hands, Y = data_loader.next_batch_validation()
+        X, Y = data_loader.next_batch_validation()
         Y = torch.from_numpy(Y).to(device)
 
-        out = model(X_skeleton, X_hands)
+        out = model(X)
 
         accuracy = calculate_accuracy(out, Y)
-        average_accuracy += accuracy * X_skeleton.shape[0]
+        average_accuracy += accuracy * X[0].shape[0]
 
         batch_log = open(output_folder + "batch_log.txt", "a+")
         batch_log.write("[VAL - " + str(batch_idx) + "/" + str(data_loader.n_batches_val) +
@@ -45,13 +42,13 @@ def evaluate_test_set(model, data_loader, output_folder):
     average_accuracy = 0
 
     for batch_idx in range(data_loader.n_batches_test):
-        X_skeleton, X_hands, Y = data_loader.next_batch_test()
+        X, Y = data_loader.next_batch_test()
         Y = torch.from_numpy(Y).to(device)
 
-        out = model(X_skeleton, X_hands)
+        out = model(X)
 
         accuracy = calculate_accuracy(out, Y)
-        average_accuracy += accuracy * X_skeleton.shape[0]
+        average_accuracy += accuracy * X[0].shape[0]
 
         batch_log = open(output_folder + "batch_log.txt", "a+")
         batch_log.write("[TEST - " + str(batch_idx) + "/" + str(data_loader.n_batches_test) +
@@ -69,10 +66,10 @@ def confusion_test_set(model, data_loader):
 
     for batch_idx in range(data_loader.n_batches_test):
         print(str(batch_idx) + " / " + str(data_loader.n_batches_test))
-        X_skeleton, X_hands, Y = data_loader.next_batch_test()
+        X, Y = data_loader.next_batch_test()
         Y = torch.from_numpy(Y).to(device)
 
-        Y_hat = model(X_skeleton, X_hands)
+        Y_hat = model(X)
         _, Y_hat = Y_hat.max(1)
 
         # Appends np arrays of shape (batch_size, )
@@ -94,6 +91,7 @@ def train_model(model,
                 epochs,
                 evaluate_test,
                 output_folder):
+
     # Lists for plotting
     time_batch = []
     time_epoch = [0]
@@ -103,9 +101,9 @@ def train_model(model,
     train_errors = []
 
     if optimizer == "ADAM":
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     elif optimizer == "SGD":
-        optimizer = optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     else:
         print("Optimizer not recognized ... exit()")
         exit()
@@ -120,10 +118,10 @@ def train_model(model,
         errors_temp = []
 
         for batch_idx in range(data_loader.n_batches):
-            X_skeleton, X_hands, Y = data_loader.next_batch()
+            X, Y = data_loader.next_batch()
             Y = torch.from_numpy(Y).to(device)
 
-            out = model(X_skeleton, X_hands)
+            out = model(X)
 
             loss = F.cross_entropy(out, Y.long())
             loss.backward()
