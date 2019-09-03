@@ -130,12 +130,13 @@ class DataLoader():
 
             # Each model has its specific data streams
             if self.model_type in ['VA-CNN']:
-                skeleton_image = create_image_from_skeleton_sequence(skeleton, c_min, c_max)
+                # shape (3, 224, 224)
+                skeleton_image = create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max)
                 skeletons_list.append(skeleton_image)
 
             elif self.model_type in ['AS-CNN']:
                 # shape (3, 224, 224)
-                skeleton_image = create_image_from_skeleton_sequence(skeleton, c_min, c_max)
+                skeleton_image = create_padded_image_from_skeleton_sequence(skeleton, c_min, c_max)
                 skeletons_list.append(skeleton_image)
 
                 # shape (n_neighbors * n_subjects = 2 * 24, )
@@ -157,8 +158,6 @@ class DataLoader():
 
             # X_bone_length shape (batch_size, n_neighbors * n_subjects = 2 * 24)
             X_bone_length = np.stack(avg_bone_length_list)
-
-            print(X_bone_length.shape)
 
             return [X_skeleton, X_bone_length], Y
 

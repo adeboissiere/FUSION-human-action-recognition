@@ -128,7 +128,7 @@ def rotate_skeleton(skeleton):
     return skeleton_aug
 
 
-def create_image_from_skeleton_sequence(skeleton, c_min, c_max):
+def create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max):
     max_frame = skeleton.shape[1]
     n_joints = skeleton.shape[2]
 
@@ -140,6 +140,26 @@ def create_image_from_skeleton_sequence(skeleton, c_min, c_max):
 
     # Normalize
     skeleton_image = np.floor(255 * (skeleton_image - c_min) / (c_max - c_min))  # shape (3, 2 * n_joints, max_frame)
+
+    # Reshape image for ResNet
+    skeleton_image = cv2.resize(skeleton_image.transpose(1, 2, 0), dsize=(224, 224)).transpose(2, 0, 1)
+
+    return skeleton_image
+
+
+def create_padded_image_from_skeleton_sequence(skeleton, c_min, c_max):
+    max_frame = skeleton.shape[1]
+    n_joints = skeleton.shape[2]
+
+    # Reshape skeleton coordinates into an image
+    skeleton_image = np.zeros((3, max_frame, 2 * n_joints))
+    skeleton_image[:, :, 0:n_joints] = skeleton[:, :, :, 0]
+    skeleton_image[:, :, n_joints:2 * n_joints] = skeleton[:, :, :, 1]
+    skeleton_image = np.transpose(skeleton_image, (0, 2, 1))
+
+    # Normalize
+    skeleton_image = np.floor(255 * (skeleton_image - c_min) / (c_max - c_min))  # shape (3, 2 * n_joints, max_frame)
+    skeleton_image = np.concatenate([skeleton_image, np.zeros((3, 224 - 2 * n_joints, max_frame))], axis=1)
 
     # Reshape image for ResNet
     skeleton_image = cv2.resize(skeleton_image.transpose(1, 2, 0), dsize=(224, 224)).transpose(2, 0, 1)
