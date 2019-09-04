@@ -54,7 +54,7 @@ class ASCNN(nn.Module):
         # Subnetwork
         self.as_subnetwork = ASModule()
         # When feature_extracting = True, model is frozen (bypass)
-        set_parameter_requires_grad(self.as_subnetwork, feature_extracting=False)
+        set_parameter_requires_grad(self.as_subnetwork, feature_extracting=True)
 
         # Pretrained model
         self.trained_cnn = models.resnet50(pretrained=True)
