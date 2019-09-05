@@ -13,7 +13,7 @@ PYTHON_INTERPRETER = python3
 # Make Features variables
 NTU_RGBD_DATA_PATH = "/media/gnocchi/Seagate Backup Plus Drive/NTU-RGB-D/"
 PROCESSED_DATA :=$(PROJECT_DIR)/data/processed/
-CROP_SIZE = 50
+DATASET_TYPE = "" # [SKELETON, RGB, IR]
 COMPRESSION = ""
 COMPRESSION_OPTS = 9
 
@@ -59,7 +59,11 @@ data: requirements
 
 ## Make Features
 features: 
-	$(PYTHON_INTERPRETER) src/features/build_features.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(NTU_RGBD_DATA_PATH) --crop_size=$(CROP_SIZE) --compression=$(COMPRESSION) \
+	$(PYTHON_INTERPRETER) src/features/build_features.py \
+	--data_path=$(NTU_RGBD_DATA_PATH) \
+	--output_folder=$(NTU_RGBD_DATA_PATH) \
+	--dataset_type=$(DATASET_TYPE) \
+	--compression=$(COMPRESSION) \
 	--compression_opts=$(COMPRESSION_OPTS)
 
 ## Make Train

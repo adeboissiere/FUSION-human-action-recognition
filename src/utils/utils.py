@@ -11,26 +11,23 @@ from click import progressbar
 from src.utils.joints import *
 
 
-def create_h5_dataset(input_path, output_path, crop_size = 50, compression = "", compression_opts = 9):
+def create_h5_skeleton_dataset(input_path, output_path, compression ="", compression_opts = 9):
     """Creates an h5 dataset. Each group corresponds to a clip and contains the numpy array of the skeleton data and the
     numpy array of image crops around the hands
 
     :param input_path: NTU-RGB-D data path
     :param output_path: location of created h5 dataset
-    :param crop_size: dimension of cropped image around hand
     :param compression: type of compression {"", "lzf", "gzip"}
     :param compression_opts: compression strength {1, .., 9}
     """
 
-    rgb_folder = "nturgb+d_rgb/"
     skeleton_folder = "nturgb+d_skeletons/"
 
     open_type = "w"
+    file = open(output_path + 'log.txt', 'w+')
+    file.close()
 
-    if os.path.exists(output_path + "datasets.h5") and os.path.exists(output_path + "log.txt"):
-        open_type = "a"
-
-    with h5py.File(output_path + 'datasets.h5', open_type) as hdf:
+    with h5py.File(output_path + 'skeleton.h5', open_type) as hdf:
         # Progress bar
         progress_bar = progressbar(iterable=None,
                                    length = len(next(os.walk(input_path + skeleton_folder))[2])
@@ -40,54 +37,103 @@ def create_h5_dataset(input_path, output_path, crop_size = 50, compression = "",
         for filename in os.listdir(input_path + skeleton_folder):
             short_filename = os.path.splitext(filename)[0]
 
-            already_treated = [line.rstrip('\n') for line in open(output_path + "log.txt")]
+            # Retrieve skeleton data
+            skeleton = read_xyz(input_path + skeleton_folder + filename)  # shape (2, max_frame, num_joint, n_subjects)
+            '''
+            skeleton_rgb = read_color_xy(
+                input_path + skeleton_folder + filename)  # shape (2, max_frame, num_joint=25, n_subjects)
+            '''
 
-            if short_filename not in already_treated or open_type == "w":
-                # Retrieve skeleton data
-                skeleton = read_xyz(input_path + skeleton_folder + filename)  # shape (2, max_frame, num_joint, n_subjects)
-                skeleton_rgb = read_color_xy(
-                    input_path + skeleton_folder + filename)  # shape (2, max_frame, num_joint=25, n_subjects)
+            # Assert skeletons are correct
+            # assert skeleton.shape[1:] == skeleton_rgb.shape[1:]
 
-                # Assert skeletons are correct
-                assert skeleton.shape[1:] == skeleton_rgb.shape[1:]
+            # Sequence code without extension
+            f = open(output_path + "log.txt", "a+")
+            f.write(short_filename)
+            f.write("\r\n")
+            f.close()
+            # print(short_filename)
 
-                # Sequence code without extension
-                f = open(output_path + "log.txt", "a+")
-                f.write(short_filename)
-                f.write("\r\n")
-                f.close()
-                # print(short_filename)
+            # Read corresponding video
+            '''
+            videodata = skvideo.io.vread(
+                input_path + rgb_folder + short_filename + '_rgb.avi')  # shape (n_frames, 1080, 1920, 3)
+            '''
 
-                # Read corresponding video
-                videodata = skvideo.io.vread(
-                    input_path + rgb_folder + short_filename + '_rgb.avi')  # shape (n_frames, 1080, 1920, 3)
+            # Check that video data has same number of frames as skeleton
+            # assert skeleton.shape[1] == videodata.shape[0]
 
-                # Check that video data has same number of frames as skeleton
-                assert skeleton.shape[1] == videodata.shape[0]
+            sample = hdf.create_group(short_filename)
 
-                # Create empty np arrays containing crops of hands from videos
-                # shape (n_frames, number of hands (2 subjects), x, y)
-                hand_crops = extract_hands(skeleton_rgb, videodata,
-                                           crop_size)  # shape (n_frames, 4, crop_size, crop_size, 3)
+            if compression == "":
+                sample.create_dataset("skeleton", data=skeleton)
+            elif compression == "lzf":
+                sample.create_dataset("skeleton", data=skeleton, compression=compression)
+            elif compression == "gzip":
+                sample.create_dataset("skeleton", data=skeleton,
+                                      compression=compression,
+                                      compression_opts=compression_opts)
+            else:
+                print("Compression type not recognized ... Exiting")
+                return
 
-                sample = hdf.create_group(short_filename)
+            progress_bar.update(1)
 
-                if compression == "":
-                    sample.create_dataset("skeleton", data=skeleton)
-                    sample.create_dataset("rgb", data=hand_crops)
-                elif compression == "lzf":
-                    sample.create_dataset("skeleton", data=skeleton, compression=compression)
-                    sample.create_dataset("rgb", data=hand_crops, compression=compression)
-                elif compression == "gzip":
-                    sample.create_dataset("skeleton", data=skeleton,
-                                          compression=compression,
-                                          compression_opts=compression_opts)
-                    sample.create_dataset("rgb", data=hand_crops,
-                                          compression=compression,
-                                          compression_opts=compression_opts)
-                else:
-                    print("Compression type not recognized ... Exiting")
-                    return
+def create_h5_ir_dataset(input_path, output_path, compression ="", compression_opts = 9):
+    """Creates an h5 dataset. Each group corresponds to a clip and contains the numpy array of the skeleton data and the
+    numpy array of image crops around the hands
+
+    :param input_path: NTU-RGB-D data path
+    :param output_path: location of created h5 dataset
+    :param compression: type of compression {"", "lzf", "gzip"}
+    :param compression_opts: compression strength {1, .., 9}
+    """
+
+    ir_folder = "nturgb+d_ir/"
+
+    open_type = "w"
+    file = open(output_path + 'log.txt', 'w+')
+    file.close()
+
+    with h5py.File(output_path + 'ir.h5', open_type) as hdf:
+        # Progress bar
+        progress_bar = progressbar(iterable=None,
+                                   length=len(next(os.walk(input_path + ir_folder))[2])
+                                   )
+
+        # Loop through skeleton files
+        for filename in os.listdir(input_path + ir_folder):
+            short_filename = os.path.splitext(filename)[0]
+
+            # Sequence code without extension
+            f = open(output_path + "log.txt", "a+")
+            f.write(short_filename)
+            f.write("\r\n")
+            f.close()
+            # print(short_filename)
+
+            # Read corresponding video
+
+            videodata = skvideo.io.vread(
+                input_path + ir_folder + short_filename + '.avi')  # shape (n_frames, H, W, 3)
+
+
+            # Check that video data has same number of frames as skeleton
+            # assert skeleton.shape[1] == videodata.shape[0]
+
+            sample = hdf.create_group(short_filename)
+
+            if compression == "":
+                sample.create_dataset("ir", data=videodata)
+            elif compression == "lzf":
+                sample.create_dataset("ir", data=videodata, compression=compression)
+            elif compression == "gzip":
+                sample.create_dataset("ir", data=videodata,
+                                      compression=compression,
+                                      compression_opts=compression_opts)
+            else:
+                print("Compression type not recognized ... Exiting")
+                return
 
             progress_bar.update(1)
 
