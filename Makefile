@@ -11,6 +11,7 @@ PROJECT_NAME = ntu-rgb-d
 PYTHON_INTERPRETER = python3
 
 # Make Features variables
+DATA_PATH = "/home/gnocchi/NTU/"
 NTU_RGBD_DATA_PATH = "/media/gnocchi/Seagate Backup Plus Drive/NTU-RGB-D/"
 PROCESSED_DATA :=$(PROJECT_DIR)/data/processed/
 DATASET_TYPE = "" # [SKELETON, RGB, IR]
@@ -60,7 +61,7 @@ data: requirements
 ## Make Features
 features: 
 	$(PYTHON_INTERPRETER) src/features/build_features.py \
-	--data_path=$(NTU_RGBD_DATA_PATH) \
+	--data_path=$(DATA_PATH) \
 	--output_folder=$(NTU_RGBD_DATA_PATH) \
 	--dataset_type=$(DATASET_TYPE) \
 	--compression=$(COMPRESSION) \

@@ -35,7 +35,7 @@ if __name__ == '__main__':
     elif arg.dataset_type == "IR":
         create_h5_ir_dataset(arg.data_path,
                              arg.output_folder,
-                             arg.compression,
+                             str(arg.compression),
                              arg.compression_opts)
     else:
         print("Data set type not recognized")
