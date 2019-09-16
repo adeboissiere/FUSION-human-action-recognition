@@ -102,6 +102,8 @@ if __name__ == '__main__':
         model = VACNN().to(device)
     elif model_type == "AS-CNN":
         model = ASCNN().to(device)
+    elif model_type == "base-IR":
+        model = BaseIRCNN().to(device)
     else:
         print("Model type not recognized. Exiting")
         exit()

@@ -31,8 +31,9 @@ class DataLoader():
         self.augment_data = augment_data
         self.use_validation = use_validation
 
-        # Opens h5 file
-        self.dataset = h5py.File(data_path + "datasets.h5", 'r')
+        # Opens h5 files
+        self.skeleton_dataset = h5py.File(data_path + "skeleton.h5", 'r')
+        self.ir_dataset = h5py.File(data_path + "ir.h5", 'r')
 
         # Creates a list of all sample names
         samples_names_list = [line.rstrip('\n') for line in open(data_path + "samples_names.txt")]
@@ -97,10 +98,11 @@ class DataLoader():
     def _create_arrays_from_batch_samples(self, batch_samples):
         skeletons_list = []
         avg_bone_length_list = []
+        ir_videos_lists = []
 
         # Access corresponding samples
         for sample_name in batch_samples:
-            skeleton = self.dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
+            skeleton = self.skeleton_dataset[sample_name]["skeleton"][:]  # shape (3, max_frame, num_joint=25, 2)
 
             # See jp notebook 4.0 for values
             c_min = 0
@@ -143,6 +145,25 @@ class DataLoader():
                 avg_bone_length = compute_avg_bone_length(skeleton)
                 avg_bone_length_list.append(avg_bone_length)
 
+            elif self.model_type in ['base-IR']:
+                ir_video = self.ir_dataset[sample_name + "_ir"]["ir"][:] # shape (n_frames, 424, 512, 3)
+
+                n_frames = ir_video.shape[0]
+                n_frames_sub_sequence = n_frames / self.sub_sequence_length  # size of each sub sequence
+
+                ir_frame = []
+
+                for sub_sequence in range(self.sub_sequence_length):
+                    lower_index = int(sub_sequence * n_frames_sub_sequence)
+                    upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
+                    random_frame = random.randint(lower_index, upper_index)
+
+                    ir_image = cv2.resize(ir_video[random_frame], dsize=(224, 224))
+                    ir_frame.append(ir_image)
+
+                ir_sequence = np.stack(ir_frame, axis=0) # shape (sub_seq_len, 224, 224, 3)
+                ir_videos_lists.append(ir_sequence)
+
         # Extract class vector
         Y = [int(x[-3:]) for x in batch_samples]
 
@@ -160,6 +181,11 @@ class DataLoader():
             X_bone_length = np.stack(avg_bone_length_list)
 
             return [X_skeleton, X_bone_length], Y
+
+        elif self.model_type in ['base-IR']:
+            X_ir = np.stack(ir_videos_lists).transpose(0, 1, 4, 2, 3) # shape (batch_size, seq_len, 3, 224, 224)
+
+            return [X_ir], Y
 
     def next_batch(self):
         # Take random samples

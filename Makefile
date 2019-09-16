@@ -61,7 +61,7 @@ data: requirements
 ## Make Features
 features: 
 	$(PYTHON_INTERPRETER) src/features/build_features.py \
-	--data_path=$(DATA_PATH) \
+	--data_path=$(NTU_RGBD_DATA_PATH) \
 	--output_folder=$(NTU_RGBD_DATA_PATH) \
 	--dataset_type=$(DATASET_TYPE) \
 	--compression=$(COMPRESSION) \

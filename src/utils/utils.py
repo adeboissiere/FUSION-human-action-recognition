@@ -79,6 +79,7 @@ def create_h5_skeleton_dataset(input_path, output_path, compression ="", compres
 
             progress_bar.update(1)
 
+
 def create_h5_ir_dataset(input_path, output_path, compression ="", compression_opts = 9):
     """Creates an h5 dataset. Each group corresponds to a clip and contains the numpy array of the skeleton data and the
     numpy array of image crops around the hands
@@ -116,6 +117,8 @@ def create_h5_ir_dataset(input_path, output_path, compression ="", compression_o
 
             videodata = skvideo.io.vread(
                 input_path + ir_folder + short_filename + '.avi')  # shape (n_frames, H, W, 3)
+
+            print(videodata[0, :, :, 0])
 
 
             # Check that video data has same number of frames as skeleton

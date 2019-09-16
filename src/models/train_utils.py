@@ -3,6 +3,7 @@ import time
 
 from src.models.VA_CNN import *
 from src.models.AS_CNN import *
+from src.models.base_ir_model import *
 
 
 def calculate_accuracy(Y_hat, Y):
