@@ -148,25 +148,25 @@ class DataLoader():
 
             elif self.model_type in ['base-IR']:
                 ir_video = self.ir_dataset[sample_name + "_ir"]["ir"][:] # shape (n_frames, 424, 512, 3)
-                ir_skeleton = self.ir_skeleton[sample_name]["ir_skeleton"][:]  # shape(2 : {x, y}, seq_len, n_joints)
+                ir_skeleton = self.ir_skeleton[sample_name]["ir_skeleton"][:].clip(min=0)  # shape(2 : {x, y}, seq_len, n_joints)
 
                 has_2_subjects = np.any(ir_skeleton[:, :, :, 1])
 
                 offset = 20
 
-                if not has_2_subjects:
-                    y_min = np.uint16(np.amin(ir_skeleton[0, :, :, 0]))
-                    y_max = np.uint16(np.amax(ir_skeleton[0, :, :, 0]))
+                if not (has_2_subjects):
+                    y_min = min(np.uint16(np.amin(ir_skeleton[0, :, :, 0])), ir_video.shape[2])
+                    y_max = min(np.uint16(np.amax(ir_skeleton[0, :, :, 0])), ir_video.shape[2])
 
-                    x_min = np.uint16(np.amin(ir_skeleton[1, :, :, 0]))
-                    x_max = np.uint16(np.amax(ir_skeleton[1, :, :, 0]))
+                    x_min = min(np.uint16(np.amin(ir_skeleton[1, :, :, 0])), ir_video.shape[1])
+                    x_max = min(np.uint16(np.amax(ir_skeleton[1, :, :, 0])), ir_video.shape[1])
 
                 else:
-                    y_min = np.uint16(np.amin(ir_skeleton[0, :, :, :]))
-                    y_max = np.uint16(np.amax(ir_skeleton[0, :, :, :]))
+                    y_min = min(np.uint16(np.amin(ir_skeleton[0, :, :, :])), ir_video.shape[2])
+                    y_max = min(np.uint16(np.amax(ir_skeleton[0, :, :, :])), ir_video.shape[2])
 
-                    x_min = np.uint16(np.amin(ir_skeleton[1, :, :, :]))
-                    x_max = np.uint16(np.amax(ir_skeleton[1, :, :, :]))
+                    x_min = min(np.uint16(np.amin(ir_skeleton[1, :, :, :])), ir_video.shape[1])
+                    x_max = min(np.uint16(np.amax(ir_skeleton[1, :, :, :])), ir_video.shape[1])
 
                 n_frames = ir_video.shape[0]
                 n_frames_sub_sequence = n_frames / self.sub_sequence_length  # size of each sub sequence
