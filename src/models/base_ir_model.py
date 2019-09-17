@@ -14,20 +14,20 @@ class BaseIRCNN(nn.Module):
         super(BaseIRCNN, self).__init__()
 
         # Pretrained model
-        self.trained_cnn = models.resnet50(pretrained=True)
+        self.trained_cnn = models.resnet18(pretrained=True)
         self.trained_cnn = nn.Sequential(*list(self.trained_cnn.children()))[:-1]
 
         # When feature_extracting = False, sets model to finetuning. Else to feature extraction
         set_parameter_requires_grad(self.trained_cnn, feature_extracting=False)
 
-        self.lstm = nn.LSTM(input_size=2048,
-                            hidden_size=2048,
+        self.lstm = nn.LSTM(input_size=512,
+                            hidden_size=512,
                             num_layers=2,
                             batch_first=True,  # input shape must be (batch, seq, feature)
                             dropout=0.5,
                             bidirectional=False)
 
-        self.fc = nn.Linear(2048, 60)
+        self.fc = nn.Linear(512, 60)
 
     def forward(self, X):
         """
@@ -53,7 +53,7 @@ class BaseIRCNN(nn.Module):
         rnn_inputs = torch.stack(rnn_inputs, dim=1) # shape (batch_size, seq_len, n_features)
         rnn_outputs, _ = self.lstm(rnn_inputs) # shape (batch_size, seq_len, n_features)
 
-        predictions = self.fc(rnn_outputs) # shape (batch_size, seq_len, 60)
+        predictions = self.fc(F.relu(rnn_outputs)) # shape (batch_size, seq_len, 60)
         predictions = F.softmax(predictions, dim=2) # shape (batch_size, seq_len, 60)
         prediction = torch.mean(predictions, dim=1) # shape (batch_size, 60)
 
