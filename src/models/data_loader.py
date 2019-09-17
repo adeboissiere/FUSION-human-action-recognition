@@ -34,6 +34,7 @@ class DataLoader():
         # Opens h5 files
         self.skeleton_dataset = h5py.File(data_path + "skeleton.h5", 'r')
         self.ir_dataset = h5py.File(data_path + "ir.h5", 'r')
+        self.ir_skeleton = h5py.File(data_path + "ir_skeleton.h5", 'r')
 
         # Creates a list of all sample names
         samples_names_list = [line.rstrip('\n') for line in open(data_path + "samples_names.txt")]
@@ -147,6 +148,25 @@ class DataLoader():
 
             elif self.model_type in ['base-IR']:
                 ir_video = self.ir_dataset[sample_name + "_ir"]["ir"][:] # shape (n_frames, 424, 512, 3)
+                ir_skeleton = self.ir_skeleton[sample_name]["ir_skeleton"][:]  # shape(2 : {x, y}, seq_len, n_joints)
+
+                has_2_subjects = np.any(ir_skeleton[:, :, :, 1])
+
+                offset = 20
+
+                if not has_2_subjects:
+                    y_min = np.uint16(np.amin(ir_skeleton[0, :, :, 0]))
+                    y_max = np.uint16(np.amax(ir_skeleton[0, :, :, 0]))
+
+                    x_min = np.uint16(np.amin(ir_skeleton[1, :, :, 0]))
+                    x_max = np.uint16(np.amax(ir_skeleton[1, :, :, 0]))
+
+                else:
+                    y_min = np.uint16(np.amin(ir_skeleton[0, :, :, :]))
+                    y_max = np.uint16(np.amax(ir_skeleton[0, :, :, :]))
+
+                    x_min = np.uint16(np.amin(ir_skeleton[1, :, :, :]))
+                    x_max = np.uint16(np.amax(ir_skeleton[1, :, :, :]))
 
                 n_frames = ir_video.shape[0]
                 n_frames_sub_sequence = n_frames / self.sub_sequence_length  # size of each sub sequence
@@ -158,7 +178,13 @@ class DataLoader():
                     upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
                     random_frame = random.randint(lower_index, upper_index)
 
-                    ir_image = cv2.resize(ir_video[random_frame], dsize=(224, 224))
+                    random_frame = ir_video[random_frame]
+
+                    random_frame = np.pad(random_frame, ((offset, offset), (offset, offset), (0, 0)),
+                                         mode='constant')  # shape(H + offset, W + offset, 3)
+                    random_frame = random_frame[x_min:x_max + 2 * offset, y_min:y_max + 2 * offset, :]
+
+                    ir_image = cv2.resize(random_frame, dsize=(224, 224))
                     ir_frame.append(ir_image)
 
                 ir_sequence = np.stack(ir_frame, axis=0) # shape (sub_seq_len, 224, 224, 3)

@@ -37,5 +37,12 @@ if __name__ == '__main__':
                              arg.output_folder,
                              arg.compression,
                              arg.compression_opts)
+
+    elif arg.dataset_type == "IR_SKELETON":
+        create_2d_ir_skeleton(arg.data_path,
+                              arg.output_folder,
+                              arg.compression,
+                              arg.compression_opts)
+
     else:
         print("Data set type not recognized")

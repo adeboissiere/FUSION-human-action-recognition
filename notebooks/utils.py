@@ -112,3 +112,16 @@ def read_color_xy(file, max_body=2, num_joint=25):
                 else:
                     pass
     return data
+
+def read_ir_xy(file, max_body=2, num_joint=25):
+    seq_info = read_skeleton(file)
+    data = np.zeros((2, seq_info['numFrame'], num_joint, max_body), dtype=np.float32)
+    
+    for n, f in enumerate(seq_info['frameInfo']):
+        for m, b in enumerate(f['bodyInfo']):
+            for j, v in enumerate(b['jointInfo']):
+                if m < max_body and j < num_joint:
+                    data[:, n, j, m] = [v['depthX'], v['depthY']]
+                else:
+                    pass
+    return data

@@ -11,6 +11,58 @@ from click import progressbar
 from src.utils.joints import *
 
 
+def create_2d_ir_skeleton(input_path, output_path, compression ="", compression_opts = 9):
+    """Creates an h5 dataset. Each group corresponds to a clip and contains the numpy array of the skeleton data and the
+    numpy array of image crops around the hands
+
+    :param input_path: NTU-RGB-D data path
+    :param output_path: location of created h5 dataset
+    :param compression: type of compression {"", "lzf", "gzip"}
+    :param compression_opts: compression strength {1, .., 9}
+    """
+
+    skeleton_folder = "nturgb+d_skeletons/"
+
+    open_type = "w"
+    file = open(output_path + 'log.txt', 'w+')
+    file.close()
+
+    with h5py.File(output_path + 'ir_skeleton.h5', open_type) as hdf:
+        # Progress bar
+        progress_bar = progressbar(iterable=None,
+                                   length = len(next(os.walk(input_path + skeleton_folder))[2])
+)
+
+        # Loop through skeleton files
+        for filename in os.listdir(input_path + skeleton_folder):
+            short_filename = os.path.splitext(filename)[0]
+
+            # Retrieve skeleton data
+            skeleton = read_ir_xy(input_path + skeleton_folder + filename)  # shape (2, max_frame, num_joint, n_subjects)
+
+            # Sequence code without extension
+            f = open(output_path + "log.txt", "a+")
+            f.write(short_filename)
+            f.write("\r\n")
+            f.close()
+
+            sample = hdf.create_group(short_filename)
+
+            if compression == "":
+                sample.create_dataset("ir_skeleton", data=skeleton)
+            elif compression == "lzf":
+                sample.create_dataset("ir_skeleton", data=skeleton, compression=compression)
+            elif compression == "gzip":
+                sample.create_dataset("ir_skeleton", data=skeleton,
+                                      compression=compression,
+                                      compression_opts=compression_opts)
+            else:
+                print("Compression type not recognized ... Exiting")
+                return
+
+            progress_bar.update(1)
+
+
 def create_h5_skeleton_dataset(input_path, output_path, compression ="", compression_opts = 9):
     """Creates an h5 dataset. Each group corresponds to a clip and contains the numpy array of the skeleton data and the
     numpy array of image crops around the hands
@@ -257,4 +309,18 @@ def read_color_xy(file, max_body=2, num_joint=25):
                 else:
                     pass
 
+    return data
+
+
+def read_ir_xy(file, max_body=2, num_joint=25):
+    seq_info = read_skeleton(file)
+    data = np.zeros((2, seq_info['numFrame'], num_joint, max_body), dtype=np.float32)
+
+    for n, f in enumerate(seq_info['frameInfo']):
+        for m, b in enumerate(f['bodyInfo']):
+            for j, v in enumerate(b['jointInfo']):
+                if m < max_body and j < num_joint:
+                    data[:, n, j, m] = [v['depthX'], v['depthY']]
+                else:
+                    pass
     return data
