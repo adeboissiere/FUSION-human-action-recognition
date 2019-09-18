@@ -33,8 +33,7 @@ class DataLoader():
 
         # Opens h5 files
         self.skeleton_dataset = h5py.File(data_path + "skeleton.h5", 'r')
-        self.ir_dataset = h5py.File(data_path + "ir.h5", 'r')
-        self.ir_skeleton = h5py.File(data_path + "ir_skeleton.h5", 'r')
+        self.ir_dataset = h5py.File(data_path + "ir_cropped.h5", 'r')
 
         # Creates a list of all sample names
         samples_names_list = [line.rstrip('\n') for line in open(data_path + "samples_names.txt")]
@@ -147,47 +146,22 @@ class DataLoader():
                 avg_bone_length_list.append(avg_bone_length)
 
             elif self.model_type in ['base-IR']:
-                ir_video = self.ir_dataset[sample_name + "_ir"]["ir"][:] # shape (n_frames, 424, 512, 3)
-                ir_skeleton = self.ir_skeleton[sample_name]["ir_skeleton"][:].clip(min=0)  # shape(2 : {x, y}, seq_len, n_joints)
-
-                has_2_subjects = np.any(ir_skeleton[:, :, :, 1])
-
-                offset = 20
-
-                if not (has_2_subjects):
-                    y_min = min(np.uint16(np.amin(ir_skeleton[0, :, :, 0])), ir_video.shape[2])
-                    y_max = min(np.uint16(np.amax(ir_skeleton[0, :, :, 0])), ir_video.shape[2])
-
-                    x_min = min(np.uint16(np.amin(ir_skeleton[1, :, :, 0])), ir_video.shape[1])
-                    x_max = min(np.uint16(np.amax(ir_skeleton[1, :, :, 0])), ir_video.shape[1])
-
-                else:
-                    y_min = min(np.uint16(np.amin(ir_skeleton[0, :, :, :])), ir_video.shape[2])
-                    y_max = min(np.uint16(np.amax(ir_skeleton[0, :, :, :])), ir_video.shape[2])
-
-                    x_min = min(np.uint16(np.amin(ir_skeleton[1, :, :, :])), ir_video.shape[1])
-                    x_max = min(np.uint16(np.amax(ir_skeleton[1, :, :, :])), ir_video.shape[1])
+                ir_video = self.ir_dataset[sample_name]["ir"][:] # shape (n_frames, H, W)
 
                 n_frames = ir_video.shape[0]
                 n_frames_sub_sequence = n_frames / self.sub_sequence_length  # size of each sub sequence
 
-                ir_frame = []
+                ir_sequence = []
 
                 for sub_sequence in range(self.sub_sequence_length):
                     lower_index = int(sub_sequence * n_frames_sub_sequence)
                     upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
-                    random_frame = random.randint(lower_index, upper_index)
+                    random_index = random.randint(lower_index, upper_index)
 
-                    random_frame = ir_video[random_frame]
+                    ir_image = cv2.resize(ir_video[random_index], dsize=(224, 224))
+                    ir_sequence.append(ir_image)
 
-                    random_frame = np.pad(random_frame, ((offset, offset), (offset, offset), (0, 0)),
-                                         mode='constant')  # shape(H + offset, W + offset, 3)
-                    random_frame = random_frame[x_min:x_max + 2 * offset, y_min:y_max + 2 * offset, :]
-
-                    ir_image = cv2.resize(random_frame, dsize=(224, 224))
-                    ir_frame.append(ir_image)
-
-                ir_sequence = np.stack(ir_frame, axis=0) # shape (sub_seq_len, 224, 224, 3)
+                ir_sequence = np.stack(ir_sequence, axis=0) # shape (sub_seq_len, 224, 224)
                 ir_videos_lists.append(ir_sequence)
 
         # Extract class vector
@@ -209,7 +183,7 @@ class DataLoader():
             return [X_skeleton, X_bone_length], Y
 
         elif self.model_type in ['base-IR']:
-            X_ir = np.stack(ir_videos_lists).transpose(0, 1, 4, 2, 3) # shape (batch_size, seq_len, 3, 224, 224)
+            X_ir = np.repeat(np.stack(ir_videos_lists)[:, :, np.newaxis, :, :], 3, axis=2) #  shape (batch_size, seq_len, 3, 224, 224)
 
             return [X_ir], Y
 

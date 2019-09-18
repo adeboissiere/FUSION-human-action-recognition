@@ -32,11 +32,18 @@ if __name__ == '__main__':
                                    arg.output_folder,
                                    arg.compression,
                                    arg.compression_opts)
+
     elif arg.dataset_type == "IR":
         create_h5_ir_dataset(arg.data_path,
                              arg.output_folder,
                              arg.compression,
                              arg.compression_opts)
+
+    elif arg.dataset_type == "IR_CROPPED":
+        create_h5_ir_cropped_dataset(arg.data_path,
+                                     arg.output_folder,
+                                     arg.compression,
+                                     arg.compression_opts)
 
     elif arg.dataset_type == "IR_SKELETON":
         create_2d_ir_skeleton(arg.data_path,

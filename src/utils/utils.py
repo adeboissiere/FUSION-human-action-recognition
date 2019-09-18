@@ -170,9 +170,6 @@ def create_h5_ir_dataset(input_path, output_path, compression ="", compression_o
             videodata = skvideo.io.vread(
                 input_path + ir_folder + short_filename + '.avi')  # shape (n_frames, H, W, 3)
 
-            print(videodata[0, :, :, 0])
-
-
             # Check that video data has same number of frames as skeleton
             # assert skeleton.shape[1] == videodata.shape[0]
 
@@ -192,6 +189,94 @@ def create_h5_ir_dataset(input_path, output_path, compression ="", compression_o
 
             progress_bar.update(1)
 
+
+def create_h5_ir_cropped_dataset(input_path, output_path, compression ="", compression_opts = 9):
+    """Creates an h5 dataset. Each group corresponds to a clip and contains the numpy array of the skeleton data and the
+    numpy array of image crops around the hands
+
+    :param input_path: NTU-RGB-D data path
+    :param output_path: location of created h5 dataset
+    :param compression: type of compression {"", "lzf", "gzip"}
+    :param compression_opts: compression strength {1, .., 9}
+    """
+
+    ir_folder = "nturgb+d_ir/"
+    ir_skeleton_dataset_file_name = "ir_skeleton.h5"
+
+    offset = 20
+
+    open_type = "w"
+    file = open(output_path + 'log.txt', 'w+')
+    file.close()
+
+    # Open ir_skeleton h5 file
+    ir_skeleton_dataset = h5py.File(input_path + ir_skeleton_dataset_file_name, 'r')
+
+    with h5py.File(output_path + 'ir_cropped.h5', open_type) as hdf:
+        # Progress bar
+        progress_bar = progressbar(iterable=None,
+                                   length=len(next(os.walk(input_path + ir_folder))[2])
+                                   )
+
+        # Loop through skeleton files
+        for filename in os.listdir(input_path + ir_folder):
+            short_filename = os.path.splitext(filename)[0][:-3]
+
+            # Sequence code without extension
+            f = open(output_path + "log.txt", "a+")
+            f.write(short_filename)
+            f.write("\r\n")
+            f.close()
+
+            # Read corresponding video
+            videodata = skvideo.io.vread(
+                input_path + ir_folder + short_filename + '_ir.avi')[:, :, :, 0]  # shape (n_frames, H, W)
+
+            # Pad video
+            cropped_ir_sample = np.pad(videodata, ((0, 0), (offset, offset), (offset, offset)), mode='constant')
+
+            # Get corresponding ir skeleton shape(2 : {x, y}, seq_len, n_joints)
+            ir_skeleton = ir_skeleton_dataset[short_filename]["ir_skeleton"][:].clip(min = 0)
+
+            # Calculate boundaries
+            has_2_subjects = np.any(ir_skeleton[:, :, :, 1])
+            ir_skeleton = ir_skeleton.clip(min=0)
+            if not (has_2_subjects):
+                y_min = min(np.uint16(np.amin(ir_skeleton[0, :, :, 0])), videodata.shape[2])
+                y_max = min(np.uint16(np.amax(ir_skeleton[0, :, :, 0])), videodata.shape[2])
+
+                x_min = min(np.uint16(np.amin(ir_skeleton[1, :, :, 0])), videodata.shape[1])
+                x_max = min(np.uint16(np.amax(ir_skeleton[1, :, :, 0])), videodata.shape[1])
+
+            else:
+                y_min = min(np.uint16(np.amin(ir_skeleton[0, :, :, :])), videodata.shape[2])
+                y_max = min(np.uint16(np.amax(ir_skeleton[0, :, :, :])), videodata.shape[2])
+
+                x_min = min(np.uint16(np.amin(ir_skeleton[1, :, :, :])), videodata.shape[1])
+                x_max = min(np.uint16(np.amax(ir_skeleton[1, :, :, :])), videodata.shape[1])
+
+            # Crop video
+            cropped_ir_sample = cropped_ir_sample[:, x_min:x_max + 2 * offset, y_min:y_max + 2 * offset]
+            _, H, W = cropped_ir_sample.shape
+
+            sample = hdf.create_group(short_filename)
+
+            if compression == "":
+                sample.create_dataset("ir", data=cropped_ir_sample, chunks=(1, H, W))
+            elif compression == "lzf":
+                sample.create_dataset("ir", data=cropped_ir_sample, compression=compression, chunks=(1, H, W))
+            elif compression == "gzip":
+                sample.create_dataset("ir", data=cropped_ir_sample,
+                                      compression=compression,
+                                      compression_opts=compression_opts,
+                                      chunks=(1, H, W))
+            else:
+                print("Compression type not recognized ... Exiting")
+                return
+
+            progress_bar.update(1)
+
+    ir_skeleton_dataset.close()
 
 def extract_hands(skeleton_rgb, videodata, crop_size):
     """Extracts the hand crops from a video data in numpy array format.
