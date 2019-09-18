@@ -99,14 +99,21 @@ if __name__ == '__main__':
                              use_validation)
 
     if model_type == "VA-CNN":
-        model = VACNN().to(device)
+        model = VACNN()
     elif model_type == "AS-CNN":
-        model = ASCNN().to(device)
+        model = ASCNN()
     elif model_type == "base-IR":
-        model = BaseIRCNN().to(device)
+        model = BaseIRCNN()
     else:
         print("Model type not recognized. Exiting")
         exit()
+
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
+        model = nn.DataParallel(model)
+
+    model.to(device)
 
     '''
     X, Y = data_loader.next_batch()
