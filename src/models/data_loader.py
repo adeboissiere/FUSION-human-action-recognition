@@ -145,7 +145,7 @@ class DataLoader():
                 avg_bone_length = compute_avg_bone_length(skeleton)
                 avg_bone_length_list.append(avg_bone_length)
 
-            elif self.model_type in ['base-IR']:
+            elif self.model_type in ['base-IR', 'CNN3D']:
                 ir_video = self.ir_dataset[sample_name]["ir"][:] # shape (n_frames, H, W)
 
                 n_frames = ir_video.shape[0]
@@ -158,7 +158,10 @@ class DataLoader():
                     upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
                     random_index = random.randint(lower_index, upper_index)
 
-                    ir_image = cv2.resize(ir_video[random_index], dsize=(224, 224))
+                    if self.model_type in ['base-IR']:
+                        ir_image = cv2.resize(ir_video[random_index], dsize=(224, 224))
+                    elif self.model_type in ['CNN3D']:
+                        ir_image = cv2.resize(ir_video[random_index], dsize=(112, 112))
                     ir_sequence.append(ir_image)
 
                 ir_sequence = np.stack(ir_sequence, axis=0) # shape (sub_seq_len, 224, 224)
@@ -182,8 +185,8 @@ class DataLoader():
 
             return [X_skeleton, X_bone_length], Y
 
-        elif self.model_type in ['base-IR']:
-            X_ir = np.repeat(np.stack(ir_videos_lists)[:, :, np.newaxis, :, :], 3, axis=2) #  shape (batch_size, seq_len, 3, 224, 224)
+        elif self.model_type in ['base-IR', 'CNN3D']:
+            X_ir = np.repeat(np.stack(ir_videos_lists)[:, :, np.newaxis, :, :], 3, axis=2) #  shape (batch_size, seq_len, 3, H, W)
 
             return [X_ir], Y
 

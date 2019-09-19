@@ -116,7 +116,7 @@ if __name__ == '__main__':
         model = nn.DataParallel(model)
 
     model.to(device)
-    exit()
+
     '''
     X, Y = data_loader.next_batch()
     model(X)
