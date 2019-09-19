@@ -86,6 +86,7 @@ def confusion_test_set(model, data_loader):
 
 
 def train_model(model,
+                model_type,
                 data_loader,
                 optimizer,
                 learning_rate,
@@ -124,7 +125,21 @@ def train_model(model,
             X, Y = data_loader.next_batch()
             Y = torch.from_numpy(Y).to(device)
 
-            out = model(X)
+            out = None
+
+            if model_type in ['base-IR', 'CNN3D']:
+                X = torch.from_numpy(np.float32(X[0] / 255)).to(device)
+                batch_size, seq_len, _, _, _ = X.shape
+
+                # Normalize X
+                normalize_values = torch.tensor([[0.43216, 0.394666, 0.37645],
+                                                 [0.22803, 0.22145, 0.216989]]).to(device)  # [[mean], [std]]
+                X = ((X.permute(0, 1, 3, 4, 2) - normalize_values[0]) / normalize_values[1]).permute(0, 1, 4, 2, 3)
+
+                out = model(X)
+
+            else :
+                out = model(X)
 
             loss = F.cross_entropy(out, Y.long())
             loss.backward()

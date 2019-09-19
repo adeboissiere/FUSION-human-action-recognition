@@ -143,6 +143,7 @@ if __name__ == '__main__':
         os.makedirs(output_folder)
 
     train_model(model,
+                model_type,
                 data_loader,
                 optimizer,
                 learning_rate,
