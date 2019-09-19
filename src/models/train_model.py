@@ -104,6 +104,8 @@ if __name__ == '__main__':
         model = ASCNN()
     elif model_type == "base-IR":
         model = BaseIRCNN()
+    elif model_type == "CNN3D":
+        model = CNN3D()
     else:
         print("Model type not recognized. Exiting")
         exit()
@@ -114,7 +116,7 @@ if __name__ == '__main__':
         model = nn.DataParallel(model)
 
     model.to(device)
-
+    exit()
     '''
     X, Y = data_loader.next_batch()
     model(X)
