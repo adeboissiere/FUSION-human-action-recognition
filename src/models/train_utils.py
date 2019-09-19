@@ -8,6 +8,18 @@ from src.models.torchvision_models import *
 from src.models.cnn3D import *
 
 
+def prime_X_cnn3d(X):
+    X = torch.from_numpy(np.float32(X[0] / 255))
+    batch_size, seq_len, _, _, _ = X.shape
+
+    # Normalize X
+    normalize_values = torch.tensor([[0.43216, 0.394666, 0.37645],
+                                     [0.22803, 0.22145, 0.216989]])  # [[mean], [std]]
+    X = ((X.permute(0, 1, 3, 4, 2) - normalize_values[0]) / normalize_values[1]).permute(0, 1, 4, 2, 3)
+
+    return X
+
+
 def calculate_accuracy(Y_hat, Y):
     _, Y_hat = Y_hat.max(1)
     trues = (Y_hat == Y.long()) * 1
@@ -18,13 +30,16 @@ def calculate_accuracy(Y_hat, Y):
     return accuracy
 
 
-def evaluate_validation_set(model, data_loader, output_folder):
+def evaluate_validation_set(model, model_type, data_loader, output_folder):
     model.eval()
     average_accuracy = 0
 
     for batch_idx in range(data_loader.n_batches_val):
         X, Y = data_loader.next_batch_validation()
         Y = torch.from_numpy(Y).to(device)
+
+        if model_type in ['base-IR', 'CNN3D']:
+            X = prime_X_cnn3d(X).to(device)
 
         out = model(X)
 
@@ -40,13 +55,16 @@ def evaluate_validation_set(model, data_loader, output_folder):
     return average_accuracy / len(data_loader.validation_samples)
 
 
-def evaluate_test_set(model, data_loader, output_folder):
+def evaluate_test_set(model, model_type, data_loader, output_folder):
     model.eval()
     average_accuracy = 0
 
     for batch_idx in range(data_loader.n_batches_test):
         X, Y = data_loader.next_batch_test()
         Y = torch.from_numpy(Y).to(device)
+
+        if model_type in ['base-IR', 'CNN3D']:
+            X = prime_X_cnn3d(X).to(device)
 
         out = model(X)
 
@@ -128,18 +146,9 @@ def train_model(model,
             out = None
 
             if model_type in ['base-IR', 'CNN3D']:
-                X = torch.from_numpy(np.float32(X[0] / 255)).to(device)
-                batch_size, seq_len, _, _, _ = X.shape
+                X = prime_X_cnn3d(X).to(device)
 
-                # Normalize X
-                normalize_values = torch.tensor([[0.43216, 0.394666, 0.37645],
-                                                 [0.22803, 0.22145, 0.216989]]).to(device)  # [[mean], [std]]
-                X = ((X.permute(0, 1, 3, 4, 2) - normalize_values[0]) / normalize_values[1]).permute(0, 1, 4, 2, 3)
-
-                out = model(X)
-
-            else :
-                out = model(X)
+            out = model(X)
 
             loss = F.cross_entropy(out, Y.long())
             loss.backward()
@@ -167,10 +176,12 @@ def train_model(model,
             progress_bar.update(1)
 
         if data_loader.use_validation:
-            validation_accuracy = evaluate_validation_set(model, data_loader, output_folder)
+            with torch.no_grad():
+                validation_accuracy = evaluate_validation_set(model, model_type, data_loader, output_folder)
 
         if evaluate_test:
-            test_accuracy = evaluate_test_set(model, data_loader, output_folder)
+            with torch.no_grad():
+                test_accuracy = evaluate_test_set(model, model_type, data_loader, output_folder)
 
         # Save loss per epoch
         time_epoch.append(e + 1)

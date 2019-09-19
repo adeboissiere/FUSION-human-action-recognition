@@ -13,11 +13,11 @@ pip install --upgrade pip
 make requirements
 make train NTU_RGBD_DATA_PATH="/home/albanmdb/scratch/datasets/" EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=CNN3D \
-			LEARNING_RATE=1e-6 \
+			LEARNING_RATE=1e-4 \
 			WEIGHT_DECAY=0.0 \
 			GRADIENT_THRESHOLD=10 \
 			EPOCHS=50 \
-			BATCH_SIZE=20 \
+			BATCH_SIZE=16 \
 			SUB_SEQUENCE_LENGTH=16 \
 			NORMALIZE_SKELETON=False \
 			NORMALIZATION_TYPE=1-COORD-SYS \
