@@ -102,10 +102,10 @@ if __name__ == '__main__':
         model = VACNN()
     elif model_type == "AS-CNN":
         model = ASCNN()
-    elif model_type == "base-IR":
-        model = BaseIRCNN()
     elif model_type == "CNN3D":
         model = CNN3D()
+    elif model_type == "FUSION":
+        model = Fusion()
     else:
         print("Model type not recognized. Exiting")
         exit()
@@ -118,8 +118,10 @@ if __name__ == '__main__':
     model.to(device)
 
     '''
-    X, Y = data_loader.next_batch()
-    model(X)
+    with torch.no_grad():
+        X, Y = data_loader.next_batch()
+        X = prime_X_fusion(X)
+        model(X)
     exit()
     '''
 

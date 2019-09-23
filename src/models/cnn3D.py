@@ -2,11 +2,6 @@ from torch import nn
 from src.models.torchvision_models import *
 import torch.nn.functional as F
 
-from src.models.device import *
-from src.models.AS_CNN_utils import *
-
-import numpy as np
-
 
 class CNN3D(nn.Module):
     def __init__(self):
@@ -25,7 +20,7 @@ class CNN3D(nn.Module):
         """
 
         # Features
-        out = self.trained_cnn3D(X.permute(0, 2, 1, 3, 4)) # shape (batch_size, 60)
+        out = self.trained_cnn3D(X) # shape (batch_size, 60)
         out = F.log_softmax(out, dim=1)
 
         return out

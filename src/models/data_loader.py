@@ -131,12 +131,12 @@ class DataLoader():
                 skeleton = rotate_skeleton(skeleton)
 
             # Each model has its specific data streams
-            if self.model_type in ['VA-CNN']:
+            if self.model_type in ['VA-CNN', 'FUSION']:
                 # shape (3, 224, 224)
                 skeleton_image = create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max)
                 skeletons_list.append(skeleton_image)
 
-            elif self.model_type in ['AS-CNN']:
+            if self.model_type in ['AS-CNN']:
                 # shape (3, 224, 224)
                 skeleton_image = create_padded_image_from_skeleton_sequence(skeleton, c_min, c_max)
                 skeletons_list.append(skeleton_image)
@@ -145,7 +145,7 @@ class DataLoader():
                 avg_bone_length = compute_avg_bone_length(skeleton)
                 avg_bone_length_list.append(avg_bone_length)
 
-            elif self.model_type in ['base-IR', 'CNN3D']:
+            if self.model_type in ['CNN3D', 'FUSION']:
                 ir_video = self.ir_dataset[sample_name]["ir"][:] # shape (n_frames, H, W)
 
                 n_frames = ir_video.shape[0]
@@ -158,10 +158,8 @@ class DataLoader():
                     upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
                     random_index = random.randint(lower_index, upper_index)
 
-                    if self.model_type in ['base-IR']:
-                        ir_image = cv2.resize(ir_video[random_index], dsize=(224, 224))
-                    elif self.model_type in ['CNN3D']:
-                        ir_image = cv2.resize(ir_video[random_index], dsize=(112, 112))
+                    ir_image = cv2.resize(ir_video[random_index], dsize=(112, 112))
+
                     ir_sequence.append(ir_image)
 
                 ir_sequence = np.stack(ir_sequence, axis=0) # shape (sub_seq_len, 224, 224)
@@ -185,10 +183,17 @@ class DataLoader():
 
             return [X_skeleton, X_bone_length], Y
 
-        elif self.model_type in ['base-IR', 'CNN3D']:
+        elif self.model_type in ['CNN3D']:
             X_ir = np.repeat(np.stack(ir_videos_lists)[:, :, np.newaxis, :, :], 3, axis=2) #  shape (batch_size, seq_len, 3, H, W)
 
             return [X_ir], Y
+
+        elif self.model_type in ['FUSION']:
+            # X_skeleton shape (batch_size, 3, 224, 224)
+            X_skeleton = np.stack(skeletons_list)
+            X_ir = np.repeat(np.stack(ir_videos_lists)[:, :, np.newaxis, :, :], 3, axis=2)  # shape (batch_size, seq_len, 3, H, W)
+
+            return [X_skeleton, X_ir], Y
 
     def next_batch(self):
         # Take random samples
