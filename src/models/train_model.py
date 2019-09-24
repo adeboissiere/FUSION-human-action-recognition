@@ -1,9 +1,13 @@
 import argparse
 import datetime
 import os
+import time
+from torch.utils import data
 
 from src.models.data_loader import *
 from src.models.train_utils import *
+
+from src.models.torch_dataset import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train model')
@@ -86,6 +90,7 @@ if __name__ == '__main__':
     print("-> evaluate_test : " + str(evaluate_test))
 
     # Create data loader
+    '''
     data_loader = DataLoader(model_type,
                              batch_size,
                              data_path,
@@ -97,6 +102,28 @@ if __name__ == '__main__':
                              kinematic_chain_skeleton,
                              augment_data,
                              use_validation)
+    '''
+
+    training_samples, testing_samples = gen_sets_lists(data_path, evaluation_type)
+
+    trainin_set = TorchDataset(model_type,
+                               batch_size,
+                               data_path,
+                               evaluation_type,
+                               sub_sequence_length,
+                               continuous_frames,
+                               normalize_skeleton,
+                               normalization_type,
+                               kinematic_chain_skeleton,
+                               augment_data,
+                               use_validation,
+                               training_samples)
+
+    training_generator = data.DataLoader(trainin_set,
+                                         batch_size=batch_size,
+                                         shuffle=True,
+                                         pin_memory=True,
+                                         num_workers=0)
 
     if model_type == "VA-CNN":
         model = VACNN()
@@ -144,6 +171,19 @@ if __name__ == '__main__':
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
+    '''
+    data_loader = DataLoader(model_type,
+                         batch_size,
+                         data_path,
+                         evaluation_type,
+                         sub_sequence_length,
+                         continuous_frames,
+                         normalize_skeleton,
+                         normalization_type,
+                         kinematic_chain_skeleton,
+                         augment_data,
+                         use_validation)
+    
     train_model(model,
                 model_type,
                 data_loader,
@@ -154,6 +194,18 @@ if __name__ == '__main__':
                 epochs,
                 evaluate_test,
                 output_folder)
+
+    '''
+    train_model_new(model,
+                    model_type,
+                    optimizer,
+                    learning_rate,
+                    weight_decay,
+                    gradient_threshold,
+                    epochs,
+                    evaluate_test,
+                    output_folder,
+                    training_generator)
 
     # echo -en "\e[?25h"
     print("-> Done !")

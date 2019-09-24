@@ -229,7 +229,7 @@ def train_model(model,
         exit()
 
     # Progress bar
-    progress_bar = progressbar(iterable=None, length=epochs * data_loader.n_batches)
+    # progress_bar = progressbar(iterable=None, length=epochs * data_loader.n_batches)
 
     for e in range(epochs):
         start = time.time()
@@ -238,7 +238,15 @@ def train_model(model,
         errors_temp = []
 
         for batch_idx in range(data_loader.n_batches):
+            print()
+            start_batch = time.time()
+            start = time.time()
             X, Y = data_loader.next_batch()
+            end = time.time()
+
+            print(str(end-start) + "s to load")
+
+            start = time.time()
             Y = torch.from_numpy(Y).to(device)
 
             if model_type in ['CNN3D']:
@@ -247,8 +255,15 @@ def train_model(model,
             elif model_type in ['FUSION']:
                 X = prime_X_fusion(X)
 
-            out = model(X)
+            end = time.time()
+            print(str(end - start) + "s to prime")
 
+            start = time.time()
+            out = model(X)
+            end = time.time()
+            print(str(end - start) + "s to forward pass")
+
+            start = time.time()
             loss = F.cross_entropy(out, Y.long())
             loss.backward()
 
@@ -257,6 +272,8 @@ def train_model(model,
                 torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_threshold)
 
             optimizer.step()
+            end = time.time()
+            print(str(end - start) + "s to backprop")
 
             # Save loss per batch
             time_batch.append(e + batch_idx / data_loader.n_batches)
@@ -272,7 +289,8 @@ def train_model(model,
             errors_temp.append(1 - accuracy)
 
             # Training mode
-            progress_bar.update(1)
+            # progress_bar.update(1)
+            print(str(time.time() - start_batch) + "s for 1 batch")
 
         if data_loader.use_validation:
             with torch.no_grad():
@@ -314,3 +332,81 @@ def train_model(model,
         torch.save(model.state_dict(), str(output_folder) + "model" + str(e) + ".pt")
 
     return model
+
+
+def train_model_new(model,
+                    model_type,
+                    optimizer,
+                    learning_rate,
+                    weight_decay,
+                    gradient_threshold,
+                    epochs,
+                    evaluate_test,
+                    output_folder,
+                    training_generator):
+
+    # Lists for plotting
+    time_batch = []
+    time_epoch = [0]
+    loss_batch = []
+    loss_epoch = []
+
+    train_errors = []
+
+    if optimizer == "ADAM":
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    elif optimizer == "SGD":
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    else:
+        print("Optimizer not recognized ... exit()")
+        exit()
+
+    for e in range(epochs):
+        start = time.time()
+
+        model.train()
+        errors_temp = []
+
+        start = time.time()
+        start_batch = time.time()
+
+        for X, y in training_generator:
+            end = time.time()
+            print(str(end - start) + "s to load")
+
+            Y = y.to(device)
+
+            start = time.time()
+            out = model([X])
+            end = time.time()
+
+            print(str(end - start) + "s to forward pass")
+
+            start = time.time()
+            loss = F.cross_entropy(out, Y.long())
+            loss.backward()
+
+            # Gradient clipping
+            if gradient_threshold > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_threshold)
+
+            optimizer.step()
+            end = time.time()
+            print(str(end - start) + "s to backprop")
+
+            # Accuracy over batch
+            accuracy, _, _ = calculate_accuracy(out, Y)
+            batch_log = open(output_folder + "batch_log.txt", "a+")
+            batch_log.write("[" + str(e) + " - " + str(0) + "/" + str(4000) +
+                            "] Accuracy : " + str(accuracy) + ", loss : " + str(loss.item()))
+            batch_log.write("\r\n")
+            batch_log.close()
+            errors_temp.append(1 - accuracy)
+
+            # Training mode
+            # progress_bar.update(1)
+            print(str(time.time() - start_batch) + "s for 1 batch")
+            print()
+
+            start = time.time()
+            start_batch = time.time()
