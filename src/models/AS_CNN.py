@@ -3,7 +3,7 @@ from torch import nn
 import torchvision.models as models
 import torch.nn.functional as F
 
-from src.models.device import *
+from src.models.utils import *
 from src.models.AS_CNN_utils import *
 
 import numpy as np
@@ -107,3 +107,19 @@ class ASCNN(nn.Module):
         out = F.log_softmax(out, dim=1)
 
         return out
+
+
+def prime_X_fusion(X):
+    X_skeleton = torch.from_numpy(np.float32(X[0])) / 255
+    X_ir = torch.from_numpy(np.float32(X[1])) / 255
+
+    # Normalize X_skeleton
+    normalize_values = torch.tensor([[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]])  # [[mean], [std]]
+    X_skeleton = ((X_skeleton.permute(0, 2, 3, 1) - normalize_values[0]) / normalize_values[1]).permute(0, 3, 1, 2)
+
+    # Normalize X
+    normalize_values = torch.tensor([[0.43216, 0.394666, 0.37645],
+                                     [0.22803, 0.22145, 0.216989]])  # [[mean], [std]]
+    X_ir = ((X_ir.permute(0, 1, 3, 4, 2) - normalize_values[0]) / normalize_values[1]).permute(0, 1, 4, 2, 3)
+
+    return [X_skeleton, X_ir.permute(0, 2, 1, 3, 4)]

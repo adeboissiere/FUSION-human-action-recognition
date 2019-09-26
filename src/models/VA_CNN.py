@@ -3,7 +3,7 @@ from torch import nn
 import torchvision.models as models
 import torch.nn.functional as F
 
-from src.models.device import *
+from src.models.utils import *
 
 import numpy as np
 

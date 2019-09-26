@@ -2,6 +2,8 @@ from torch import nn
 from src.models.torchvision_models import *
 import torch.nn.functional as F
 
+from src.models.utils import *
+
 
 class CNN3D(nn.Module):
     def __init__(self):
@@ -24,3 +26,14 @@ class CNN3D(nn.Module):
         out = F.log_softmax(out, dim=1)
 
         return out
+
+
+def prime_X_cnn3d(X):
+    X = X[0] / 255.0 # shape (batch_size, seq_len, 3, 112, 112)
+
+    # Normalize X
+    normalize_values = torch.tensor([[0.43216, 0.394666, 0.37645],
+                                     [0.22803, 0.22145, 0.216989]])  # [[mean], [std]]
+    X = ((X.permute(0, 1, 3, 4, 2) - normalize_values[0]) / normalize_values[1]).permute(0, 1, 4, 2, 3)
+
+    return X.permute(0, 2, 1, 3, 4).to(device) # shape (batch_size, 3, seq_len, 112, 112)

@@ -5,15 +5,16 @@ from torch.utils import data
 
 from src.models.data_loader_utils import *
 
-def gen_sets_lists(data_path, evaluation_type):
+
+def gen_sets_lists(data_path, evaluation_type, use_validation):
     # Creates a list of all sample names
     samples_names_list = [line.rstrip('\n') for line in open(data_path + "samples_names.txt")]
 
     # Create list of samples without skeleton
-    missing_skeletons_list = [line.rstrip('\n') for line in open(data_path + "missing_skeleton.txt")]
+    # missing_skeletons_list = [line.rstrip('\n') for line in open(data_path + "missing_skeleton.txt")]
 
     # Remove missing skeletons from sample_names_list
-    samples_names_list = list(set(samples_names_list) - set(missing_skeletons_list))
+    # samples_names_list = list(set(samples_names_list) - set(missing_skeletons_list))
 
     # Contains all training sample names
     training_samples = []
@@ -44,22 +45,83 @@ def gen_sets_lists(data_path, evaluation_type):
     training_samples = training_samples.copy()
     testing_samples = testing_samples.copy()
 
-    return training_samples, testing_samples
+    # Validation set
+    validation_samples = []
+
+    if use_validation:
+        validation_samples = [training_samples.pop(random.randrange(len(training_samples))) for _ in
+                              range(int(0.05 * len(training_samples)))]
+
+    return training_samples, validation_samples, testing_samples
+
+
+def create_data_loaders(data_path,
+                        evaluation_type,
+                        model_type,
+                        batch_size,
+                        sub_sequence_length,
+                        normalize_skeleton,
+                        normalization_type,
+                        augment_data,
+                        use_validation):
+
+    training_samples, validation_samples, testing_samples = gen_sets_lists(data_path, evaluation_type, use_validation)
+
+    training_set = TorchDataset(model_type,
+                                data_path,
+                                sub_sequence_length,
+                                normalize_skeleton,
+                                normalization_type,
+                                augment_data,
+                                training_samples)
+
+    training_generator = data.DataLoader(training_set,
+                                         batch_size=batch_size,
+                                         shuffle=True,
+                                         pin_memory=True,
+                                         num_workers=8)
+
+    validation_generator = None
+    if len(validation_samples) > 0:
+        validation_set = TorchDataset(model_type,
+                                      data_path,
+                                      sub_sequence_length,
+                                      normalize_skeleton,
+                                      normalization_type,
+                                      augment_data,
+                                      validation_samples)
+
+        validation_generator = data.DataLoader(validation_set,
+                                               batch_size=batch_size,
+                                               shuffle=True,
+                                               pin_memory=True,
+                                               num_workers=8)
+
+    testing_set = TorchDataset(model_type,
+                               data_path,
+                               sub_sequence_length,
+                               normalize_skeleton,
+                               normalization_type,
+                               augment_data,
+                               testing_samples)
+
+    testing_generator = data.DataLoader(testing_set,
+                                        batch_size=batch_size,
+                                        shuffle=True,
+                                        pin_memory=True,
+                                        num_workers=8)
+
+    return training_generator, validation_generator, testing_generator
 
 
 class TorchDataset(torch.utils.data.Dataset):
     def __init__(self,
                  model_type,
-                 batch_size,
                  data_path,
-                 evaluation_type,
                  sub_sequence_length,
-                 continuous_frames,
                  normalize_skeleton,
                  normalization_type,
-                 kinematic_chain_skeleton,
                  augment_data,
-                 use_validation,
                  samples_names):
         super(TorchDataset, self).__init__()
 
@@ -146,19 +208,20 @@ class TorchDataset(torch.utils.data.Dataset):
                 ir_sequence.append(ir_image)
 
             ir_sequence = np.stack(ir_sequence, axis=0)  # shape (sub_seq_len, 224, 224)
+            ir_sequence = np.float32(np.repeat(ir_sequence[:, np.newaxis, :, :], 3, axis=1))
 
         # Return corresponding data
         if self.model_type in ['VA-CNN']:
-            return skeleton_image, y
+            return [skeleton_image], y
 
         elif self.model_type in ['AS-CNN']:
-            return skeleton_image, avg_bone_length, y
+            return [skeleton_image, avg_bone_length], y
 
         elif self.model_type in ['CNN3D']:
-            return ir_sequence, y
+            return [ir_sequence], y
 
         elif self.model_type in ['FUSION']:
-            return skeleton_image, ir_sequence, y
+            return [skeleton_image, ir_sequence], y
 
     def __len__(self):
         return len(self.samples_names)
