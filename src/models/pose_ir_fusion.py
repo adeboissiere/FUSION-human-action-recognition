@@ -45,3 +45,17 @@ class Fusion(nn.Module):
 
         return torch.log(pred)
 
+def prime_X_fusion(X):
+    X_skeleton = X[0] / 255.0 # shape (batch_size, 3, 224, 224)
+    X_ir = X[1] / 255.0 # shape (batch_size, seq_len, 3, 113, 112)
+
+    # Normalize X_skeleton
+    normalize_values = torch.tensor([[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]])  # [[mean], [std]]
+    X_skeleton = ((X_skeleton.permute(0, 2, 3, 1) - normalize_values[0]) / normalize_values[1]).permute(0, 3, 1, 2)
+
+    # Normalize X
+    normalize_values = torch.tensor([[0.43216, 0.394666, 0.37645],
+                                     [0.22803, 0.22145, 0.216989]])  # [[mean], [std]]
+    X_ir = ((X_ir.permute(0, 1, 3, 4, 2) - normalize_values[0]) / normalize_values[1]).permute(0, 1, 4, 2, 3)
+
+    return [X_skeleton.to(device), X_ir.permute(0, 2, 1, 3, 4).to(device)]

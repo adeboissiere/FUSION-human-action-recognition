@@ -154,7 +154,10 @@ def train_model_new(model,
             Y = batch[1].to(device)
 
             if model_type == "CNN3D":
-                X = prime_X_cnn3d(X).to(device)
+                X = prime_X_cnn3d(X)
+
+            elif model_type == "FUSION":
+                X = prime_X_fusion(X)
 
             out = model(X)
 

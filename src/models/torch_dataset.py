@@ -151,8 +151,6 @@ class TorchDataset(torch.utils.data.Dataset):
         # If model requires skeleton data
         if self.model_type in ['VA-CNN', 'AS-CNN', 'FUSION']:
 
-
-
             # See jp notebook 4.0 for values
             c_min = 0
             c_max = 0
@@ -182,11 +180,11 @@ class TorchDataset(torch.utils.data.Dataset):
             # Each model has its specific data streams
             if self.model_type in ['VA-CNN', 'FUSION']:
                 # shape (3, 224, 224)
-                skeleton_image = create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max)
+                skeleton_image = np.float32(create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max))
 
             if self.model_type in ['AS-CNN']:
                 # shape (3, 224, 224)
-                skeleton_image = create_padded_image_from_skeleton_sequence(skeleton, c_min, c_max)
+                skeleton_image = np.float32(create_padded_image_from_skeleton_sequence(skeleton, c_min, c_max))
 
                 # shape (n_neighbors * n_subjects = 2 * 24, )
                 avg_bone_length = compute_avg_bone_length(skeleton)
