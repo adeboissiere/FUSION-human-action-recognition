@@ -2,7 +2,7 @@
 crop_size = 100
 
 import numpy as np
-from joints import *
+from src.utils.joints import *
 
 
 def extract_hands(skeleton_rgb, videodata, crop_size):

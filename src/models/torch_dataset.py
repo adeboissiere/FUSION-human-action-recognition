@@ -88,7 +88,7 @@ def create_data_loaders(data_path,
                                       sub_sequence_length,
                                       normalize_skeleton,
                                       normalization_type,
-                                      augment_data,
+                                      False,
                                       validation_samples)
 
         validation_generator = data.DataLoader(validation_set,
@@ -102,7 +102,7 @@ def create_data_loaders(data_path,
                                sub_sequence_length,
                                normalize_skeleton,
                                normalization_type,
-                               augment_data,
+                               False,
                                testing_samples)
 
     testing_generator = data.DataLoader(testing_set,
@@ -146,7 +146,11 @@ class TorchDataset(torch.utils.data.Dataset):
         if self.model_type in ['CNN3D', 'FUSION']:
             # retrives IR video of shape (n_frames, H, W)
             with h5py.File(self.data_path + "ir_cropped.h5", 'r') as ir_dataset:
-                ir_video = ir_dataset[self.samples_names[index]]["ir"][:]
+                ir_video = ir_dataset[self.samples_names[index]]["ir"][:] # shape (n_frames, 424, 512)
+
+                # 50% chance to flip video
+                if self.augment_data and random.random() <= 0.5:
+                    ir_video = np.flip(ir_video, axis=2)
 
         # If model requires skeleton data
         if self.model_type in ['VA-CNN', 'AS-CNN', 'FUSION']:

@@ -94,6 +94,9 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
         if model_type == "CNN3D":
             X = prime_X_cnn3d(X).to(device)
 
+        elif model_type == "FUSION":
+            X = prime_X_fusion(X)
+
         out = model(X)
 
         accuracy, Y_hat, Y = calculate_accuracy(out, Y)
