@@ -28,6 +28,7 @@ WEIGHT_DECAY=0
 GRADIENT_THRESHOLD=0
 EPOCHS=30
 BATCH_SIZE=8
+ACCUMULATION_STEPS=1
 SUB_SEQUENCE_LENGTH=20 
 NORMALIZE_SKELETON=True
 NORMALIZATION_TYPE=1-COORD-SYS
@@ -35,6 +36,9 @@ KINEMATIC_CHAIN_SKELETON=False
 AUGMENT_DATA=True
 USE_VALIDATION=True
 EVALUATE_TEST=True
+
+# Plot confusion matrix variables
+MODEL_FILE=""
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -76,6 +80,7 @@ train:
 	--gradient_threshold=$(GRADIENT_THRESHOLD) \
 	--epochs=$(EPOCHS) \
 	--batch_size=$(BATCH_SIZE) \
+	--accumulation_steps=$(ACCUMULATION_STEPS) \
 	--sub_sequence_length=$(SUB_SEQUENCE_LENGTH) \
 	--normalize_skeleton=$(NORMALIZE_SKELETON) \
 	--normalization_type=$(NORMALIZATION_TYPE) \
@@ -86,10 +91,16 @@ train:
 
 ## Make Visualize
 confusion_matrix:
-	$(PYTHON_INTERPRETER) src/models/plot_confusion_matrix.py --data_path=$(NTU_RGBD_DATA_PATH) --output_folder=$(MODEL_FOLDER) --evaluation_type=$(EVALUATION_TYPE) --model_type=$(MODEL_TYPE) \
-	--optimizer=$(OPTIMIZER) --learning_rate=$(LEARNING_RATE) --epochs=$(EPOCHS) --batch_size=$(BATCH_SIZE) --sub_sequence_length=$(SUB_SEQUENCE_LENGTH) --include_pose=$(INCLUDE_POSE) \
-	--include_rgb=$(INCLUDE_RGB) --continuous_frames=$(CONTINUOUS_FRAMES) --normalize_skeleton=$(NORMALIZE_SKELETON) --normalization_type=$(NORMALIZATION_TYPE) --augment_data=$(AUGMENT_DATA) \
-	--use_validation=$(USE_VALIDATION) --evaluate_test=$(EVALUATE_TEST)
+	$(PYTHON_INTERPRETER) src/models/plot_confusion_matrix.py --data_path=$(NTU_RGBD_DATA_PATH) \
+	--model_folder=$(MODEL_FOLDER) \
+	--model_file=$(MODEL_FILE) \
+	--evaluation_type=$(EVALUATION_TYPE) \
+	--model_type=$(MODEL_TYPE) \
+	--batch_size=$(BATCH_SIZE) \
+	--sub_sequence_length=$(SUB_SEQUENCE_LENGTH) \
+	--normalize_skeleton=$(NORMALIZE_SKELETON) \
+	--normalization_type=$(NORMALIZATION_TYPE) \
+	--kinematic_chain_skeleton=$(KINEMATIC_CHAIN_SKELETON)
 
 ## Delete all compiled Python files
 clean:

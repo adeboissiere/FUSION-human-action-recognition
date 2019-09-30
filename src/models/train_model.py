@@ -22,6 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--gradient_threshold', default=0)
     parser.add_argument('--epochs', default=40)
     parser.add_argument('--batch_size', default=64)
+    parser.add_argument('--accumulation_steps', default=1)
     parser.add_argument('--sub_sequence_length', default=20)
     parser.add_argument('--normalize_skeleton', default=True)
     parser.add_argument('--normalization_type')
@@ -43,6 +44,7 @@ if __name__ == '__main__':
     gradient_threshold = float(arg.gradient_threshold)
     epochs = int(arg.epochs)
     batch_size = int(arg.batch_size)
+    accumulation_steps = int(arg.accumulation_steps)
     sub_sequence_length = int(arg.sub_sequence_length)
     normalize_skeleton = arg.normalize_skeleton == "True"
     normalization_type = arg.normalization_type
@@ -69,6 +71,7 @@ if __name__ == '__main__':
     print("-> gradient threshold : " + str(gradient_threshold))
     print("-> max epochs : " + str(epochs))
     print("-> batch size : " + str(batch_size))
+    print("-> accumulation steps : " + str(accumulation_steps))
     print("-> sub_sequence_length : " + str(sub_sequence_length))
     print("-> normalize_skeleton : " + str(normalize_skeleton))
     print("-> normalization_type : " + str(normalization_type))
@@ -122,11 +125,12 @@ if __name__ == '__main__':
     output_folder += str(model_type) + '_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + \
                     '_' + str(now.hour) + 'h' + str(now.minute) + '_' + \
                      evaluation_type + '_'+ str(optimizer) + \
-                    '_lr=' + str(learning_rate) +\
+                    '_lr=' + str(learning_rate) + \
                      '_wd=' + str(weight_decay) + \
                     '_gt=' + str(gradient_threshold) + \
                      '_epochs=' + str(epochs) + \
                      '_batch=' + str(batch_size) + \
+                     '_steps=' + str(accumulation_steps) + \
                      '_seq_len=' +\
                      str(sub_sequence_length) +  '/'
 
@@ -140,6 +144,7 @@ if __name__ == '__main__':
                     weight_decay,
                     gradient_threshold,
                     epochs,
+                    accumulation_steps,
                     evaluate_test,
                     output_folder,
                     train_generator,

@@ -73,13 +73,14 @@ def calculate_accuracy(Y_hat, Y):
 
     accuracy = np.mean(trues)
 
-    return accuracy, Y_hat.cpu().numpy(), trues
+    return accuracy, Y_hat.cpu().numpy(), Y.cpu().numpy()
 
 
 def evaluate_set(model, model_type, data_loader, output_folder, set_name):
     model.eval()
 
     average_accuracy = 0
+    n_samples = 0
 
     y_true = []
     y_pred = []
@@ -90,6 +91,7 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
         Y = batch[1].to(device)
 
         batch_size = Y.shape[0]
+        n_samples += batch_size
 
         if model_type == "CNN3D":
             X = prime_X_cnn3d(X).to(device)
@@ -111,7 +113,7 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
         batch_log.write("\r\n")
         batch_log.close()
 
-    return average_accuracy / len(data_loader), y_true, y_pred
+    return average_accuracy / n_samples, y_true, y_pred
 
 
 def train_model_new(model,
@@ -121,6 +123,7 @@ def train_model_new(model,
                     weight_decay,
                     gradient_threshold,
                     epochs,
+                    accumulation_steps,
                     evaluate_test,
                     output_folder,
                     train_generator,
@@ -134,6 +137,10 @@ def train_model_new(model,
     loss_epoch = []
 
     train_errors = []
+
+    # Accumulation of values if updating gradients over multiple batches
+    accuracy_accumulated = 0
+    loss_accumulated = 0
 
     if optimizer == "ADAM":
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
@@ -152,7 +159,8 @@ def train_model_new(model,
         start_batch = time.time()
         for batch_idx, batch in enumerate(train_generator):
             # BATCH TRAINING
-            print(str(e) + " - " + str(batch_idx) + "/" + str(len(train_generator)))
+            print(str(e) + " - " + str(float(batch_idx / accumulation_steps)) +
+                  "/" + str(int(len(train_generator) / accumulation_steps)))
             X = batch[0]
             Y = batch[1].to(device)
 
@@ -164,30 +172,39 @@ def train_model_new(model,
 
             out = model(X)
 
-            loss = F.cross_entropy(out, Y.long())
+            loss = F.cross_entropy(out, Y.long()) / accumulation_steps
+            loss_accumulated += loss.item()
             loss.backward()
 
             # Gradient clipping
             if gradient_threshold > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_threshold)
 
-            optimizer.step()
-
-            # Save loss per batch
-            time_batch.append(e + batch_idx / len(train_generator))
-            loss_batch.append(loss.item())
-
             # Accuracy over batch
-            accuracy, _, _ = calculate_accuracy(out, Y)
-            batch_log = open(output_folder + "batch_log.txt", "a+")
-            batch_log.write("[" + str(e) + " - " + str(batch_idx) + "/" + str(len(train_generator)) +
-                            "] Accuracy : " + str(accuracy) + ", loss : " + str(loss.item()))
-            batch_log.write("\r\n")
-            batch_log.close()
-            errors_temp.append(1 - accuracy)
+            accuracy_batch, _, _ = calculate_accuracy(out, Y)
+            accuracy_accumulated += accuracy_batch / accumulation_steps
 
-            print("Batch took : " + str(time.time() - start_batch) + "s")
-            start_batch = time.time()
+            if (batch_idx + 1) % accumulation_steps == 0:
+                optimizer.step()
+                model.zero_grad()
+
+                # Save loss per batch
+                time_batch.append(e + (batch_idx / accumulation_steps) / (len(train_generator) / accumulation_steps))
+                loss_batch.append(loss.item())
+
+                batch_log = open(output_folder + "batch_log.txt", "a+")
+                batch_log.write("[" + str(e) + " - " + str(int(batch_idx / accumulation_steps)) + "/"
+                                + str(int(len(train_generator) / accumulation_steps)) +
+                                "] Accuracy : " + str(accuracy_accumulated) + ", loss : " + str(loss_accumulated))
+                batch_log.write("\r\n")
+                batch_log.close()
+                errors_temp.append(1 - accuracy_accumulated)
+
+                print("Batch took : " + str(time.time() - start_batch) + "s")
+
+                accuracy_accumulated = 0
+                loss_accumulated = 0
+                start_batch = time.time()
 
         # VALIDATION STEP
         if validation_generator is not None:
@@ -201,19 +218,11 @@ def train_model_new(model,
         # TEST STEP
         if evaluate_test:
             with torch.no_grad():
-                test_accuracy, y_true, y_pred = evaluate_set(model,
-                                                             model_type,
-                                                             test_generator,
-                                                             output_folder,
-                                                             "TEST")
-
-                # Plot confusion matrix per epoch
-                y_true = np.int32(np.concatenate(y_true))
-                y_pred = np.int32(np.concatenate(y_pred))
-
-                plot_confusion_matrix(y_true, y_pred, classes, normalize=True,
-                                      title="Confusion matrix")
-                plt.savefig(output_folder + str(model_type) + str(e) + ".png")
+                test_accuracy, _, _ = evaluate_set(model,
+                                                   model_type,
+                                                   test_generator,
+                                                   output_folder,
+                                                   "TEST")
 
         # Save loss per epoch
         time_epoch.append(e + 1)
