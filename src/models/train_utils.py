@@ -173,6 +173,7 @@ def train_model_new(model,
             out = model(X)
 
             loss = F.cross_entropy(out, Y.long()) / accumulation_steps
+            print(loss.item())
             loss_accumulated += loss.item()
             loss.backward()
 
