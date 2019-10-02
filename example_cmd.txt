@@ -65,3 +65,14 @@ make train EVALUATION_TYPE=cross_subject \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
 			EVALUATE_TEST=True
+
+
+# CONFUSION MATRIX
+make confusion_matrix MODEL_FILE=FUSION.pt \
+						EVALUATION_TYPE=cross_subject \
+						MODEL_TYPE=FUSION \
+						BATCH_SIZE=2 \
+						SUB_SEQUENCE_LENGTH=16 \
+						NORMALIZE_SKELETON=True \
+						NORMALIZATION_TYPE=1-COORD-SYS \
+						KINEMATIC_CHAIN_SKELETON=False
