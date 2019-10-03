@@ -61,7 +61,7 @@ class Fusion(nn.Module):
         pred = (weighted_prediction[:, 0] * pred_pose.transpose(1, 0)
                 + weighted_prediction[:, 1] * pred_ir.transpose(1, 0)).transpose(1, 0)
         '''
-        return torch.log(pred)
+        return torch.log(pred + 1e-12)
 
 
 def prime_X_fusion(X):

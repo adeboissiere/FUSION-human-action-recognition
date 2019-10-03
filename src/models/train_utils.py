@@ -107,9 +107,9 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
         y_true.append(Y)
         y_pred.append(Y_hat)
 
-        print([classes[i] for i in np.int32(Y_hat)])
-        print([classes[i] for i in np.int32(Y)])
-        print()
+        # print([classes[i] for i in np.int32(Y_hat)])
+        # print([classes[i] for i in np.int32(Y)])
+        # print()
 
         batch_log = open(output_folder + "batch_log.txt", "a+")
         batch_log.write("[" + str(set_name) + " - " + str(batch_idx) + "/" + str(len(data_loader)) +
