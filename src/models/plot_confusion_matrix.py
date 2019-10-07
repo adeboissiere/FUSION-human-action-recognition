@@ -69,7 +69,7 @@ if __name__ == '__main__':
     elif model_type == "CNN3D":
         model = CNN3D()
     elif model_type == "FUSION":
-        model = Fusion()
+        model = FUSION()
     else:
         print("Model type not recognized. Exiting")
         exit()

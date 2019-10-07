@@ -58,6 +58,9 @@ def gen_sets_lists(data_path, evaluation_type, use_validation):
 def create_data_loaders(data_path,
                         evaluation_type,
                         model_type,
+                        use_pose,
+                        use_ir,
+                        use_cropped_IR,
                         batch_size,
                         sub_sequence_length,
                         normalize_skeleton,
@@ -68,6 +71,9 @@ def create_data_loaders(data_path,
     training_samples, validation_samples, testing_samples = gen_sets_lists(data_path, evaluation_type, use_validation)
 
     training_set = TorchDataset(model_type,
+                                use_pose,
+                                use_ir,
+                                use_cropped_IR,
                                 data_path,
                                 sub_sequence_length,
                                 normalize_skeleton,
@@ -84,6 +90,9 @@ def create_data_loaders(data_path,
     validation_generator = None
     if len(validation_samples) > 0:
         validation_set = TorchDataset(model_type,
+                                      use_pose,
+                                      use_ir,
+                                      use_cropped_IR,
                                       data_path,
                                       sub_sequence_length,
                                       normalize_skeleton,
@@ -98,6 +107,9 @@ def create_data_loaders(data_path,
                                                num_workers=8)
 
     testing_set = TorchDataset(model_type,
+                               use_pose,
+                               use_ir,
+                               use_cropped_IR,
                                data_path,
                                sub_sequence_length,
                                normalize_skeleton,
@@ -117,6 +129,9 @@ def create_data_loaders(data_path,
 class TorchDataset(torch.utils.data.Dataset):
     def __init__(self,
                  model_type,
+                 use_pose,
+                 use_ir,
+                 use_cropped_IR,
                  data_path,
                  sub_sequence_length,
                  normalize_skeleton,
@@ -126,6 +141,9 @@ class TorchDataset(torch.utils.data.Dataset):
         super(TorchDataset, self).__init__()
 
         self.model_type = model_type
+        self.use_pose = use_pose
+        self.use_ir = use_ir
+        self.use_cropped_IR = use_cropped_IR
         self.data_path = data_path
         self.sub_sequence_length = sub_sequence_length
         self.normalize_skeleton = normalize_skeleton
@@ -138,22 +156,32 @@ class TorchDataset(torch.utils.data.Dataset):
         y = int(self.samples_names[index][-3:]) - 1
 
         # Open h5 files
-        if self.model_type in ['VA-CNN', 'AS-CNN', 'FUSION']:
+        if self.use_pose:
             # retrieve skeleton sequence of shape (3, max_frame, num_joint=25, 2)
             with h5py.File(self.data_path + "skeleton.h5", 'r') as skeleton_dataset:
                 skeleton = skeleton_dataset[self.samples_names[index]]["skeleton"][:]
 
-        if self.model_type in ['CNN3D', 'FUSION']:
-            # retrives IR video of shape (n_frames, H, W)
-            with h5py.File(self.data_path + "ir_cropped.h5", 'r') as ir_dataset:
-                ir_video = ir_dataset[self.samples_names[index]]["ir"][:] # shape (n_frames, 424, 512)
+        if self.use_ir:
+            if self.use_cropped_IR:
+                file_name = "ir_cropped.h5"
+            else:
+                file_name = "ir.h5"
+
+            # retrieves IR video of shape (n_frames, H, W)
+            with h5py.File(self.data_path + file_name, 'r') as ir_dataset:
+                ir_video = ir_dataset[self.samples_names[index]]["ir"][:] # shape (n_frames, H, W)
 
                 # 50% chance to flip video
                 if self.augment_data and random.random() <= 0.5:
                     ir_video = np.flip(ir_video, axis=2)
 
+        # Potential outputs
+        skeleton_image = -1
+        avg_bone_length = -1
+        ir_sequence = -1
+
         # If model requires skeleton data
-        if self.model_type in ['VA-CNN', 'AS-CNN', 'FUSION']:
+        if self.use_pose:
 
             # See jp notebook 4.0 for values
             c_min = 0
@@ -194,7 +222,7 @@ class TorchDataset(torch.utils.data.Dataset):
                 avg_bone_length = compute_avg_bone_length(skeleton)
 
         # If model requires IR data
-        if self.model_type in ['CNN3D', 'FUSION']:
+        if self.use_ir:
             n_frames = ir_video.shape[0]
             n_frames_sub_sequence = n_frames / self.sub_sequence_length  # size of each sub sequence
 

@@ -21,7 +21,11 @@ COMPRESSION_OPTS = 9
 # Make Train variables
 MODEL_FOLDER :=$(PROJECT_DIR)/models/
 EVALUATION_TYPE=cross_subject
-MODEL_TYPE=STA-HANDS
+MODEL_TYPE=FUSION
+USE_POSE=False
+USE_IR=False
+PRETRAINED=False
+USE_CROPPED_IR=False
 OPTIMIZER=ADAM
 LEARNING_RATE=1e-4
 WEIGHT_DECAY=0
@@ -74,6 +78,10 @@ train:
 	--output_folder=$(MODEL_FOLDER) \
 	--evaluation_type=$(EVALUATION_TYPE) \
 	--model_type=$(MODEL_TYPE) \
+	--use_pose=$(USE_POSE) \
+	--use_ir=$(USE_IR) \
+	--pretrained=$(PRETRAINED) \
+	--use_cropped_IR=$(USE_CROPPED_IR) \
 	--optimizer=$(OPTIMIZER) \
 	--learning_rate=$(LEARNING_RATE) \
 	--weight_decay=$(WEIGHT_DECAY) \

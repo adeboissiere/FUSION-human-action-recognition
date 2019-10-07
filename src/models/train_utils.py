@@ -97,7 +97,7 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
             X = prime_X_cnn3d(X).to(device)
 
         elif model_type == "FUSION":
-            X = prime_X_fusion(X)
+            X = prime_X_fusion(X, model.use_pose, model.use_ir)
 
         out = model(X)
 
@@ -172,12 +172,11 @@ def train_model_new(model,
                 X = prime_X_cnn3d(X)
 
             elif model_type == "FUSION":
-                X = prime_X_fusion(X)
+                X = prime_X_fusion(X, model.use_pose, model.use_ir)
 
             out = model(X)
 
             loss = F.cross_entropy(out, Y.long()) / accumulation_steps
-            print(loss.item())
             loss_accumulated += loss.item()
             loss.backward()
 

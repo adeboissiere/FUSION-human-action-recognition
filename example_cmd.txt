@@ -1,6 +1,10 @@
 # Fusion
 make train EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=FUSION \
+			USE_POSE=True \
+			USE_IR=False \
+			PRETRAINED=False \
+			USE_CROPPED_IR=True \
 			LEARNING_RATE=1e-4 \
 			WEIGHT_DECAY=0.0 \
 			GRADIENT_THRESHOLD=10 \
@@ -11,7 +15,7 @@ make train EVALUATION_TYPE=cross_subject \
 			NORMALIZE_SKELETON=True \
 			NORMALIZATION_TYPE=1-COORD-SYS \
 			KINEMATIC_CHAIN_SKELETON=False \
-			AUGMENT_DATA=True \
+			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
 			EVALUATE_TEST=True
 

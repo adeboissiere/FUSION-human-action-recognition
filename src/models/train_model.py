@@ -16,6 +16,10 @@ if __name__ == '__main__':
     )
     parser.add_argument('--evaluation_type')
     parser.add_argument('--model_type')
+    parser.add_argument('--use_pose', default=False)
+    parser.add_argument('--use_ir', default=False)
+    parser.add_argument('--pretrained', default=False)
+    parser.add_argument('--use_cropped_IR', default=False)
     parser.add_argument('--optimizer', default="ADAM")
     parser.add_argument('--learning_rate', default=1e-4)
     parser.add_argument('--weight_decay', default=0)
@@ -38,6 +42,10 @@ if __name__ == '__main__':
     output_folder = arg.output_folder
     evaluation_type = arg.evaluation_type
     model_type = arg.model_type
+    use_pose = arg.use_pose == "True"
+    use_ir = arg.use_ir == "True"
+    pretrained = arg.pretrained == "True"
+    use_cropped_IR = arg.use_cropped_IR == "True"
     optimizer = arg.optimizer
     learning_rate = float(arg.learning_rate)
     weight_decay = float(arg.weight_decay)
@@ -65,6 +73,11 @@ if __name__ == '__main__':
     print("-> output_folder : " + output_folder)
     print("-> evaluation_type : " + evaluation_type)
     print("-> model_type : " + str(model_type))
+    if model_type == "FUSION":
+        print("-> use pose : " + str(use_pose))
+        print("-> use ir : " + str(use_ir))
+        print("-> pretrained : " + str(pretrained))
+        print("-> use cropped ir : " + str(use_cropped_IR))
     print("-> optimizer : " + optimizer)
     print("-> learning rate : " + str(learning_rate))
     print("-> weight decay : " + str(weight_decay))
@@ -81,10 +94,19 @@ if __name__ == '__main__':
     print("-> evaluate_test : " + str(evaluate_test))
     print()
 
+    # Keep different trainings consistent
+    random.seed(0)
+    np.random.seed(0)
+    torch.manual_seed(0)
+    torch.cuda.manual_seed(0)
+
     # Create data loaders
     train_generator, validation_generator, test_generator = create_data_loaders(data_path,
                                                                                 evaluation_type,
                                                                                 model_type,
+                                                                                use_pose,
+                                                                                use_ir,
+                                                                                use_cropped_IR,
                                                                                 batch_size,
                                                                                 sub_sequence_length,
                                                                                 normalize_skeleton,
@@ -99,7 +121,7 @@ if __name__ == '__main__':
     elif model_type == "CNN3D":
         model = CNN3D()
     elif model_type == "FUSION":
-        model = Fusion()
+        model = FUSION(use_pose, use_ir, pretrained)
     else:
         print("Model type not recognized. Exiting")
         exit()
@@ -123,11 +145,18 @@ if __name__ == '__main__':
     now = datetime.datetime.now()
 
     output_folder += str(model_type) + '_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + \
-                    '_' + str(now.hour) + 'h' + str(now.minute) + '_' + \
-                     evaluation_type + '_'+ str(optimizer) + \
-                    '_lr=' + str(learning_rate) + \
+                    '_' + str(now.hour) + 'h' + str(now.minute)
+
+    if model_type == "FUSION":
+        output_folder += "_pose=" + str(use_pose) + \
+                         "_ir=" + str(use_ir) + \
+                         "_pretrained=" + str(pretrained) + \
+                         "_cropped_IR=" + str(use_cropped_IR)
+
+    output_folder += '_' + evaluation_type + '_' + str(optimizer) + \
+                     '_lr=' + str(learning_rate) + \
                      '_wd=' + str(weight_decay) + \
-                    '_gt=' + str(gradient_threshold) + \
+                     '_gt=' + str(gradient_threshold) + \
                      '_epochs=' + str(epochs) + \
                      '_batch=' + str(batch_size) + \
                      '_steps=' + str(accumulation_steps) + \

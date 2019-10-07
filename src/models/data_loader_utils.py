@@ -18,12 +18,12 @@ import cv2
 from src.utils.joints import *
 
 # Global variables
-x_rot_low = -17.0
-x_rot_high = 17.0
-y_rot_low = -17.0
-y_rot_high = 17.0
-z_rot_low = -17.0
-z_rot_high = 17.0
+x_rot_low = -20.0
+x_rot_high = 20.0
+y_rot_low = -20.0
+y_rot_high = 20.0
+z_rot_low = -20.0
+z_rot_high = 20.0
 
 # Global variables
 '''
