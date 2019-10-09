@@ -17,7 +17,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 3D-CNN
 make train EVALUATION_TYPE=cross_subject \
@@ -34,7 +35,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # AS-CNN
 make train EVALUATION_TYPE=cross_subject \
@@ -51,7 +53,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # VA-CNN
 make train EVALUATION_TYPE=cross_subject \
@@ -68,7 +71,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 
 # CONFUSION MATRIX

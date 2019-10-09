@@ -34,6 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('--augment_data', default=True)
     parser.add_argument('--use_validation', default=True)
     parser.add_argument('--evaluate_test', default=True)
+    parser.add_argument('--seed', default=0)
 
     arg = parser.parse_args()
 
@@ -60,6 +61,7 @@ if __name__ == '__main__':
     augment_data = arg.augment_data == "True"
     use_validation = arg.use_validation == "True"
     evaluate_test = arg.evaluate_test == "True"
+    seed = int(arg.seed)
 
     if evaluation_type not in ["cross_subject", "cross_view"]:
         print("Error : Evaluation type not recognized")
@@ -92,13 +94,16 @@ if __name__ == '__main__':
     print("-> augment_data : " + str(augment_data))
     print("-> use_validation : " + str(use_validation))
     print("-> evaluate_test : " + str(evaluate_test))
+    print("-> seed : " + str(0))
     print()
 
     # Keep different trainings consistent
-    random.seed(0)
-    np.random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     # Create data loaders
     train_generator, validation_generator, test_generator = create_data_loaders(data_path,
@@ -160,7 +165,8 @@ if __name__ == '__main__':
                      '_epochs=' + str(epochs) + \
                      '_batch=' + str(batch_size) + \
                      '_steps=' + str(accumulation_steps) + \
-                     '_seq_len=' +\
+                     '_seq_len=' + \
+                     '_aug=' + str(augment_data) + \
                      str(sub_sequence_length) +  '/'
 
     if not os.path.exists(output_folder):

@@ -40,6 +40,7 @@ KINEMATIC_CHAIN_SKELETON=False
 AUGMENT_DATA=True
 USE_VALIDATION=True
 EVALUATE_TEST=True
+SEED=0
 
 # Plot confusion matrix variables
 MODEL_FILE=""
@@ -95,7 +96,8 @@ train:
 	--kinematic_chain_skeleton=$(KINEMATIC_CHAIN_SKELETON) \
 	--augment_data=$(AUGMENT_DATA) \
 	--use_validation=$(USE_VALIDATION) \
-	--evaluate_test=$(EVALUATE_TEST)
+	--evaluate_test=$(EVALUATE_TEST) \
+	--seed=$(SEED)
 
 ## Make Visualize
 confusion_matrix:

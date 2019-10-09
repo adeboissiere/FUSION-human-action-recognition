@@ -1,4 +1,4 @@
-# 1. Skeleton
+# 1. Skeleton 
 make train EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=FUSION \
 			USE_POSE=True \
@@ -19,7 +19,7 @@ make train EVALUATION_TYPE=cross_subject \
 			USE_VALIDATION=True \
 			EVALUATE_TEST=True
 
-# 2. Skeleton pretrained
+# 2. Skeleton pretrained 
 make train EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=FUSION \
 			USE_POSE=True \
@@ -40,7 +40,7 @@ make train EVALUATION_TYPE=cross_subject \
 			USE_VALIDATION=True \
 			EVALUATE_TEST=True
 
-# 3. Augmented skeleton
+# 3. Augmented skeleton 
 make train EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=FUSION \
 			USE_POSE=True \
@@ -61,7 +61,7 @@ make train EVALUATION_TYPE=cross_subject \
 			USE_VALIDATION=True \
 			EVALUATE_TEST=True
 
-# 4. Augmented skeleton pretrained
+# 4. Augmented skeleton pretrained 
 make train EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=FUSION \
 			USE_POSE=True \
@@ -166,7 +166,7 @@ make train EVALUATION_TYPE=cross_subject \
 			USE_VALIDATION=True \
 			EVALUATE_TEST=True
 
-# 9. IR cropped
+# 9. IR cropped 
 make train EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=FUSION \
 			USE_POSE=False \
@@ -187,7 +187,7 @@ make train EVALUATION_TYPE=cross_subject \
 			USE_VALIDATION=True \
 			EVALUATE_TEST=True
 
-# 10. IR augmented cropped
+# 10. IR augmented cropped 
 make train EVALUATION_TYPE=cross_subject \
 			MODEL_TYPE=FUSION \
 			USE_POSE=False \

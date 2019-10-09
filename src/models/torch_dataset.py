@@ -52,6 +52,8 @@ def gen_sets_lists(data_path, evaluation_type, use_validation):
         validation_samples = [training_samples.pop(random.randrange(len(training_samples))) for _ in
                               range(int(0.05 * len(training_samples)))]
 
+    print(validation_samples[:100])
+
     return training_samples, validation_samples, testing_samples
 
 
