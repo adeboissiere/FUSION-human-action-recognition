@@ -17,7 +17,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 2. Skeleton pretrained 
 make train EVALUATION_TYPE=cross_subject \
@@ -38,7 +39,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 3. Augmented skeleton 
 make train EVALUATION_TYPE=cross_subject \
@@ -59,7 +61,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 4. Augmented skeleton pretrained 
 make train EVALUATION_TYPE=cross_subject \
@@ -80,7 +83,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \ 
+			SEED=0
 
 # 5. IR 
 make train EVALUATION_TYPE=cross_subject \
@@ -101,7 +105,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 6. IR augmented
 make train EVALUATION_TYPE=cross_subject \
@@ -122,7 +127,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 7. IR pretrained
 make train EVALUATION_TYPE=cross_subject \
@@ -143,7 +149,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 8. IR pretrained augmented
 make train EVALUATION_TYPE=cross_subject \
@@ -164,7 +171,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 9. IR cropped 
 make train EVALUATION_TYPE=cross_subject \
@@ -185,7 +193,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 10. IR augmented cropped 
 make train EVALUATION_TYPE=cross_subject \
@@ -206,7 +215,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 11. IR pretrained cropped
 make train EVALUATION_TYPE=cross_subject \
@@ -227,7 +237,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=False \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 12. IR pretrained augmented cropped
 make train EVALUATION_TYPE=cross_subject \
@@ -248,7 +259,8 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0
 
 # 13. FUSION augmented pretrained
 make train EVALUATION_TYPE=cross_subject \
@@ -269,4 +281,5 @@ make train EVALUATION_TYPE=cross_subject \
 			KINEMATIC_CHAIN_SKELETON=False \
 			AUGMENT_DATA=True \
 			USE_VALIDATION=True \
-			EVALUATE_TEST=True
+			EVALUATE_TEST=True \
+			SEED=0

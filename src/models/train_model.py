@@ -94,7 +94,7 @@ if __name__ == '__main__':
     print("-> augment_data : " + str(augment_data))
     print("-> use_validation : " + str(use_validation))
     print("-> evaluate_test : " + str(evaluate_test))
-    print("-> seed : " + str(0))
+    print("-> seed : " + str(seed))
     print()
 
     # Keep different trainings consistent
@@ -165,9 +165,10 @@ if __name__ == '__main__':
                      '_epochs=' + str(epochs) + \
                      '_batch=' + str(batch_size) + \
                      '_steps=' + str(accumulation_steps) + \
-                     '_seq_len=' + \
+                     '_seq_len=' + str(sub_sequence_length) + \
                      '_aug=' + str(augment_data) + \
-                     str(sub_sequence_length) +  '/'
+                     '_seed=' + str(seed) + \
+                      '/'
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
