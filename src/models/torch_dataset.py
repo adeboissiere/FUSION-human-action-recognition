@@ -239,7 +239,7 @@ class TorchDataset(torch.utils.data.Dataset):
 
                 ir_sequence.append(ir_image)
 
-            ir_sequence = np.stack(ir_sequence, axis=0)  # shape (sub_seq_len, 224, 224)
+            ir_sequence = np.stack(ir_sequence, axis=0)  # shape (sub_seq_len, 112, 112)
             ir_sequence = np.float32(np.repeat(ir_sequence[:, np.newaxis, :, :], 3, axis=1))
 
         # Return corresponding data
