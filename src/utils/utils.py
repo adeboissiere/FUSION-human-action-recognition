@@ -277,54 +277,7 @@ def create_h5_ir_cropped_dataset(input_path, output_path, compression ="", compr
             progress_bar.update(1)
 
     ir_skeleton_dataset.close()
-
-def extract_hands(skeleton_rgb, videodata, crop_size):
-    """Extracts the hand crops from a video data in numpy array format.
-
-    Parameters:
-    skeleton_rgb -- the 2D projection on RGB image of the skeletons of shape (max_frame, 1080, 1920, 3)
-    videodata -- the video in numpy format of shape (max_frame, 1080, 1920, 3)
-    crop_size -- the image size of the crop around each hand (crop_size x crop_size x 3)
-
-    Returns:
-    np array containing hand crops of shape (n_frames, number of hands (2 subjects), x, y)
-    """
-    hand_crops = []
-
-    max_x = videodata.shape[1]
-    max_y = videodata.shape[2]
-
-    offset = int(crop_size / 2)
-
-    n_frames = skeleton_rgb.shape[1]
-    n_subjects = 1
-
-    # Check if some coordinates for skeleton 2 are != 0
-    if np.any(skeleton_rgb[:, :, :, 1]):
-        n_subjects = 2
-
-    # Get correspoding time coordinates
-    for s in range(n_subjects):
-        hand_crops_s = np.zeros((n_frames, 2, crop_size, crop_size, 3), dtype=np.uint8)
-
-        for t in range(n_frames):
-            # Get right/left hand center coordinates
-            left_hand_x = max(min(int(np.nan_to_num(skeleton_rgb[1, t, Joints.HANDLEFT, s])), max_x), 0)
-            left_hand_y = max(min(int(np.nan_to_num(skeleton_rgb[0, t, Joints.HANDLEFT, s])), max_y), 0)
-
-            right_hand_x = max(min(int(np.nan_to_num(skeleton_rgb[1, t, Joints.HANDRIGHT, s])), max_x), 0)
-            right_hand_y = max(min(int(np.nan_to_num(skeleton_rgb[0, t, Joints.HANDRIGHT, s])), max_y), 0)
-
-            frame = np.pad(videodata[t], ((offset, offset), (offset, offset), (0, 0)),
-                           mode='constant')  # shape(1130, 1970, 3)
-
-            hand_crops_s[t, 0] = frame[left_hand_x:left_hand_x + 2 * offset, left_hand_y:left_hand_y + 2 * offset]
-            hand_crops_s[t, 1] = frame[right_hand_x:right_hand_x + 2 * offset, right_hand_y:right_hand_y + 2 * offset]
-
-        hand_crops.append(hand_crops_s)
-
-    return np.concatenate(hand_crops, axis=1)
-
+    
 
 # Code courtesy of yysijie and the awesome paper ST-GCN
 # https://github.com/yysijie/st-gcn/
