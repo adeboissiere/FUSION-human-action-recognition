@@ -10,16 +10,15 @@ PROFILE = default
 PROJECT_NAME = ntu-rgb-d
 PYTHON_INTERPRETER = python3
 
-# Make Features variables
-DATA_PATH = "/home/gnocchi/NTU/"
-NTU_RGBD_DATA_PATH = "/media/gnocchi/Seagate Backup Plus Drive/NTU-RGB-D/"
-PROCESSED_DATA :=$(PROJECT_DIR)/data/processed/
+# Make Data variables
+RAW_DATA_PATH:="$(shell pwd)/data/raw/"
+PROCESSED_DATA_PATH:="$(shell pwd)/data/processed/"
 DATASET_TYPE = "" # [SKELETON, RGB, IR]
 COMPRESSION = ""
 COMPRESSION_OPTS = 9
 
 # Make Train variables
-MODEL_FOLDER :=$(PROJECT_DIR)/models/
+MODEL_FOLDER :="$(shell pwd)/models/"
 EVALUATION_TYPE=cross_subject
 MODEL_TYPE=FUSION
 USE_POSE=False
@@ -60,22 +59,19 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
-
-## Make Features
-features: 
-	$(PYTHON_INTERPRETER) src/features/build_features.py \
-	--data_path=$(NTU_RGBD_DATA_PATH) \
-	--output_folder=$(NTU_RGBD_DATA_PATH) \
+## Make h5 Dataset
+data: 
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py \
+	--data_path=$(RAW_DATA_PATH) \
+	--output_folder=$(PROCESSED_DATA_PATH) \
 	--dataset_type=$(DATASET_TYPE) \
 	--compression=$(COMPRESSION) \
 	--compression_opts=$(COMPRESSION_OPTS)
 
 ## Make Train
 train: 
-	$(PYTHON_INTERPRETER) src/models/train_model.py --data_path=$(NTU_RGBD_DATA_PATH) \
+	$(PYTHON_INTERPRETER) src/models/train_model.py \
+	--data_path=$(PROCESSED_DATA_PATH) \
 	--output_folder=$(MODEL_FOLDER) \
 	--evaluation_type=$(EVALUATION_TYPE) \
 	--model_type=$(MODEL_TYPE) \
