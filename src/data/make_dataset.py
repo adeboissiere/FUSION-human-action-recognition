@@ -1,7 +1,6 @@
 import argparse
 from src.data.make_dataset_utils import *
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='NTU RGB-D feature extraction')
     parser.add_argument('--data_path')
@@ -42,10 +41,16 @@ if __name__ == '__main__':
                              arg.compression_opts)
 
     elif arg.dataset_type == "IR_CROPPED":
-        create_h5_ir_cropped_dataset(arg.data_path,
-                                     arg.output_folder,
-                                     arg.compression,
-                                     arg.compression_opts)
+        create_h5_ir_cropped_dataset_from_h5(arg.output_folder,
+                                             arg.output_folder,
+                                             arg.compression,
+                                             arg.compression_opts)
+
+    elif arg.dataset_type == "IR_CROPPED_MOVING":
+        create_h5_ir_cropped_moving_dataset_from_h5(arg.output_folder,
+                                                    arg.output_folder,
+                                                    arg.compression,
+                                                    arg.compression_opts)
 
     else:
         print("Data set type not recognized")

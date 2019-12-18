@@ -1,7 +1,6 @@
-import os
-
+import cv2
 import h5py
-
+import os
 import skvideo.io
 import skvideo.datasets
 
@@ -157,7 +156,7 @@ def create_h5_ir_dataset(input_path, output_path, compression="", compression_op
 
         # Loop through skeleton files
         for filename in os.listdir(input_path + ir_folder):
-            short_filename = os.path.splitext(filename)[0]
+            short_filename = os.path.splitext(filename)[0][:-3]
 
             # Sequence code without extension
             f = open(output_path + "log.txt", "a+")
@@ -169,7 +168,9 @@ def create_h5_ir_dataset(input_path, output_path, compression="", compression_op
             # Read corresponding video
 
             videodata = skvideo.io.vread(
-                input_path + ir_folder + short_filename + '.avi')  # shape (n_frames, H, W, 3)
+                input_path + ir_folder + short_filename + '.avi')[:, :, :, 0]  # shape (n_frames, H, W)
+
+            _, H, W = videodata.shape
 
             # Check that video data has same number of frames as skeleton
             # assert skeleton.shape[1] == videodata.shape[0]
@@ -177,13 +178,14 @@ def create_h5_ir_dataset(input_path, output_path, compression="", compression_op
             sample = hdf.create_group(short_filename)
 
             if compression == "":
-                sample.create_dataset("ir", data=videodata)
+                sample.create_dataset("ir", data=videodata, chunks=(1, H, W))
             elif compression == "lzf":
-                sample.create_dataset("ir", data=videodata, compression=compression)
+                sample.create_dataset("ir", data=videodata, compression=compression, chunks=(1, H, W))
             elif compression == "gzip":
                 sample.create_dataset("ir", data=videodata,
                                       compression=compression,
-                                      compression_opts=compression_opts)
+                                      compression_opts=compression_opts,
+                                      chunks=(1, H, W))
             else:
                 print("Compression type not recognized ... Exiting")
                 return
@@ -191,7 +193,7 @@ def create_h5_ir_dataset(input_path, output_path, compression="", compression_op
             progress_bar.update(1)
 
 
-def create_h5_ir_cropped_dataset(input_path, output_path, compression="", compression_opts=9):
+def create_h5_ir_cropped_dataset_from_h5(input_path, output_path, compression="", compression_opts=9):
     """Creates an h5 dataset. Each group corresponds to a clip and contains the numpy array of the skeleton data and the
     numpy array of image crops around the hands
 
@@ -201,48 +203,51 @@ def create_h5_ir_cropped_dataset(input_path, output_path, compression="", compre
     :param compression_opts: compression strength {1, .., 9}
     """
 
-    ir_folder = "nturgb+d_ir/"
-    ir_skeleton_dataset_file_name = "ir_skeleton.h5"
+    # Get samples list
+    samples_names_list = [line.rstrip('\n') for line in open(input_path + "samples_names.txt")]
 
+    # Existing h5 files
+    ir_skeleton_dataset_file_name = "ir_skeleton.h5"
+    ir_dataset_file_name = "ir.h5"
+
+    # Offset around bounding box
     offset = 20
 
+    # Overwrite existing log file and create a new one
     open_type = "w"
     file = open(output_path + 'log.txt', 'w')
     file.close()
 
-    # Open ir_skeleton h5 file
+    # Open h5 files
     ir_skeleton_dataset = h5py.File(input_path + ir_skeleton_dataset_file_name, 'r')
+    ir_dataset = h5py.File(input_path + ir_dataset_file_name, 'r')
 
     with h5py.File(output_path + 'ir_cropped.h5', open_type) as hdf:
         # Progress bar
-        progress_bar = progressbar(iterable=None,
-                                   length=len(next(os.walk(input_path + ir_folder))[2])
-                                   )
+        progress_bar = progressbar(iterable=None, length=len(samples_names_list))
 
         # Loop through skeleton files
-        for filename in os.listdir(input_path + ir_folder):
-            short_filename = os.path.splitext(filename)[0][:-3]
+        for filename in samples_names_list:
 
             # Sequence code without extension
             f = open(output_path + "log.txt", "a+")
-            f.write(short_filename)
+            f.write(filename)
             f.write("\r\n")
             f.close()
 
-            # Read corresponding video
-            videodata = skvideo.io.vread(
-                input_path + ir_folder + short_filename + '_ir.avi')[:, :, :, 0]  # shape (n_frames, H, W)
+            # Fetch corresponding ir raw sequence
+            videodata = ir_dataset[filename]["ir"][:]
 
             # Pad video
             cropped_ir_sample = np.pad(videodata, ((0, 0), (offset, offset), (offset, offset)), mode='constant')
 
-            # Get corresponding ir skeleton shape(2 : {x, y}, seq_len, n_joints)
-            ir_skeleton = ir_skeleton_dataset[short_filename]["ir_skeleton"][:].clip(min=0)
+            # Get corresponding ir skeleton shape(2 : {y, x}, seq_len, n_joints, n_subjects)
+            ir_skeleton = ir_skeleton_dataset[filename]["ir_skeleton"][:].clip(min=0)
 
             # Calculate boundaries
             has_2_subjects = np.any(ir_skeleton[:, :, :, 1])
-            ir_skeleton = ir_skeleton.clip(min=0)
-            if not (has_2_subjects):
+
+            if not has_2_subjects:
                 y_min = min(np.uint16(np.amin(ir_skeleton[0, :, :, 0])), videodata.shape[2])
                 y_max = min(np.uint16(np.amax(ir_skeleton[0, :, :, 0])), videodata.shape[2])
 
@@ -260,7 +265,7 @@ def create_h5_ir_cropped_dataset(input_path, output_path, compression="", compre
             cropped_ir_sample = cropped_ir_sample[:, x_min:x_max + 2 * offset, y_min:y_max + 2 * offset]
             _, H, W = cropped_ir_sample.shape
 
-            sample = hdf.create_group(short_filename)
+            sample = hdf.create_group(filename)
 
             if compression == "":
                 sample.create_dataset("ir", data=cropped_ir_sample, chunks=(1, H, W))
@@ -278,6 +283,110 @@ def create_h5_ir_cropped_dataset(input_path, output_path, compression="", compre
             progress_bar.update(1)
 
     ir_skeleton_dataset.close()
+    ir_dataset.close()
+
+
+def create_h5_ir_cropped_moving_dataset_from_h5(input_path, output_path, compression="", compression_opts=9):
+    # Get samples list
+    samples_names_list = [line.rstrip('\n') for line in open(input_path + "samples_names.txt")]
+
+    # Existing h5 files
+    ir_skeleton_dataset_file_name = "ir_skeleton.h5"
+    ir_dataset_file_name = "ir.h5"
+
+    # Offset around bounding box
+    offset = 20
+
+    # Overwrite existing log file and create a new one
+    open_type = "w"
+    file = open(output_path + 'log.txt', 'w')
+    file.close()
+
+    # Open h5 files
+    ir_skeleton_dataset = h5py.File(input_path + ir_skeleton_dataset_file_name, 'r')
+    ir_dataset = h5py.File(input_path + ir_dataset_file_name, 'r')
+
+    with h5py.File(output_path + 'ir_cropped_moving.h5', open_type) as hdf:
+        # Progress bar
+        progress_bar = progressbar(iterable=None, length=len(samples_names_list))
+
+        # Loop through skeleton files
+        for filename in samples_names_list:
+
+            # Sequence code without extension
+            f = open(output_path + "log.txt", "a+")
+            f.write(filename)
+            f.write("\r\n")
+            f.close()
+
+            # Fetch corresponding ir raw sequence shape (n_frames, H, W)
+            videodata = ir_dataset[filename]["ir"][:]
+
+            # Get corresponding ir skeleton shape(2 : {y, x}, seq_len, n_joints, n_subjects)
+            ir_skeleton = ir_skeleton_dataset[filename]["ir_skeleton"][:].clip(min=0)
+
+            # Check if there is another subject if there exists non zero coordinates for subject 2
+            has_2_subjects = np.any(ir_skeleton[:, :, :, 1])
+
+            # Calculate boundaries for each frame
+            y_min = np.uint16(np.amin(ir_skeleton[0, :, :, 0], axis=1))
+            y_max = np.uint16(np.amax(ir_skeleton[0, :, :, 0], axis=1))
+
+            x_min = np.uint16(np.amin(ir_skeleton[1, :, :, 0], axis=1))
+            x_max = np.uint16(np.amax(ir_skeleton[1, :, :, 0], axis=1))
+
+            if has_2_subjects:
+                y_min = np.minimum(y_min, np.uint16(np.amin(ir_skeleton[0, :, :, 1], axis=1)))
+                y_max = np.maximum(y_max, np.uint16(np.amax(ir_skeleton[0, :, :, 1], axis=1)))
+
+                x_min = np.minimum(x_min, np.uint16(np.amin(ir_skeleton[1, :, :, 1], axis=1)))
+                x_max = np.maximum(x_max, np.uint16(np.amax(ir_skeleton[1, :, :, 1], axis=1)))
+
+            x_min.clip(max=videodata.shape[1])
+            x_max.clip(max=videodata.shape[1])
+            y_min.clip(max=videodata.shape[2])
+            y_max.clip(max=videodata.shape[2])
+
+            # Crop and scale ir video
+            new_sequence = []
+            for t in range(videodata.shape[0]):
+                # Fetch individual frame
+                frame = videodata[t]  # shape (H, W)
+
+                # Pad frame with zeros (to compensate for offset)
+                frame = np.pad(frame, ((offset, offset), (offset, offset)), mode='constant')
+
+                # Crop frame
+                frame = frame[x_min[t]:x_max[t] + 2 * offset,
+                              y_min[t]:y_max[t] + 2 * offset]
+
+                # Rescale frame
+                ir_frame = cv2.resize(frame, dsize=(112, 112))
+                new_sequence.append(ir_frame)
+
+            new_sequence = np.stack(new_sequence, axis=0)  # shape (n_frames, 112, 112)
+            _, H, W = new_sequence.shape
+
+            sample = hdf.create_group(filename)
+
+            if compression == "":
+                sample.create_dataset("ir", data=new_sequence, chunks=(1, H, W))
+            elif compression == "lzf":
+                sample.create_dataset("ir", data=new_sequence, compression=compression, chunks=(1, H, W))
+            elif compression == "gzip":
+                sample.create_dataset("ir", data=new_sequence,
+                                      compression=compression,
+                                      compression_opts=compression_opts,
+                                      chunks=(1, H, W))
+            else:
+                print("Compression type not recognized ... Exiting")
+                return
+
+
+            progress_bar.update(1)
+
+    ir_skeleton_dataset.close()
+    ir_dataset.close()
 
 
 # Code courtesy of yysijie and the awesome paper ST-GCN
