@@ -20,6 +20,14 @@ import sphinx_rtd_theme
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../src/'))
 
+def skip(app, what, name, obj, would_skip, options):
+    if name in ["__getitem__", "__len__"]:
+        return False
+    return would_skip
+
+def setup(app):
+    app.connect("autodoc-skip-member", skip)
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
