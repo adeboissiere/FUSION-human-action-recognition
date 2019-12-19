@@ -40,8 +40,12 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+	rm modules.rst src.*
 
-html:
+rst:
+	sphinx-apidoc -o . ../src/
+
+html: clean rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

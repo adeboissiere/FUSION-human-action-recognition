@@ -4,42 +4,26 @@ src.models package
 Submodules
 ----------
 
-src.models.AS\_CNN module
--------------------------
+src.models.data\_augmentation module
+------------------------------------
 
-.. automodule:: src.models.AS_CNN
+.. automodule:: src.models.data_augmentation
    :members:
    :undoc-members:
    :show-inheritance:
 
-src.models.AS\_CNN\_utils module
---------------------------------
+src.models.gen\_data\_loaders module
+------------------------------------
 
-.. automodule:: src.models.AS_CNN_utils
+.. automodule:: src.models.gen_data_loaders
    :members:
    :undoc-members:
    :show-inheritance:
 
-src.models.VA\_CNN module
--------------------------
+src.models.h5\_pytorch\_dataset module
+--------------------------------------
 
-.. automodule:: src.models.VA_CNN
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-src.models.cnn3D module
------------------------
-
-.. automodule:: src.models.cnn3D
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-src.models.data\_loader\_utils module
--------------------------------------
-
-.. automodule:: src.models.data_loader_utils
+.. automodule:: src.models.h5_pytorch_dataset
    :members:
    :undoc-members:
    :show-inheritance:
@@ -56,14 +40,6 @@ src.models.pose\_ir\_fusion module
 ----------------------------------
 
 .. automodule:: src.models.pose_ir_fusion
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-src.models.torch\_dataset module
---------------------------------
-
-.. automodule:: src.models.torch_dataset
    :members:
    :undoc-members:
    :show-inheritance:

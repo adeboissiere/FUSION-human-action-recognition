@@ -1,9 +1,7 @@
-NTU-RGB-D
-=========
+src
+===
 
 .. toctree::
    :maxdepth: 4
 
-   setup
    src
-   test_environment
