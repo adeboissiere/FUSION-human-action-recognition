@@ -15,6 +15,16 @@ Contents:
    commands
 
 
+Modules
+=======
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   src
+
 
 Indices and tables
 ==================
