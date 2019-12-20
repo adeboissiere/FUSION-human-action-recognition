@@ -1,12 +1,37 @@
+r"""
+Custom PyTorch dataset that reads from the *.h5 datasets (see data module for more infos).
+"""
+
 import h5py
 import random
 import torch
 from torch.utils import data
 
-from src.models.data_loader_utils import *
+from src.models.data_augmentation import *
 
 
 class TorchDataset(torch.utils.data.Dataset):
+    r"""This custom PyTorch lazy loads from the *.h5 datasets. This means that it does not load the entire dataset in
+    memory, which would be impossible for the IR sequences. Instead, it opens and reads from the h5 file. This is a bit
+    slower, but very memory efficient. Additionally, the lost time is mitigated when using multiple workers for the
+    data loaders.
+
+    Attributes:
+        - **data_path** (str): Path containing the h5 files (default ./data/processed/).
+        - **model_type** (str): "FUSION" only for now.
+        - **use_pose** (bool): Include skeleton data
+        - **use_ir** (bool): Include IR data
+        - **use_cropped_IR** (bool): Type of IR dataset
+        - **sub_sequence_length** (str): Number of frames to subsample from full IR sequences
+        - **augment_data** (bool): Choose to augment data by geometric transformation (skeleton data) or horizontal
+          flip (IR data)
+        - **samples_names** (list): Contains the sequences names of the dataset (ie. train, validation, test)clean rst
+
+    Methods:
+        - *__getitem__(index)*: Returns the processed sequence (skeleton and/or IR) and its label
+        - *__len__()*: Returns the number of elements in dataset.
+
+    """
     def __init__(self,
                  model_type,
                  use_pose,
@@ -29,6 +54,19 @@ class TorchDataset(torch.utils.data.Dataset):
         self.samples_names = samples_names
 
     def __getitem__(self, index):
+        r"""Returns a processed sequence and label given an index.
+
+        Inputs:
+            - **index** (int): Used as an index for **samples_names** attribute, a list, which will yield a sequence
+              name that will be used to address the h5 files.
+
+        Outputs:
+            - **skeleton_image** (np array): Skeleton sequence mapped to an image of shape `(3, 224, 224)`.
+              Equals -1 if **use_pose** is False.
+            - **ir_sequence** (np array): Subsampled IR sequence of shape `(**sub_sequence_length**, 112, 112)`.
+              Equals -1 if **use_ir** is False.
+            - **y** (int): Class label of sequence.
+        """
         y = int(self.samples_names[index][-3:]) - 1
 
         # Open h5 files
@@ -69,14 +107,14 @@ class TorchDataset(torch.utils.data.Dataset):
 
             skeleton = (skeleton.transpose(1, 2, 0, 3) - trans_vector).transpose(2, 0, 1, 3)
 
-            # Data augmentation : rotation around x, y, z axis (see data_loader_utils.py for values)
+            # Data augmentation : rotation around x, y, z axis (see data_augmentation.py for values)
             if self.augment_data:
                 skeleton = rotate_skeleton(skeleton)
 
-            # Each model has its specific data streams
+            # Map to RGB image
             if self.model_type in ['FUSION']:
                 # shape (3, 224, 224)
-                skeleton_image = np.float32(create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max))
+                skeleton_image = np.float32(stretched_image_from_skeleton_sequence(skeleton, c_min, c_max))
 
         # If model requires IR data
         if self.use_ir:
@@ -85,6 +123,7 @@ class TorchDataset(torch.utils.data.Dataset):
 
             ir_sequence = []
 
+            # Create a fixed number number of subwindows (equal to sub_sequence_length) and randomly sample from each
             for sub_sequence in range(self.sub_sequence_length):
                 lower_index = int(sub_sequence * n_frames_sub_sequence)
                 upper_index = int((sub_sequence + 1) * n_frames_sub_sequence) - 1
@@ -94,6 +133,7 @@ class TorchDataset(torch.utils.data.Dataset):
 
                 ir_sequence.append(ir_image)
 
+            # Stack the sampled frames to create new sequence
             ir_sequence = np.stack(ir_sequence, axis=0)  # shape (sub_seq_len, 112, 112)
             ir_sequence = np.float32(np.repeat(ir_sequence[:, np.newaxis, :, :], 3, axis=1))
 
@@ -102,5 +142,10 @@ class TorchDataset(torch.utils.data.Dataset):
             return [skeleton_image, ir_sequence], y
 
     def __len__(self):
+        r"""Returns number of elements in dataset
+
+        Outputs:
+            - **length** (int): Number of elements in dataset.
+        """
         return len(self.samples_names)
 

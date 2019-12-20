@@ -1,21 +1,34 @@
-import numpy as np
+r"""
+Contains functions to augment skeleton data.
+Skeleton data has a prior normalization step applied where the scene is translated from the camera coordinate system
+to a new local coordinate system. The translation is given by the vector formed between the origin of the camera and
+the first subject SPINE_MID for the first frame. The vector is the same for all subsequent frames.
+
+The skeleton data used as inputs is already "prior" normalized.
+
+Three functions are provided.
+
+    - *build_rotation_matrix*: Creates a 3x3 rotation matrix for a given axis
+    - *rotate_skeleton*: Randomly rotates a skeleton sequence around the X, Y and Z axis.
+    - *stretched_image_from_skeleton_sequence*: Creates an RGB image from a skeleton sequence
+
+**Note** that the rotation angles are randomly taken in between hardcoded global variables in this file.
+
+As more guidelines we add the following informations.
+
+Kinect v2 coordinate system:
+    - **x** : horizontal plane
+    - **y** : height
+    - **z** : depth
+
+NTU RGB-D sequences are acquired from -45° to 45° on the x axis
+
+"""
+
 import math
 import cv2
 from src.utils.joints import *
 
-'''
-Kinect coordinate system :
-x : horizontal plane
-y : height
-z : depth
-
-NTU RGB-D acquisition are rotated from -45° to 45° on the x axis
-
-Try :
-x_rot € [-45°, 45°]
-y_rot € [-90°, 90°]
-z_rot € [-10°, 10°]
-'''
 
 # Global variables
 x_rot_low = -20.0
@@ -25,26 +38,19 @@ y_rot_high = 20.0
 z_rot_low = -20.0
 z_rot_high = 20.0
 
-# Global variables
-'''
-x_rot_low = 0
-x_rot_high = 0
-y_rot_low = 0
-y_rot_high = 0
-z_rot_low = 0
-z_rot_high = 0
-'''
-
 
 def build_rotation_matrix(axis, rot_angle):
-    """
-    Builds a rotation matrix for a given axis.
+    r"""Builds a random rotation matrix for a given axis.
 
-    :param axis: Axis of rotation (0: x, 1: y, 2: z)
-    :param rot_angle: Angle of rotation in degrees
+    Inputs:
+        - **axis** (int): Axis of rotation (0: x, 1: y, 2: z)
+        - **rot_angle** (float): Angle of rotation in degrees
 
-    :return rotation_matrix: Rotation matrix (https://fr.wikipedia.org/wiki/Matrice_de_rotation)
+    Outputs:
+        **rotation_matrix (np array)**: 3x3 rotation matrix
+
     """
+
     rotation_matrix = np.zeros((3, 3))
 
     cos_rotation_angle = np.cos(rot_angle)
@@ -74,13 +80,15 @@ def build_rotation_matrix(axis, rot_angle):
 
 
 def rotate_skeleton(skeleton):
-    """
-    Rotates the skeleton around its different axis
+    r"""Rotates the skeleton sequence around its different axis.
 
-    :param skeleton: np array of shape (3, max_frame, num_joint=25, 2). The first frame should be normalized to the
-        position of the torso of the first subject
+    Inputs:
+        **skeleton** (np array): Skeleton sequence of shape `(3 {x, y, z}, max_frame, num_joint=25, n_subjects=2)`
 
-    :return skeleton_aug: augmented skeleton
+    Outputs:
+        **skeleton_aug** (np array): Randomly rotated skeleton sequence of shape
+        `(3 {x, y, z}, max_frame, num_joint=25, n_subjects=2)`
+
     """
 
     seq_len = skeleton.shape[1]
@@ -107,19 +115,10 @@ def rotate_skeleton(skeleton):
     # -> shape (3, seq_len, n_joints * n_subjects)
     # Ordered in such way that skeleton[:, :, subject_id*n_joints:(subject_id+1)*n_joints gives the coordinates
     # of subject number "subject_id"
-    assert np.array_equal(skeleton[:, :, :, 0], skeleton.reshape((3, seq_len, n_joints * n_subjects), order='F')[:, :,
-                                   0 * n_joints:n_joints])
-    assert np.array_equal(skeleton[:, :, :, 1], skeleton.reshape((3, seq_len, n_joints * n_subjects), order='F')[:, :,
-                                                1 * n_joints:2*n_joints])
-
     skeleton = np.reshape(skeleton, (3, seq_len, n_joints * n_subjects), order='F')
-
-    # print(skeleton[0, 10, :])
 
     # Apply rotation matrix
     skeleton_aug = skeleton.transpose(1, 2, 0) @ rotation_matrix.transpose(1, 0)[None, ...]
-    # print(skeleton.transpose(1, 2, 0).shape)
-    # print(rotation_matrix.transpose(1, 0)[None, ...].shape)
 
     # Transpose back
     skeleton_aug = skeleton_aug.transpose(2, 0, 1) # shape (3, seq_len, n_joints * n_subjects)
@@ -129,7 +128,21 @@ def rotate_skeleton(skeleton):
     return skeleton_aug
 
 
-def create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max):
+def stretched_image_from_skeleton_sequence(skeleton, c_min, c_max):
+    r"""Rotates the skeleton sequence around its different axis.
+
+    Inputs:
+        - **skeleton** (np array): Skeleton sequence of shape `(3 {x, y, z}, max_frame, num_joint=25, n_subjects=2)`
+        - **c_min** (int): Minimum coordinate across all sequences, joints, subjects, frames after the prior
+          normalization step.
+        - **c_max** (int): Maximum coordinate across all sequences, joints, subjects, frames after the prior
+          normalization step.
+
+    Outputs:
+        **skeleton_image** (np array): RGB image of shape `(3, 224, 224)`
+
+    """
+
     max_frame = skeleton.shape[1]
     n_joints = skeleton.shape[2]
 
@@ -139,7 +152,7 @@ def create_stretched_image_from_skeleton_sequence(skeleton, c_min, c_max):
     skeleton_image[:, :, n_joints:2 * n_joints] = skeleton[:, :, :, 1]
     skeleton_image = np.transpose(skeleton_image, (0, 2, 1))
 
-    # Normalize
+    # Normalize (min-max)
     skeleton_image = np.floor(255 * (skeleton_image - c_min) / (c_max - c_min))  # shape (3, 2 * n_joints, max_frame)
 
     # Reshape image for ResNet

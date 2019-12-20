@@ -33,11 +33,7 @@ EPOCHS=30
 BATCH_SIZE=8
 ACCUMULATION_STEPS=1
 SUB_SEQUENCE_LENGTH=20 
-NORMALIZE_SKELETON=True
-NORMALIZATION_TYPE=1-COORD-SYS
-KINEMATIC_CHAIN_SKELETON=False
 AUGMENT_DATA=True
-USE_VALIDATION=True
 EVALUATE_TEST=True
 SEED=0
 
@@ -63,7 +59,7 @@ requirements: test_environment
 data: 
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py \
 	--data_path=$(RAW_DATA_PATH) \
-	--output_folder=$(PROCESSED_DATA_PATH) \
+l	--output_folder=$(PROCESSED_DATA_PATH) \
 	--dataset_type=$(DATASET_TYPE) \
 	--compression=$(COMPRESSION) \
 	--compression_opts=$(COMPRESSION_OPTS)
@@ -87,26 +83,23 @@ train:
 	--batch_size=$(BATCH_SIZE) \
 	--accumulation_steps=$(ACCUMULATION_STEPS) \
 	--sub_sequence_length=$(SUB_SEQUENCE_LENGTH) \
-	--normalize_skeleton=$(NORMALIZE_SKELETON) \
-	--normalization_type=$(NORMALIZATION_TYPE) \
-	--kinematic_chain_skeleton=$(KINEMATIC_CHAIN_SKELETON) \
 	--augment_data=$(AUGMENT_DATA) \
-	--use_validation=$(USE_VALIDATION) \
 	--evaluate_test=$(EVALUATE_TEST) \
 	--seed=$(SEED)
 
 ## Make Visualize
 confusion_matrix:
-	$(PYTHON_INTERPRETER) src/models/plot_confusion_matrix.py --data_path=$(NTU_RGBD_DATA_PATH) \
+	$(PYTHON_INTERPRETER) src/models/plot_confusion_matrix.py \
+	--data_path=$(NTU_RGBD_DATA_PATH) \
 	--model_folder=$(MODEL_FOLDER) \
 	--model_file=$(MODEL_FILE) \
 	--evaluation_type=$(EVALUATION_TYPE) \
 	--model_type=$(MODEL_TYPE) \
+	--use_pose=$(USE_POSE) \
+	--use_ir=$(USE_IR) \
+	--use_cropped_IR=$(USE_CROPPED_IR) \
 	--batch_size=$(BATCH_SIZE) \
-	--sub_sequence_length=$(SUB_SEQUENCE_LENGTH) \
-	--normalize_skeleton=$(NORMALIZE_SKELETON) \
-	--normalization_type=$(NORMALIZATION_TYPE) \
-	--kinematic_chain_skeleton=$(KINEMATIC_CHAIN_SKELETON)
+	--sub_sequence_length=$(SUB_SEQUENCE_LENGTH) 
 
 ## Delete all compiled Python files
 clean:

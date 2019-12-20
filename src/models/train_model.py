@@ -1,19 +1,89 @@
+"""
+The main file for the *src.models* module. Takes as input the different hyperparameters and starts training the model.
+The model is saved after every epoch. A `batch_log.txt` keeps the record of the accuracy and loss of each batch.
+A `log.txt` keeps a record of the accuracy of the train-val-test sets after each epoch.
+
+**Note** that although we compute the test set at each epoch, we take the final decision based on the validation set
+only.
+
+Training is best called using the provided Makefile provided.
+
+>>> make train \\
+    PROCESSED_DATA_PATH=X \\
+    MODEL_FOLDER=X \\
+    EVALUATION_TYPE=X \\
+    MODEL_TYPE=X \\
+    USE_POSE=X \\
+    USE_IR=X \\
+    PRETRAINED=X \\
+    USE_CROPPED_IR=X \\
+    LEARNING_RATE=X \\
+    WEIGHT_DECAY=X \\
+    GRADIENT_THRESHOLD=X \\
+    EPOCHS=X \\
+    BATCH_SIZE=X \\
+    ACCUMULATION_STEPS=X \\
+    SUB_SEQUENCE_LENGTH=X \\
+    AUGMENT_DATA=X \\
+    EVALUATE_TEST=X \\
+    SEED=X
+
+
+With the parameters taking from the following values :
+    - PROCESSED_DATA_PATH:
+        Path to h5 files. Default location is *./data/processed/*
+    - MODEL_FOLDER:
+        Output path to save models and log files. A folder inside that path will be automatically created. Default
+        location is *./models/*
+    - EVALUATION_TYPE:
+        [cross_subject | cross_view]
+    - MODEL_TYPE:
+        [FUSION]
+    - USE_POSE:
+        [True, False]
+    - USE_IR:
+        [True, False]
+    - PRETRAINED:
+        [True, False]
+    - USE_CROPPED_IR:
+        [True, False]
+    - LEARNING_RATE:
+        Real positive number.
+    - WEIGHT_DECAY:
+        Real positive number. If 0, then no weight decay is applied.
+    - EPOCHS:
+        Whole positive number above 1.
+    - BATCH_SIZE:
+        Whole positive number above 1.
+    - GRADIENT_THRESHOLD:
+        Real positive number. If 0, then no threshold is applied
+    - ACCUMULATION_STEPS:
+        Accumulate gradient across epochs. This is a trick to virtually train larger batches on modest architectures.
+    - SUB_SEQUENCE_LENGTH:
+        [1 .. 20]
+        Specifies the number of frames to take from a complete IR sequence.
+    - AUGMENT_DATA
+        [True, False]
+    - EVALUATE_TEST
+        [True, False]
+    - SEED
+        Positive whole number. Used to make training replicable.
+
+"""
+
 import argparse
 import datetime
 import os
 
 from src.models.train_utils import *
 
-from src.models.torch_dataset import *
+from src.models.gen_data_loaders import *
 
 if __name__ == '__main__':
+    # Parser to gather hyperparameters
     parser = argparse.ArgumentParser(description='Train model')
-    parser.add_argument(
-        '--data_path', default="/media/gnocchi/Seagate Backup Plus Drive/NTU-RGB-D/"
-    )
-    parser.add_argument(
-        '--output_folder', default="./models/"
-    )
+    parser.add_argument('--data_path')
+    parser.add_argument('--output_folder', default="./models/")
     parser.add_argument('--evaluation_type')
     parser.add_argument('--model_type')
     parser.add_argument('--use_pose', default=False)
@@ -28,17 +98,12 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=64)
     parser.add_argument('--accumulation_steps', default=1)
     parser.add_argument('--sub_sequence_length', default=20)
-    parser.add_argument('--normalize_skeleton', default=True)
-    parser.add_argument('--normalization_type')
-    parser.add_argument('--kinematic_chain_skeleton', default=False)
     parser.add_argument('--augment_data', default=True)
-    parser.add_argument('--use_validation', default=True)
     parser.add_argument('--evaluate_test', default=True)
     parser.add_argument('--seed', default=0)
-
     arg = parser.parse_args()
 
-    # Hyper parameters
+    # Extract hyperparameters
     data_path = arg.data_path
     output_folder = arg.output_folder
     evaluation_type = arg.evaluation_type
@@ -55,14 +120,11 @@ if __name__ == '__main__':
     batch_size = int(arg.batch_size)
     accumulation_steps = int(arg.accumulation_steps)
     sub_sequence_length = int(arg.sub_sequence_length)
-    normalize_skeleton = arg.normalize_skeleton == "True"
-    normalization_type = arg.normalization_type
-    kinematic_chain_skeleton = arg.kinematic_chain_skeleton == "True"
     augment_data = arg.augment_data == "True"
-    use_validation = arg.use_validation == "True"
     evaluate_test = arg.evaluate_test == "True"
     seed = int(arg.seed)
 
+    # Check evaluation type is a known benchmark
     if evaluation_type not in ["cross_subject", "cross_view"]:
         print("Error : Evaluation type not recognized")
         print("... Returning")
@@ -70,7 +132,7 @@ if __name__ == '__main__':
         exit()
 
     # Print summary
-    print("\r\n\n\n========== TRAIN MODEL ==========")
+    print("\r\n\n\n========== SUMMARY ==========")
     print("-> h5 dataset folder path : " + data_path)
     print("-> output_folder : " + output_folder)
     print("-> evaluation_type : " + evaluation_type)
@@ -88,11 +150,7 @@ if __name__ == '__main__':
     print("-> batch size : " + str(batch_size))
     print("-> accumulation steps : " + str(accumulation_steps))
     print("-> sub_sequence_length : " + str(sub_sequence_length))
-    print("-> normalize_skeleton : " + str(normalize_skeleton))
-    print("-> normalization_type : " + str(normalization_type))
-    print("-> kinematic chain skeleton : " + str(kinematic_chain_skeleton))
     print("-> augment_data : " + str(augment_data))
-    print("-> use_validation : " + str(use_validation))
     print("-> evaluate_test : " + str(evaluate_test))
     print("-> seed : " + str(seed))
     print()
@@ -115,28 +173,22 @@ if __name__ == '__main__':
                                                                                 use_cropped_IR,
                                                                                 batch_size,
                                                                                 sub_sequence_length,
-                                                                                normalize_skeleton,
-                                                                                normalization_type,
-                                                                                augment_data,
-                                                                                use_validation)
+                                                                                augment_data)
 
-    if model_type == "VA-CNN":
-        model = VACNN()
-    elif model_type == "AS-CNN":
-        model = ASCNN()
-    elif model_type == "CNN3D":
-        model = CNN3D()
-    elif model_type == "FUSION":
+    # Create model
+    if model_type == "FUSION":
         model = FUSION(use_pose, use_ir, pretrained)
     else:
         print("Model type not recognized. Exiting")
         exit()
 
+    # If multiple GPUs are available (not guaranteed to work)
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
         model = nn.DataParallel(model)
 
+    # Push model to first GPU if available
     model.to(device)
 
     '''
@@ -147,7 +199,7 @@ if __name__ == '__main__':
     exit()
     '''
 
-    # Create folder for output files
+    # Create folder name for output files
     now = datetime.datetime.now()
 
     output_folder += str(model_type) + '_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + \
@@ -171,9 +223,11 @@ if __name__ == '__main__':
                      '_seed=' + str(seed) + \
                       '/'
 
+    # Create folder if does not exist
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
+    # Start training
     train_model_new(model,
                     model_type,
                     optimizer,

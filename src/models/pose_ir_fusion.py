@@ -4,7 +4,8 @@ from src.models.torchvision_models import *
 import torchvision.models as models
 import torch.nn.functional as F
 
-from src.models.cnn3D import *
+# Custom imports
+from src.models.utils import *
 
 
 class FUSION(nn.Module):

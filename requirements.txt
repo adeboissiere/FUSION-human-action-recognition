@@ -1,3 +1,4 @@
+scikit-video
 # local package
 -e .
 

@@ -1,13 +1,10 @@
-from click import progressbar
+import numpy as np
 import time
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 
-from src.models.VA_CNN import *
-from src.models.AS_CNN import *
 from src.models.torchvision_models import *
-from src.models.cnn3D import *
 from src.models.pose_ir_fusion import *
 
 
@@ -93,10 +90,7 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
         batch_size = Y.shape[0]
         n_samples += batch_size
 
-        if model_type == "CNN3D":
-            X = prime_X_cnn3d(X).to(device)
-
-        elif model_type == "FUSION":
+        if model_type == "FUSION":
             X = prime_X_fusion(X, model.use_pose, model.use_ir)
 
         out = model(X)
@@ -168,10 +162,7 @@ def train_model_new(model,
             X = batch[0]
             Y = batch[1].to(device)
 
-            if model_type == "CNN3D":
-                X = prime_X_cnn3d(X)
-
-            elif model_type == "FUSION":
+            if model_type == "FUSION":
                 X = prime_X_fusion(X, model.use_pose, model.use_ir)
 
             out = model(X)
