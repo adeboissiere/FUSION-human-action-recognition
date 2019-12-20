@@ -54,6 +54,31 @@ Project Organization
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
 
+Getting started
+------------
+The first step to replicate our results is to clone the project and create a virtual environment using the Makefile. After that, the raw data should be downloaded and placed according to the default Project Organization provided above. Then various h5 datasets will have to be created using the Makefile. This will take a while but is a more practical way of handling data. Once the h5 files are created, you are ready to replicate our results or use them to implement your own models!
+
+The data used comes from the [NTU RGB+D dataset](http://rose1.ntu.edu.sg/datasets/actionrecognition.asp).
+
+1. Clone project
+    `git clone https://github.com/gnocchiflette/FUSION-human-action-recognition`
+
+2. Create virtual environment 
+    `make create_environment`
+
+3. Activate environment (do so every time you work on this repository)
+    `workon fusion` (for virtual env wrapper)
+    `source activate fusion` (for conda)
+
+4. Install requirements
+    `make requirements`
+
+5. Download raw data from the [NTU RGB+D website](http://rose1.ntu.edu.sg/datasets/actionrecognition.asp), decompress archives and place files as described in the Project Description above.
+
+6. Run the `make data` commands to create the h5 files.
+
+
+
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
