@@ -46,6 +46,7 @@ class Joints(IntEnum):
     THUMBRIGHT = 24
 
 
+# shape (n_connexions, 2)
 connexion_tuples = np.array([[Joints.SPINEBASE, Joints.SPINEMID],
                              [Joints.SPINEMID, Joints.SPINESHOULDER],
                              [Joints.SPINESHOULDER, Joints.NECK],
@@ -73,4 +74,4 @@ connexion_tuples = np.array([[Joints.SPINEBASE, Joints.SPINEMID],
                              [Joints.SPINEBASE, Joints.HIPLEFT], # 20
                              [Joints.HIPLEFT, Joints.KNEELEFT],
                              [Joints.KNEELEFT, Joints.ANKLELEFT],
-                             [Joints.ANKLELEFT, Joints.FOOTLEFT]])  # shape (n_connexions, 2)
+                             [Joints.ANKLELEFT, Joints.FOOTLEFT]])
