@@ -79,9 +79,6 @@ target/
 # exclude data from source control by default
 /data/raw/*
 
-# exclude PyTorch models
-*.pt
-
 # Mac OS-specific storage files
 .DS_Store
 
@@ -91,3 +88,10 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+# ========== CUSTOM EXCLUDES ==========
+# exclude PyTorch models
+*.pt
+
+# exclude batch_log.txt files
+batch_log.txt
