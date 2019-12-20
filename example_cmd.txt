@@ -19,13 +19,12 @@ make train \
 
 # Confusion matrix
 make confusion_matrix \
-    MODEL_FOLDER="./models/pretrained=True_aug=True/" \
-    MODEL_FILE="model11.pt" \
+    MODEL_FOLDER="./models/fusion_20/cross_subject/aug=True/" \
+    MODEL_FILE="model12.pt" \
     EVALUATION_TYPE=cross_subject \
     MODEL_TYPE=FUSION \
     USE_POSE=True \
-    USE_IR=False \
-    USE_CROPPED_IR=False \
-    BATCH_SIZE=32 \
-    SUB_SEQUENCE_LENGTH=0 \
-    
+    USE_IR=True \
+    USE_CROPPED_IR=True \
+    BATCH_SIZE=1 \
+    SUB_SEQUENCE_LENGTH=20 
