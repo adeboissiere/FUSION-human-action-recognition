@@ -116,7 +116,8 @@ Train model
 -----------
 After the necessary h5 have been generated, it is time to test our FUSION model. To do so, use the `make train` command with the different hyperparameters. Below is an example of how to use the command. For the commands used to obtain the results from the paper, check *paper_cmds.txt* in the root folder. 
 
-    ```make train \
+    ```shell
+    make train \
     EVALUATION_TYPE=cross_subject \
     MODEL_TYPE=FUSION \
     USE_POSE=True \
@@ -132,7 +133,8 @@ After the necessary h5 have been generated, it is time to test our FUSION model.
     SUB_SEQUENCE_LENGTH=20 \
     AUGMENT_DATA=True \
     EVALUATE_TEST=True \
-    SEED=0```
+    SEED=0
+    ```
 
 
 --------
