@@ -61,16 +61,21 @@ The first step to replicate our results is to clone the project and create a vir
 The data used comes from the [NTU RGB+D dataset](http://rose1.ntu.edu.sg/datasets/actionrecognition.asp).
 
 1. Clone project
+
     `git clone https://github.com/gnocchiflette/FUSION-human-action-recognition`
 
-2. Create virtual environment 
+2. Create virtual environment
+
     `make create_environment`
 
 3. Activate environment (do so every time you work on this repository)
+
     `workon fusion` (for virtual env wrapper)
+
     `source activate fusion` (for conda)
 
 4. Install requirements
+
     `make requirements`
 
 5. Download raw data from the [NTU RGB+D website](http://rose1.ntu.edu.sg/datasets/actionrecognition.asp), decompress archives and place files as described in the Project Description above.
