@@ -149,7 +149,7 @@ Results
 
 Below is a summary of the results from the paper. We achieve state-of-the-art results. 
 
-![Summary of results][/reports/figures/results_summary.png]
+![Summary of results][./reports/figures/results_summary.png]
 
 --------
 
