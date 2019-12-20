@@ -11,7 +11,7 @@ PROJECT_NAME = fusion
 PYTHON_INTERPRETER = python3
 
 # Make Data variables
-RAW_DATA_PATH:="$(shell pwd)/data/raw/"
+DATA_PATH:="$(shell pwd)/data/raw/"
 PROCESSED_DATA_PATH:="$(shell pwd)/data/processed/"
 DATASET_TYPE = "" # [SKELETON, RGB, IR]
 COMPRESSION = ""
@@ -58,8 +58,8 @@ requirements: test_environment
 ## Make h5 Dataset
 data: 
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py \
-	--data_path=$(RAW_DATA_PATH) \
-l	--output_folder=$(PROCESSED_DATA_PATH) \
+	--data_path=$(DATA_PATH) \
+	--output_folder=$(PROCESSED_DATA_PATH) \
 	--dataset_type=$(DATASET_TYPE) \
 	--compression=$(COMPRESSION) \
 	--compression_opts=$(COMPRESSION_OPTS)

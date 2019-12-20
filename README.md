@@ -4,7 +4,7 @@ FUSION: Full Use of Skeleton and Infrared in Optimized Network for Human Action 
 We propose a novel deep network fusing skeleton and infrared data for Human Action Recognition. The network is tested on the largest RGB+D dataset to date, NTU RGB+D. We report state of the art performances with over 90% accuracy on both cross-subject and cross-view benchmarks. 
 
 Project Organization
-------------
+--------------------
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
@@ -83,6 +83,29 @@ The data used comes from the [NTU RGB+D dataset](http://rose1.ntu.edu.sg/dataset
 6. Run the `make data` commands to create the h5 files.
 
 
+Make h5 datasets
+----------------
+Our FUSION model uses both pose and IR data. It is modular, so it is possible to start with one or the other (see the Train model section), but best results are achieved using a combination of the two. To replicate all results from the paper, all h5 datasets (except *ir_cropped_moving.h5*) must be created. Assuming the Project Organization is kept, here are the commands to create the different datasets.
+
+### IR 2D skeleton dataset
+
+    `make data DATASET_TYPE=IR_SKELETON`
+
+### 3D skeleton dataset
+
+    `make data DATASET_TYPE=SKELETON`
+
+### Raw IR sequences dataset
+
+    `make data DATASET_TYPE=IR`
+
+### Cropped IR sequences dataset (requires ir.h5 and ir_skeleton.h5)
+
+    `make data DATASET_TYPE=IR_CROPPED DATA_PATH="./data/processed/"`
+
+### [Optional] Cropped moving IR sequences dataset (requires ir.h5 and ir_skeleton.h5)
+
+    `make data DATASET_TYPE=IR_CROPPED_MOVING DATA_PATH="./data/processed/"`
 
 --------
 

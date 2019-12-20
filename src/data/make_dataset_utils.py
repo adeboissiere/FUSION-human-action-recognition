@@ -213,7 +213,7 @@ def create_h5_ir_dataset(input_path, output_path, compression="", compression_op
 
             # Read corresponding video
             video_data = skvideo.io.vread(
-                input_path + ir_folder + sequence_name + '.avi')[:, :, :, 0]  # shape (n_frames, H, W)
+                input_path + ir_folder + filename)[:, :, :, 0]  # shape (n_frames, H, W)
 
             # Get video dimensions
             _, H, W = video_data.shape
