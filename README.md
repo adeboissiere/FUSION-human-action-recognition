@@ -114,7 +114,9 @@ It is not mandatory to keep raw and processed data in the *./data/* folder, thou
 
 Train model
 -----------
-After the necessary h5 have been generated, it is time to test our FUSION model. To do so, use the `make train` command with the different hyperparameters. Below is an example of how to use the command. For the commands used to obtain the results from the paper, check *paper_cmds.txt* in the root folder. 
+After the necessary h5 have been generated, it is time to test our FUSION model. To do so, use the `make train` command with the different hyperparameters. Below is an example of how to use the command, assuming the Project Organization is kept. For the commands used to obtain the results from the paper, check *paper_cmds.txt* in the root folder. 
+
+**Note** that a folder with a unique name will be created.
 
     
     make train \
@@ -136,6 +138,18 @@ After the necessary h5 have been generated, it is time to test our FUSION model.
         SEED=0
     
 
+If the h5 files are not in the default location, you need to specify the `PROCESSED_DATA_PATH` variable. If you would like to save the model else where (default is *./data/models/*), you need to specify the `MODEL_FOLDER` variable.
+
+Check the documentation for more infos on the **src.model** module and the make train command.
+
+
+
+Results
+-------
+
+Below is a summary of the results from the paper. We achieve state-of-the-art results. 
+
+![Summary of results][/reports/figures/results_summary.png]
 
 --------
 
