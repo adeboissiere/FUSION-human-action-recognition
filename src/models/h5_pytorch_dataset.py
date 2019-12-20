@@ -1,5 +1,5 @@
 r"""
-Custom PyTorch dataset that reads from the *.h5 datasets (see data module for more infos).
+Custom PyTorch dataset that reads from the h5 datasets (see src.data module for more infos).
 
 """
 
@@ -12,13 +12,13 @@ from src.models.data_augmentation import *
 
 
 class TorchDataset(torch.utils.data.Dataset):
-    r"""This custom PyTorch lazy loads from the *.h5 datasets. This means that it does not load the entire dataset in
+    r"""This custom PyTorch lazy loads from the h5 datasets. This means that it does not load the entire dataset in
     memory, which would be impossible for the IR sequences. Instead, it opens and reads from the h5 file. This is a bit
     slower, but very memory efficient. Additionally, the lost time is mitigated when using multiple workers for the
     data loaders.
 
     Attributes:
-        - **data_path** (str): Path containing the h5 files (default ./data/processed/).
+        - **data_path** (str): Path containing the h5 files (default *./data/processed/*).
         - **model_type** (str): "FUSION" only for now.
         - **use_pose** (bool): Include skeleton data
         - **use_ir** (bool): Include IR data
@@ -26,7 +26,7 @@ class TorchDataset(torch.utils.data.Dataset):
         - **sub_sequence_length** (str): Number of frames to subsample from full IR sequences
         - **augment_data** (bool): Choose to augment data by geometric transformation (skeleton data) or horizontal
           flip (IR data)
-        - **samples_names** (list): Contains the sequences names of the dataset (ie. train, validation, test)clean rst
+        - **samples_names** (list): Contains the sequences names of the dataset (ie. train, validation, test)
 
     Methods:
         - *__getitem__(index)*: Returns the processed sequence (skeleton and/or IR) and its label
@@ -58,13 +58,13 @@ class TorchDataset(torch.utils.data.Dataset):
         r"""Returns a processed sequence and label given an index.
 
         Inputs:
-            - **index** (int): Used as an index for **samples_names** attribute, a list, which will yield a sequence
+            - **index** (int): Used as an index for **samples_names** list which will yield a sequence
               name that will be used to address the h5 files.
 
         Outputs:
             - **skeleton_image** (np array): Skeleton sequence mapped to an image of shape `(3, 224, 224)`.
               Equals -1 if **use_pose** is False.
-            - **ir_sequence** (np array): Subsampled IR sequence of shape `(**sub_sequence_length**, 112, 112)`.
+            - **ir_sequence** (np array): Subsampled IR sequence of shape `(sub_sequence_length, 112, 112)`.
               Equals -1 if **use_ir** is False.
             - **y** (int): Class label of sequence.
 

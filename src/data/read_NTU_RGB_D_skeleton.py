@@ -6,6 +6,7 @@ Three functions are provided.
     - *read_skeleton*: Parses entire skeleton file and outputs skeleton data in a dictionary
     - *read_xyz*: Only keeps 3D coordinates from dictionary and returns numpy version.
     - *read_xy_ir*: Only keeps 2D IR coordinates from dictionary and returns numpy version.
+
 """
 
 import numpy as np

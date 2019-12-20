@@ -1,11 +1,13 @@
 r"""
 Used to create the training, validation and test PyTorch data loaders. All data loaders are created from the same
 custom PyTorch dataset template (h5_pytorch_dataset.py). A helper function is used to create 3 lists containing the
-sequences' names for the 3 sets. These lists are used for the __getitem__ methods of the datasets.
+sequences' names for the 3 sets. These lists are used for the __getitem__ method of the datasets.
 
 The provided functions are as follows:
     - *gen_sets_lists*: Creates lists with the sequences' names of the train-val-test splits
     - *create_data_loaders*: Creates three data loaders corresponding to the train-val-test splits
+
+We use 5% of the training set as our validation set.
 
 **Note** that because we fix the seed, the sets lists are consistent across runs. This is useful when studying the
 impact of a given hyperparameter for example.
@@ -22,7 +24,7 @@ def gen_sets_lists(data_path, evaluation_type):
     Inputs:
         - **data_path** (str): Path containing the h5 files (default ./data/processed/). This folder should contain
           the *samples_names.txt* file containing all the samples' names.
-        - **evaluation_type** (str): Benchmark evaluated. Either "cross_subject" of "cross_view"
+        - **evaluation_type** (str): Benchmark evaluated. Either "cross_subject" or "cross_view"
 
     Outputs:
         - **training_samples** (list): All the training sequences' names

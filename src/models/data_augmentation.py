@@ -2,7 +2,7 @@ r"""
 Contains functions to augment skeleton data.
 Skeleton data has a prior normalization step applied where the scene is translated from the camera coordinate system
 to a new local coordinate system. The translation is given by the vector formed between the origin of the camera and
-the first subject SPINE_MID for the first frame. The vector is the same for all subsequent frames.
+the first subject's SPINE_MID joint for the first frame. The vector is the same for all subsequent frames.
 
 The skeleton data used as inputs is already "prior" normalized.
 
@@ -133,9 +133,9 @@ def stretched_image_from_skeleton_sequence(skeleton, c_min, c_max):
 
     Inputs:
         - **skeleton** (np array): Skeleton sequence of shape `(3 {x, y, z}, max_frame, num_joint=25, n_subjects=2)`
-        - **c_min** (int): Minimum coordinate across all sequences, joints, subjects, frames after the prior
+        - **c_min** (int): Minimum coordinate value across all sequences, joints, subjects, frames after the prior
           normalization step.
-        - **c_max** (int): Maximum coordinate across all sequences, joints, subjects, frames after the prior
+        - **c_max** (int): Maximum coordinate value across all sequences, joints, subjects, frames after the prior
           normalization step.
 
     Outputs:

@@ -1,11 +1,15 @@
-# To associate an ID to a joint
+r"""
+Contains a help *Joints* class which maps each Kinect v2 index with its name. Also provides a **connexion_tuples** np
+array which contains all neighboring joints.
+
+"""
 from enum import IntEnum
 import numpy as np
 
 
-# See https://medium.com/@lisajamhoury/understanding-kinect-v2-joints-and-coordinate-system-4f4b90b9df16 for joints info
 class Joints(IntEnum):
-    r"""Maps each Kinect v2 joint to its corresponding index.
+    r"""Maps each Kinect v2 joint name to its corresponding index. See
+    https://medium.com/@lisajamhoury/understanding-kinect-v2-joints-and-coordinate-system-4f4b90b9df16 for joints infos.
 
     """
     SPINEBASE = 0

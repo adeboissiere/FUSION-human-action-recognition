@@ -228,19 +228,19 @@ if __name__ == '__main__':
         os.makedirs(output_folder)
 
     # Start training
-    train_model_new(model,
-                    model_type,
-                    optimizer,
-                    learning_rate,
-                    weight_decay,
-                    gradient_threshold,
-                    epochs,
-                    accumulation_steps,
-                    evaluate_test,
-                    output_folder,
-                    train_generator,
-                    test_generator,
-                    validation_generator)
+    train_model(model,
+                model_type,
+                optimizer,
+                learning_rate,
+                weight_decay,
+                gradient_threshold,
+                epochs,
+                accumulation_steps,
+                evaluate_test,
+                output_folder,
+                train_generator,
+                test_generator,
+                validation_generator)
 
     # echo -en "\e[?25h"
     print("-> Done !")

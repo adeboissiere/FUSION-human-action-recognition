@@ -1,6 +1,12 @@
 r"""
 Contains helper function to train a network, evaluate its accuracy score, and plot a confusion matrix.
 
+The following functions are provided:
+    - *plot_confusion_matrix*: Given a prediction and a ground truth vector, returns a plot of the confusion matrix.
+    - *calculate_accuracy*: Calculates accuracy score between 2 PyTorch tensors
+    - *evaluate_set*: Computes accuracy for a given set (train-val-test)
+    - *train_model*: Trains a model with the given hyperparameters.
+
 """
 import numpy as np
 import time
@@ -96,7 +102,7 @@ def calculate_accuracy(Y_hat, Y):
 
 def evaluate_set(model, model_type, data_loader, output_folder, set_name):
     r"""Calculates accuracy score over a given set (train-test-val) and returns two vectors with all predictions and
-    all ground truthes.
+    all ground truths.
 
     Inputs:
         - **model** (PyTorch model): Evaluated PyTorch model.
@@ -149,19 +155,19 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
     return average_accuracy / n_samples, y_true, y_pred
 
 
-def train_model_new(model,
-                    model_type,
-                    optimizer,
-                    learning_rate,
-                    weight_decay,
-                    gradient_threshold,
-                    epochs,
-                    accumulation_steps,
-                    evaluate_test,
-                    output_folder,
-                    train_generator,
-                    test_generator,
-                    validation_generator = None):
+def train_model(model,
+                model_type,
+                optimizer,
+                learning_rate,
+                weight_decay,
+                gradient_threshold,
+                epochs,
+                accumulation_steps,
+                evaluate_test,
+                output_folder,
+                train_generator,
+                test_generator,
+                validation_generator = None):
     r"""Trains a model in batches fashion. At each epoch, the entire training set is studied, then the validation and
     the test sets are evaluated. **Note** that we only use the validation set to select which model to keep. Files
     *log.txt* and *batch_log.txt* are used to debug and record training progress.

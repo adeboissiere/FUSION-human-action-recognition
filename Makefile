@@ -90,7 +90,7 @@ train:
 ## Make Visualize
 confusion_matrix:
 	$(PYTHON_INTERPRETER) src/models/plot_confusion_matrix.py \
-	--data_path=$(NTU_RGBD_DATA_PATH) \
+	--data_path=$(PROCESSED_DATA_PATH) \
 	--model_folder=$(MODEL_FOLDER) \
 	--model_file=$(MODEL_FILE) \
 	--evaluation_type=$(EVALUATION_TYPE) \
