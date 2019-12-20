@@ -143,13 +143,28 @@ If the h5 files are not in the default location, you need to specify the `PROCES
 Check the documentation for more infos on the **src.model** module and the make train command.
 
 
+Plot confusion matrix
+---------------------
+Once the model is trained, the confusion matrix is a greater information to understand where the model struggles. We provide a command to generate a .png image from a trained model. Below is an example of how to do so.
+
+    make confusion_matrix \
+        MODEL_FOLDER="./models/fusion_test_tube_seed=0/fusion_20/cross_subject/aug=True/" \
+        MODEL_FILE="model12.pt" \
+        EVALUATION_TYPE=cross_subject \
+        MODEL_TYPE=FUSION \
+        USE_POSE=True \
+        USE_IR=True \
+        USE_CROPPED_IR=True \
+        BATCH_SIZE=1 \
+        SUB_SEQUENCE_LENGTH=20 
+
 
 Results
 -------
 
 Below is a summary of the results from the paper. We achieve state-of-the-art results. 
 
-![Summary of results][./reports/figures/results_summary.png]
+![Summary of results](./reports/figures/results_summary.png)
 
 --------
 
