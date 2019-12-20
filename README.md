@@ -1,5 +1,5 @@
 FUSION: Full Use of Skeleton and Infrared in Optimized Network for Human Action Recognition
-==============================
+===========================================================================================
 
 We propose a novel deep network fusing skeleton and infrared data for Human Action Recognition. The network is tested on the largest RGB+D dataset to date, NTU RGB+D. We report state of the art performances with over 90% accuracy on both cross-subject and cross-view benchmarks. 
 
@@ -13,11 +13,11 @@ Project Organization
     │   ├── processed      <- The final, canonical data sets for modeling.
     │   │   ├── missing_skeleton.txt   
     │   │   ├── samples_names.txt   
-    │   │   ├── ir.h5   
-    │   │   ├── ir_cropped.h5
-    │   │   ├── ir_cropped_moving.h5 (optional)
-    │   │   ├── ir_skeleton.h5
-    │   │   ├── skeleton.h5   
+    │   │   ├── ir.h5 (1TB)   
+    │   │   ├── ir_cropped.h5 (157.8GB)
+    │   │   ├── ir_cropped_moving.h5 (60.8GB | optional)
+    │   │   ├── ir_skeleton.h5 (2.0GB)
+    │   │   ├── skeleton.h5 (3.0GB)   
     │   │      
     │   └── raw            <- The original, immutable data dump.
     │       ├── nturgb+d_ir         <- Raw IR videos (*.avi)
@@ -55,7 +55,7 @@ Project Organization
 
 
 Getting started
-------------
+---------------
 The first step to replicate our results is to clone the project and create a virtual environment using the Makefile. After that, the raw data should be downloaded and placed according to the default Project Organization provided above. Then various h5 datasets will have to be created using the Makefile. This will take a while but is a more practical way of handling data. Once the h5 files are created, you are ready to replicate our results or use them to implement your own models!
 
 The data used comes from the [NTU RGB+D dataset](http://rose1.ntu.edu.sg/datasets/actionrecognition.asp).
@@ -85,27 +85,55 @@ The data used comes from the [NTU RGB+D dataset](http://rose1.ntu.edu.sg/dataset
 
 Make h5 datasets
 ----------------
-Our FUSION model uses both pose and IR data. It is modular, so it is possible to start with one or the other (see the Train model section), but best results are achieved using a combination of the two. To replicate all results from the paper, all h5 datasets (except *ir_cropped_moving.h5*) must be created. Assuming the Project Organization is kept, here are the commands to create the different datasets.
+Our FUSION model uses both pose and IR data. It is modular, so it is possible to start with one or the other (see the Train model section), but best results are achieved using a combination of the two. To replicate all results from the paper, all h5 datasets (except *ir_cropped_moving.h5*) must be created. Assuming the Project Organization is kept, here are the commands to create the different datasets. The files are **quite heavy**, check the Project Organization for exact sizes.
 
-### IR 2D skeleton dataset
+
+- **IR 2D skeleton dataset**
 
     `make data DATASET_TYPE=IR_SKELETON`
 
-### 3D skeleton dataset
+- **3D skeleton dataset**
 
     `make data DATASET_TYPE=SKELETON`
 
-### Raw IR sequences dataset
+- **Raw IR sequences dataset**
 
     `make data DATASET_TYPE=IR`
 
-### Cropped IR sequences dataset (requires ir.h5 and ir_skeleton.h5)
+- **Cropped IR sequences dataset** (requires ir.h5 and ir_skeleton.h5)
 
     `make data DATASET_TYPE=IR_CROPPED DATA_PATH="./data/processed/"`
 
-### [Optional] Cropped moving IR sequences dataset (requires ir.h5 and ir_skeleton.h5)
+- **[Optional] Cropped moving IR sequences dataset** (requires ir.h5 and ir_skeleton.h5)
 
     `make data DATASET_TYPE=IR_CROPPED_MOVING DATA_PATH="./data/processed/"`
+
+
+It is not mandatory to keep raw and processed data in the *./data/* folder, though highly encouraged. They could be in a different location (ie. an external drive). However, **it is crucial to keep the h5 files names the same**. Should the data be in a different folder, you will have to specify the input (DATA_PATH) and output path (PROCESSED_DATA_PATH). Check the project documentation (**src.data** module) for details.
+
+
+Train model
+-----------
+After the necessary h5 have been generated, it is time to test our FUSION model. To do so, use the `make train` command with the different hyperparameters. Below is an example of how to use the command. For the commands used to obtain the results from the paper, check *paper_cmds.txt* in the root folder. 
+
+`make train \\
+    EVALUATION_TYPE=cross_subject \\
+    MODEL_TYPE=FUSION \\
+    USE_POSE=True \\
+    USE_IR=True \\
+    PRETRAINED=True \\
+    USE_CROPPED_IR=True \\
+    LEARNING_RATE=1e-4 \\
+    WEIGHT_DECAY=0.0 \\
+    GRADIENT_THRESHOLD=10 \\
+    EPOCHS=15 \\
+    BATCH_SIZE=16 \\
+    ACCUMULATION_STEPS=1 \\
+    SUB_SEQUENCE_LENGTH=20 \\
+    AUGMENT_DATA=True \\
+    EVALUATE_TEST=True \\
+    SEED=0`
+
 
 --------
 
