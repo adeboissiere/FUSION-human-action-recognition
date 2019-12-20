@@ -1,4 +1,8 @@
-import torch
+r"""This module is a copy taken from the official Torchvision documentation of a greater release. The reason it is
+included is because we use an older version of Torchvision, as it is the latest available on our cluster. Will update
+in the future.
+
+"""
 import torch.nn as nn
 
 from torch.hub import load_state_dict_from_url

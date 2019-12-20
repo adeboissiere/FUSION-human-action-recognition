@@ -1,5 +1,6 @@
 r"""
 Custom PyTorch dataset that reads from the *.h5 datasets (see data module for more infos).
+
 """
 
 import h5py
@@ -66,6 +67,7 @@ class TorchDataset(torch.utils.data.Dataset):
             - **ir_sequence** (np array): Subsampled IR sequence of shape `(**sub_sequence_length**, 112, 112)`.
               Equals -1 if **use_ir** is False.
             - **y** (int): Class label of sequence.
+
         """
         y = int(self.samples_names[index][-3:]) - 1
 
@@ -146,6 +148,7 @@ class TorchDataset(torch.utils.data.Dataset):
 
         Outputs:
             - **length** (int): Number of elements in dataset.
+
         """
         return len(self.samples_names)
 

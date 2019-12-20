@@ -5,6 +5,9 @@ import numpy as np
 
 # See https://medium.com/@lisajamhoury/understanding-kinect-v2-joints-and-coordinate-system-4f4b90b9df16 for joints info
 class Joints(IntEnum):
+    r"""Maps each Kinect v2 joint to its corresponding index.
+
+    """
     SPINEBASE = 0
     SPINEMID = 1
     NECK = 2
@@ -38,30 +41,6 @@ class Joints(IntEnum):
     HANDTIPRIGHT = 23
     THUMBRIGHT = 24
 
-
-kinematic_chain = np.array([Joints.SPINEMID, Joints.SPINEBASE, Joints.HIPLEFT, Joints.KNEELEFT, Joints.ANKLELEFT, Joints.FOOTLEFT,
-                            Joints.ANKLELEFT, Joints.KNEELEFT, Joints.HIPLEFT, Joints.SPINEBASE,
-                            Joints.SPINEMID,  Joints.SPINEBASE, Joints.HIPRIGHT, Joints.KNEERIGHT, Joints.ANKLERIGHT, Joints.FOOTRIGHT,
-                            Joints.ANKLERIGHT, Joints.KNEERIGHT, Joints.HIPRIGHT, Joints.SPINEBASE,
-                            Joints.SPINEMID, Joints.SPINESHOULDER, Joints.NECK, Joints.HEAD,
-                            Joints.NECK, Joints.SPINESHOULDER, Joints.SPINEMID,
-                            Joints.SPINESHOULDER, Joints.SHOULDERLEFT, Joints.ELBOWLEFT, Joints.WRISTLEFT, Joints.HANDLEFT, Joints.HANDTIPLEFT,
-                            Joints.HANDLEFT, Joints.WRISTLEFT, Joints.THUMBLEFT, Joints.WRISTLEFT, Joints.ELBOWLEFT, Joints.SHOULDERLEFT, Joints.SPINESHOULDER, Joints.SPINEMID,
-                            Joints.SPINESHOULDER, Joints.SHOULDERRIGHT, Joints.ELBOWRIGHT, Joints.WRISTRIGHT, Joints.HANDRIGHT, Joints.HANDTIPRIGHT,
-                            Joints.HANDRIGHT, Joints.WRISTRIGHT, Joints.THUMBRIGHT, Joints.WRISTRIGHT, Joints.ELBOWRIGHT, Joints.SHOULDERRIGHT, Joints.SPINESHOULDER, Joints.SPINEMID])
-
-'''
-kinematic_chain = np.array([Joints.SPINEMID, Joints.SPINEBASE, Joints.HIPLEFT, Joints.KNEELEFT, Joints.ANKLELEFT, Joints.FOOTLEFT,
-                            Joints.ANKLELEFT, Joints.KNEELEFT, Joints.HIPLEFT,
-                            Joints.SPINEMID,  Joints.SPINEBASE, Joints.HIPRIGHT, Joints.KNEERIGHT, Joints.ANKLERIGHT, Joints.FOOTRIGHT,
-                            Joints.ANKLERIGHT, Joints.KNEERIGHT, Joints.HIPRIGHT, Joints.SPINEBASE,
-                            Joints.SPINEMID, Joints.SPINESHOULDER, Joints.NECK, Joints.HEAD,
-                            Joints.NECK, Joints.SPINESHOULDER, Joints.SPINEMID,
-                            Joints.SPINESHOULDER, Joints.SHOULDERLEFT, Joints.ELBOWLEFT, Joints.WRISTLEFT, Joints.HANDLEFT, Joints.HANDTIPLEFT,
-                            Joints.HANDLEFT, Joints.WRISTLEFT, Joints.ELBOWLEFT, Joints.SHOULDERLEFT, Joints.SPINESHOULDER, Joints.SPINEMID,
-                            Joints.SPINESHOULDER, Joints.SHOULDERRIGHT, Joints.ELBOWRIGHT, Joints.WRISTRIGHT, Joints.HANDRIGHT, Joints.HANDTIPRIGHT,
-                            Joints.HANDRIGHT, Joints.WRISTRIGHT, Joints.ELBOWRIGHT, Joints.SHOULDERRIGHT, Joints.SPINESHOULDER, Joints.SPINEMID])
-'''
 
 connexion_tuples = np.array([[Joints.SPINEBASE, Joints.SPINEMID],
                              [Joints.SPINEMID, Joints.SPINESHOULDER],

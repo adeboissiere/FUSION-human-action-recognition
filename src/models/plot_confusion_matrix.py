@@ -2,7 +2,7 @@
 Computes the confusion matrix for a trained model. Takes as input important parameters such as the benchmark studied.
 A confusion matrix in .png format is saved in the trained model folder provided.
 
-Ploting the confusion matrix is best called using the provided Makefile provided.
+Plotting the confusion matrix is best called using the provided Makefile provided.
 
 >>> make train \\
     PROCESSED_DATA_PATH=X \\
@@ -134,8 +134,7 @@ if __name__ == '__main__':
         y_true = np.int32(np.concatenate(y_true))
         y_pred = np.int32(np.concatenate(y_pred))
 
-        plot_confusion_matrix(y_true, y_pred, classes, normalize=True,
-                              title="Confusion matrix")
+        plot_confusion_matrix(y_true, y_pred, classes, normalize=True, title="Confusion matrix")
         plt.savefig(model_folder + str(model_type) + ".png")
 
         print("Accuracy over test set " + str(test_accuracy))

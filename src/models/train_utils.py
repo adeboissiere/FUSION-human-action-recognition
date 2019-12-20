@@ -1,20 +1,31 @@
+r"""
+Contains helper function to train a network, evaluate its accuracy score, and plot a confusion matrix.
+
+"""
 import numpy as np
 import time
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 
-from src.models.torchvision_models import *
 from src.models.pose_ir_fusion import *
 
 
-def plot_confusion_matrix(y_true, y_pred, classes,
-                          normalize=False,
-                          title=None,
-                          cmap=plt.cm.Blues):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
+def plot_confusion_matrix(y_true, y_pred, classes, normalize=False, title=None, cmap=plt.cm.Blues):
+    r""" This function is taken from the sklearn website. It is slightly modified. Given a prediction vector, a ground
+    truth vector and a list containing the names of the classes, it returns a confusion matrix plot.
+
+    Inputs:
+        - **y_true** (np.int32 array): 1D array of predictions
+        - **y_pred** (np.int32 array): 1D array of ground truths
+        - **classes** (list): List of action names
+        - **normalize** (bool): Use percentages instead of totals
+        - **title** (str): Title of the plot
+        - **cmap** (matplotlib cmap): Plot color style
+
+    Outputs:
+        **ax** (matplotlib plot): Confusion matrix plot
+
     """
     if not title:
         if normalize:
@@ -32,8 +43,6 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     else:
         None
         # print('Confusion matrix, without normalization')
-
-    # print(cm)
 
     fig, ax = plt.subplots(figsize=(27, 27))
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
@@ -64,6 +73,18 @@ def plot_confusion_matrix(y_true, y_pred, classes,
 
 
 def calculate_accuracy(Y_hat, Y):
+    r"""Calculates accuracy score for prediction tensor given its ground truh.
+
+    Inputs:
+        - **Y_hat** (PyTorch tensor): Predictions scores (Softmax/log-Softmax) of shape `(batch_size, n_classes)`
+        - **Y** (PyTorch tensor): Ground truth vector of shape `(batch_size, n_classes)`
+
+    Outputs:
+        - **accuracy** (int): Accuracy score
+        - **Y_hat** (np array): Numpy version of **Y_hat** of shape `(batch_size, n_classes)`
+        - **Y** (np array): Numpy version of **Y** of shape `(batch_size, n_classes)`
+
+    """
     _, Y_hat = Y_hat.max(1)
     trues = (Y_hat == Y.long()) * 1
     trues = trues.cpu().numpy()
@@ -74,6 +95,24 @@ def calculate_accuracy(Y_hat, Y):
 
 
 def evaluate_set(model, model_type, data_loader, output_folder, set_name):
+    r"""Calculates accuracy score over a given set (train-test-val) and returns two vectors with all predictions and
+    all ground truthes.
+
+    Inputs:
+        - **model** (PyTorch model): Evaluated PyTorch model.
+        - **model_type** (str): "FUSION" only for now.
+        - **data_loader** (PyTorch data loader): Data loader of evaluated set
+        - **output_folder** (str): Path of output folder
+        - **set_name** (str): Name of the evaluated set [ie. "TRAIN" | "VAL" | "TEST"]
+
+    Outputs:
+        - **accuracy** (int): Accuracy over set
+        - **y_true** (list of np arrays): Lists of all ground truths vectors. Each index of the list yields the ground
+          truths for a given batch.
+        - **y_pred** (list of np arrays): Lists of all predictions vectors. Each index of the list yields the
+          predictions for a given batch.
+
+    """
     model.eval()
 
     average_accuracy = 0
@@ -101,10 +140,6 @@ def evaluate_set(model, model_type, data_loader, output_folder, set_name):
         y_true.append(Y)
         y_pred.append(Y_hat)
 
-        # print([classes[i] for i in np.int32(Y_hat)])
-        # print([classes[i] for i in np.int32(Y)])
-        # print()
-
         batch_log = open(output_folder + "batch_log.txt", "a+")
         batch_log.write("[" + str(set_name) + " - " + str(batch_idx) + "/" + str(len(data_loader)) +
                         "] Accuracy : " + str(accuracy))
@@ -127,6 +162,28 @@ def train_model_new(model,
                     train_generator,
                     test_generator,
                     validation_generator = None):
+    r"""Trains a model in batches fashion. At each epoch, the entire training set is studied, then the validation and
+    the test sets are evaluated. **Note** that we only use the validation set to select which model to keep. Files
+    *log.txt* and *batch_log.txt* are used to debug and record training progress.
+
+    Inputs:
+        - **model** (PyTorch model): Model to train.
+        - **model_type** (str): "FUSION" only for now.
+        - **optimizer** (str): Name of the optimizer to use ("ADAM" of "SGD" only for now)
+        - **learning_rate** (float): Learning rate
+        - **weight_decay** (float): Weight decay
+        - **gradient_threshold** (float): Clip gradient by this value. If 0, no threshold is applied.
+        - **epochs** (int): Number of epochs to train.
+        - **accumulation_steps** (int): Accumulate gradient across batches. This is a trick to virtually train larger
+          batches on modest architectures.
+        - **evaluate_test** (bool): Choose to evaluate test set or not at each epoch.
+        - **output_folder** (str): Entire path in which log files and models are saved.
+          By default: ./models/automatically_created_folder/
+        - **train_generator** (PyTorch data loader): Training set data loader
+        - **validation_generator** (PyTorch data loader): Validation set data loader
+        - **test_generator** (PyTorch data loader): Test set data loader
+
+    """
 
     # Lists for plotting
     time_batch = []
@@ -202,13 +259,12 @@ def train_model_new(model,
                 start_batch = time.time()
 
         # VALIDATION STEP
-        if validation_generator is not None:
-            with torch.no_grad():
-                validation_accuracy, _, _ = evaluate_set(model,
-                                                         model_type,
-                                                         validation_generator,
-                                                         output_folder,
-                                                         "VAL")
+        with torch.no_grad():
+            validation_accuracy, _, _ = evaluate_set(model,
+                                                     model_type,
+                                                     validation_generator,
+                                                     output_folder,
+                                                     "VAL")
 
         # TEST STEP
         if evaluate_test:

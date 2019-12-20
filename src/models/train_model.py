@@ -58,7 +58,7 @@ With the parameters taking from the following values :
     - GRADIENT_THRESHOLD:
         Real positive number. If 0, then no threshold is applied
     - ACCUMULATION_STEPS:
-        Accumulate gradient across epochs. This is a trick to virtually train larger batches on modest architectures.
+        Accumulate gradient across batches. This is a trick to virtually train larger batches on modest architectures.
     - SUB_SEQUENCE_LENGTH:
         [1 .. 20]
         Specifies the number of frames to take from a complete IR sequence.
