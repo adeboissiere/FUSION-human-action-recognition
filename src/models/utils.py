@@ -7,9 +7,17 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def set_parameter_requires_grad(model, feature_extracting):
-    if feature_extracting:
-        for param in model.parameters():
-            param.requires_grad = False
+    r"""Sets model to feature extraction mode or not. If **feature_extracting** is True, the gradients are frozen in the
+    model. Else, the gradients are activated.
+
+    Inputs:
+        - **model** (PyTorch model): Model to set
+        - **feature_extracting** (bool): If true, freezes model gradients. If not, activates model gradients.
+
+    """
+
+    for param in model.parameters():
+        param.requires_grad = not feature_extracting
 
 
 classes = ['drink water', 'eat meal/snack',

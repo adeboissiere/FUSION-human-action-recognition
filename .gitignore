@@ -62,6 +62,7 @@ target/
 # Database
 *.db
 *.rdb
+*.h5
 
 # Pycharm
 .idea
@@ -76,7 +77,7 @@ target/
 .ipynb_checkpoints/
 
 # exclude data from source control by default
-/data/
+/data/raw/*
 
 # Mac OS-specific storage files
 .DS_Store
@@ -87,3 +88,10 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+# ========== CUSTOM EXCLUDES ==========
+# exclude PyTorch models
+*.pt
+
+# exclude batch_log.txt files
+batch_log.txt

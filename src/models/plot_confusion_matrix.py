@@ -2,27 +2,19 @@
 Computes the confusion matrix for a trained model. Takes as input important parameters such as the benchmark studied.
 A confusion matrix in .png format is saved in the trained model folder provided.
 
-Ploting the confusion matrix is best called using the provided Makefile provided.
+Plotting the confusion matrix is best called using the provided Makefile provided.
 
->>> make train \\
+>>> make confusion_matrix \\
     PROCESSED_DATA_PATH=X \\
     MODEL_FOLDER=X \\
+    MODEL_FILE=X \\
     EVALUATION_TYPE=X \\
     MODEL_TYPE=X \\
     USE_POSE=X \\
     USE_IR=X \\
-    PRETRAINED=X \\
     USE_CROPPED_IR=X \\
-    LEARNING_RATE=X \\
-    WEIGHT_DECAY=X \\
-    GRADIENT_THRESHOLD=X \\
-    EPOCHS=X \\
     BATCH_SIZE=X \\
-    ACCUMULATION_STEPS=X \\
     SUB_SEQUENCE_LENGTH=X \\
-    AUGMENT_DATA=X \\
-    EVALUATE_TEST=X \\
-    SEED=X
 
 
 With the parameters taking from the following values :
@@ -31,6 +23,8 @@ With the parameters taking from the following values :
     - MODEL_FOLDER:
         Output path to save models and log files. A folder inside that path will be automatically created. Default
         location is *./models/*
+    - MODEL_FILE:
+        Name of the model.
     - EVALUATION_TYPE:
         [cross_subject | cross_view]
     - MODEL_TYPE:
@@ -112,7 +106,7 @@ if __name__ == '__main__':
                                                False)
 
     if model_type == "FUSION":
-        model = FUSION()
+        model = FUSION(use_pose, use_ir, False)
     else:
         print("Model type not recognized. Exiting")
         exit()
@@ -134,8 +128,7 @@ if __name__ == '__main__':
         y_true = np.int32(np.concatenate(y_true))
         y_pred = np.int32(np.concatenate(y_pred))
 
-        plot_confusion_matrix(y_true, y_pred, classes, normalize=True,
-                              title="Confusion matrix")
+        plot_confusion_matrix(y_true, y_pred, classes, normalize=True, title="Confusion matrix")
         plt.savefig(model_folder + str(model_type) + ".png")
 
         print("Accuracy over test set " + str(test_accuracy))

@@ -2,9 +2,18 @@
 The main file for the *src.data* module. Creates an h5 dataset from the raw NTU RGB+D files.
 Best called using the Makefile provided.
 
->>> make data RAW_DATA_PATH=X PROCESSED_DATA_PATH=X DATASET_TYPE=X COMPRESSION=X COMPRESSION_OPTS=X
+>>> make data \\
+    RAW_DATA_PATH=X \\
+    PROCESSED_DATA_PATH=X \\
+    DATASET_TYPE=X \\
+    COMPRESSION=X \\
+    COMPRESSION_OPTS=X
 
 With the parameters taking from the following values :
+    - RAW_DATA_PATH:
+        Default value is *./data/raw/*
+    - PROCESSED_DATA_PATH:
+        Default value is *./data/processed/*
     - DATASET_TYPE:
         [SKELETON | IR_SKELETON | IR | IR_CROPPED | IR_CROPPED_MOVING]
     - COMPRESSION:
@@ -45,10 +54,10 @@ if __name__ == '__main__':
                                    arg.compression_opts)
 
     elif arg.dataset_type == "IR_SKELETON":
-        create_2d_ir_skeleton(arg.data_path,
-                              arg.output_folder,
-                              arg.compression,
-                              arg.compression_opts)
+        create_h5_2d_ir_skeleton(arg.data_path,
+                                 arg.output_folder,
+                                 arg.compression,
+                                 arg.compression_opts)
 
     elif arg.dataset_type == "IR":
         create_h5_ir_dataset(arg.data_path,

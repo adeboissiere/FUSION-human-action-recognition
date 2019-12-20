@@ -3,13 +3,14 @@ This module creates different h5 files that contain the data provided by NTU RGB
 
 The following functions are provided.
 
-    - *create_2d_ir_skeleton*: Creates h5 with 2D IR skeleton data
-    - *create_h5_ir_cropped_dataset_from_h5*: Creates h5 containing cropped IR sequences around the subjects with a
-      fixed bounding box. Requires *create_h5_ir_dataset* and *create_2d_ir_skeleton* to be run first.
-    - *create_h5_ir_cropped_moving_dataset_from_h5*: Creates h5 containing cropped IR sequences around the subjects
-      with a moving bounding box. Requires *create_h5_ir_dataset* and *create_2d_ir_skeleton* to be run first.
-    - *create_h5_ir_dataset*: Creates h5 with raw IR sequences
+    - *create_h5_2d_ir_skeleton*: Creates h5 with 2D IR skeleton data
     - *create_h5_skeleton_dataset:* Creates h5 with 3D skeleton data
+    - *create_h5_ir_dataset*: Creates h5 with raw IR sequences
+    - *create_h5_ir_cropped_dataset_from_h5*: Creates h5 containing cropped IR sequences around the subjects with a
+      fixed bounding box. Requires *create_h5_ir_dataset* and *create_h5_2d_ir_skeleton* to be run first.
+    - *create_h5_ir_cropped_moving_dataset_from_h5*: Creates h5 containing cropped IR sequences around the subjects
+      with a moving bounding box. Requires *create_h5_ir_dataset* and *create_h5_2d_ir_skeleton* to be run first.
+
 """
 
 import cv2
@@ -25,7 +26,7 @@ from src.data.read_NTU_RGB_D_skeleton import *
 from src.utils.joints import *
 
 
-def create_2d_ir_skeleton(input_path, output_path, compression="", compression_opts=9):
+def create_h5_2d_ir_skeleton(input_path, output_path, compression="", compression_opts=9):
     r"""Creates an h5 dataset of the 2D skeleton projected on the IR frames.
     For each sequence, a new group with the name of the sequence, **SsssCcccPpppRrrrAaaa**, is created.
     In each group, a new dataset is created containing the 2D skeleton data.
@@ -37,9 +38,9 @@ def create_2d_ir_skeleton(input_path, output_path, compression="", compression_o
 
 
     Inputs:
-        - **input_path** (str): Path containing the raw NTU files (default: ./data/raw/.
+        - **input_path** (str): Path containing the raw NTU files (default: *./data/raw/.*
           See **Project Organization** in *README.md*)
-        - **output_path** (str): Path containing the processed h5 files (default: ./data/processed/.
+        - **output_path** (str): Path containing the processed h5 files (default: *./data/processed/.*
           See **Project Organization** in *README.md*)
         - **compression** (str): Compression type for h5. May take values in ["", "lzf", "gzip"]
         - **compression_otps** (int): Compression opts. For "gzip" compression only.
@@ -104,9 +105,9 @@ def create_h5_skeleton_dataset(input_path, output_path, compression="", compress
     The method creates the file "skeleton.h5". **Warning:** The file should not be renamed!
 
     Inputs:
-        - **input_path** (str): Path containing the raw NTU files (default: ./data/raw/.
+        - **input_path** (str): Path containing the raw NTU files (default: *./data/raw/*.
           See **Project Organization** in *README.md*)
-        - **output_path** (str): Path containing the processed h5 files (default: ./data/processed/.
+        - **output_path** (str): Path containing the processed h5 files (default: *./data/processed/*.
           See **Project Organization** in *README.md*)
         - **compression** (str): Compression type for h5. May take values in ["", "lzf", "gzip"]
         - **compression_otps** (int): Compression opts. For "gzip" compression only.
@@ -173,9 +174,9 @@ def create_h5_ir_dataset(input_path, output_path, compression="", compression_op
     The method creates the file "ir.h5". **Warning:** The file should not be renamed!
 
     Inputs:
-        - **input_path** (str): Path containing the raw NTU files (default: ./data/raw/.
+        - **input_path** (str): Path containing the raw NTU files (default: *./data/raw/*.
           See **Project Organization** in *README.md*)
-        - **output_path** (str): Path containing the processed h5 files (default: ./data/processed/.
+        - **output_path** (str): Path containing the processed h5 files (default: *./data/processed/*.
           See **Project Organization** in *README.md*)
         - **compression** (str): Compression type for h5. May take values in ["", "lzf", "gzip"]
         - **compression_otps** (int): Compression opts. For "gzip" compression only.
@@ -245,14 +246,14 @@ def create_h5_ir_cropped_dataset_from_h5(input_path, output_path, compression=""
     In each group, a new dataset is created containing the unprocessed IR sequence.
     The IR video data is of shape `(n_frames, H, W)`.
 
-    This method depends on the h5 datasets (ir.h5, ir_skeleton.h5) created by the above methods.
+    This method depends on the h5 datasets (ir.h5, ir_skeleton.h5) created by the corresponding methods.
 
     The method creates the file "ir_cropped.h5". **Warning:** The file should not be renamed!
 
     Inputs:
-        - **input_path** (str): Path containing the processed h5 files (default: ./data/processed/.
+        - **input_path** (str): Path containing the processed h5 files (default: *./data/processed/*.
           See **Project Organization** in *README.md*)
-        - **output_path** (str): Path containing the processed h5 files (default: ./data/processed/.
+        - **output_path** (str): Path containing the processed h5 files (default: *./data/processed/*.
           See **Project Organization** in *README.md*)
         - **compression** (str): Compression type for h5. May take values in ["", "lzf", "gzip"]
         - **compression_otps** (int): Compression opts. For "gzip" compression only.
@@ -356,14 +357,14 @@ def create_h5_ir_cropped_moving_dataset_from_h5(input_path, output_path, compres
     In each group, a new dataset is created containing the unprocessed IR sequence.
     The IR video data is of shape `(n_frames, H, W)`.
 
-    This method depends on the h5 datasets (ir.h5, ir_skeleton.h5) created by the above methods.
+    This method depends on the h5 datasets (ir.h5, ir_skeleton.h5) created by the corresponding methods.
 
     The method creates the file "ir_cropped_moving.h5". **Warning:** The file should not be renamed!
 
     Inputs:
-        - **input_path** (str): Path containing the processed h5 files (default: ./data/processed/.
+        - **input_path** (str): Path containing the processed h5 files (default: *./data/processed/.*
           See **Project Organization** in *README.md*)
-        - **output_path** (str): Path containing the processed h5 files (default: ./data/processed/.
+        - **output_path** (str): Path containing the processed h5 files (default: *./data/processed/.*
           See **Project Organization** in *README.md*)
         - **compression** (str): Compression type for h5. May take values in ["", "lzf", "gzip"]
         - **compression_otps** (int): Compression opts. For "gzip" compression only.
