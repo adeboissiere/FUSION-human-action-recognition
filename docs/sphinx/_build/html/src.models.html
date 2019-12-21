@@ -1,0 +1,905 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>src.models package &mdash; NTU-RGB-D 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="src.utils package" href="src.utils.html" />
+    <link rel="prev" title="src.data package" href="src.data.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> NTU-RGB-D
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Commands</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="src.html">src package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="src.data.html">src.data package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">src.models package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.data_augmentation">src.models.data_augmentation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.gen_data_loaders">src.models.gen_data_loaders module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.h5_pytorch_dataset">src.models.h5_pytorch_dataset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.plot_confusion_matrix">src.models.plot_confusion_matrix module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.pose_ir_fusion">src.models.pose_ir_fusion module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.torchvision_models">src.models.torchvision_models module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.train_model">src.models.train_model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.train_utils">src.models.train_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models.utils">src.models.utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-src.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="src.utils.html">src.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="src.html#module-src">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NTU-RGB-D</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="src.html">src package</a> &raquo;</li>
+        
+      <li>src.models package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/src.models.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="src-models-package">
+<h1>src.models package<a class="headerlink" href="#src-models-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-src.models.data_augmentation">
+<span id="src-models-data-augmentation-module"></span><h2>src.models.data_augmentation module<a class="headerlink" href="#module-src.models.data_augmentation" title="Permalink to this headline">¶</a></h2>
+<p>Contains functions to augment skeleton data.
+Skeleton data has a prior normalization step applied where the scene is translated from the camera coordinate system
+to a new local coordinate system. The translation is given by the vector formed between the origin of the camera and
+the first subject’s SPINE_MID joint for the first frame. The vector is the same for all subsequent frames.</p>
+<p>The skeleton data used as inputs is already “prior” normalized.</p>
+<p>Three functions are provided.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><em>build_rotation_matrix</em>: Creates a 3x3 rotation matrix for a given axis</p></li>
+<li><p><em>rotate_skeleton</em>: Randomly rotates a skeleton sequence around the X, Y and Z axis.</p></li>
+<li><p><em>stretched_image_from_skeleton_sequence</em>: Creates an RGB image from a skeleton sequence</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Note</strong> that the rotation angles are randomly taken in between hardcoded global variables in this file.</p>
+<p>As more guidelines we add the following informations.</p>
+<dl class="simple">
+<dt>Kinect v2 coordinate system:</dt><dd><ul class="simple">
+<li><p><strong>x</strong> : horizontal plane</p></li>
+<li><p><strong>y</strong> : height</p></li>
+<li><p><strong>z</strong> : depth</p></li>
+</ul>
+</dd>
+</dl>
+<p>NTU RGB-D sequences are acquired from -45° to 45° on the x axis</p>
+<dl class="function">
+<dt id="src.models.data_augmentation.build_rotation_matrix">
+<code class="sig-prename descclassname">src.models.data_augmentation.</code><code class="sig-name descname">build_rotation_matrix</code><span class="sig-paren">(</span><em class="sig-param">axis</em>, <em class="sig-param">rot_angle</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.data_augmentation.build_rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds a random rotation matrix for a given axis.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>axis</strong> (int): Axis of rotation (0: x, 1: y, 2: z)</p></li>
+<li><p><strong>rot_angle</strong> (float): Angle of rotation in degrees</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><p><strong>rotation_matrix (np array)</strong>: 3x3 rotation matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.data_augmentation.rotate_skeleton">
+<code class="sig-prename descclassname">src.models.data_augmentation.</code><code class="sig-name descname">rotate_skeleton</code><span class="sig-paren">(</span><em class="sig-param">skeleton</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.data_augmentation.rotate_skeleton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotates the skeleton sequence around its different axis.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><p><strong>skeleton</strong> (np array): Skeleton sequence of shape <cite>(3 {x, y, z}, max_frame, num_joint=25, n_subjects=2)</cite></p>
+</dd>
+<dt>Outputs:</dt><dd><p><strong>skeleton_aug</strong> (np array): Randomly rotated skeleton sequence of shape
+<cite>(3 {x, y, z}, max_frame, num_joint=25, n_subjects=2)</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.data_augmentation.stretched_image_from_skeleton_sequence">
+<code class="sig-prename descclassname">src.models.data_augmentation.</code><code class="sig-name descname">stretched_image_from_skeleton_sequence</code><span class="sig-paren">(</span><em class="sig-param">skeleton</em>, <em class="sig-param">c_min</em>, <em class="sig-param">c_max</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.data_augmentation.stretched_image_from_skeleton_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotates the skeleton sequence around its different axis.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>skeleton</strong> (np array): Skeleton sequence of shape <cite>(3 {x, y, z}, max_frame, num_joint=25, n_subjects=2)</cite></p></li>
+<li><p><strong>c_min</strong> (int): Minimum coordinate value across all sequences, joints, subjects, frames after the prior
+normalization step.</p></li>
+<li><p><strong>c_max</strong> (int): Maximum coordinate value across all sequences, joints, subjects, frames after the prior
+normalization step.</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><p><strong>skeleton_image</strong> (np array): RGB image of shape <cite>(3, 224, 224)</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.models.gen_data_loaders">
+<span id="src-models-gen-data-loaders-module"></span><h2>src.models.gen_data_loaders module<a class="headerlink" href="#module-src.models.gen_data_loaders" title="Permalink to this headline">¶</a></h2>
+<p>Used to create the training, validation and test PyTorch data loaders. All data loaders are created from the same
+custom PyTorch dataset template (h5_pytorch_dataset.py). A helper function is used to create 3 lists containing the
+sequences’ names for the 3 sets. These lists are used for the __getitem__ method of the datasets.</p>
+<dl class="simple">
+<dt>The provided functions are as follows:</dt><dd><ul class="simple">
+<li><p><em>gen_sets_lists</em>: Creates lists with the sequences’ names of the train-val-test splits</p></li>
+<li><p><em>create_data_loaders</em>: Creates three data loaders corresponding to the train-val-test splits</p></li>
+</ul>
+</dd>
+</dl>
+<p>We use 5% of the training set as our validation set.</p>
+<p><strong>Note</strong> that because we fix the seed, the sets lists are consistent across runs. This is useful when studying the
+impact of a given hyperparameter for example.</p>
+<dl class="function">
+<dt id="src.models.gen_data_loaders.create_data_loaders">
+<code class="sig-prename descclassname">src.models.gen_data_loaders.</code><code class="sig-name descname">create_data_loaders</code><span class="sig-paren">(</span><em class="sig-param">data_path</em>, <em class="sig-param">evaluation_type</em>, <em class="sig-param">model_type</em>, <em class="sig-param">use_pose</em>, <em class="sig-param">use_ir</em>, <em class="sig-param">use_cropped_IR</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">sub_sequence_length</em>, <em class="sig-param">augment_data</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.gen_data_loaders.create_data_loaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates three PyTorch data loaders corresponding to the train-val-test splits.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>data_path</strong> (str): Path containing the h5 files (default ./data/processed/).</p></li>
+<li><p><strong>evaluation_type</strong> (str): Benchmark evaluated. Either “cross_subject” of “cross_view”</p></li>
+<li><p><strong>model_type</strong> (str): “FUSION” only for now.</p></li>
+<li><p><strong>use_pose</strong> (bool): Include skeleton data</p></li>
+<li><p><strong>use_ir</strong> (bool): Include IR data</p></li>
+<li><p><strong>use_cropped_IR</strong> (bool): Type of IR dataset</p></li>
+<li><p><strong>batch_size</strong> (int): Size of batch</p></li>
+<li><p><strong>sub_sequence_length</strong> (str): Number of frames to subsample from full IR sequences</p></li>
+<li><p><strong>augment_data</strong> (bool): Choose to augment data by geometric transformation (skeleton data) or horizontal
+flip (IR data)</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><ul class="simple">
+<li><p><strong>training_generator</strong> (PyTorch data loader): Training PyTorch data loader</p></li>
+<li><p><strong>validation_generator</strong> (PyTorch data loader): Validation PyTorch data loader</p></li>
+<li><p><strong>testing_generator</strong> (PyTorch data loader): Testing PyTorch data loader</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.gen_data_loaders.gen_sets_lists">
+<code class="sig-prename descclassname">src.models.gen_data_loaders.</code><code class="sig-name descname">gen_sets_lists</code><span class="sig-paren">(</span><em class="sig-param">data_path</em>, <em class="sig-param">evaluation_type</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.gen_data_loaders.gen_sets_lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates 3 lists containing the sequences’ names for the train-val-test splits.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>data_path</strong> (str): Path containing the h5 files (default ./data/processed/). This folder should contain
+the <em>samples_names.txt</em> file containing all the samples’ names.</p></li>
+<li><p><strong>evaluation_type</strong> (str): Benchmark evaluated. Either “cross_subject” or “cross_view”</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><ul class="simple">
+<li><p><strong>training_samples</strong> (list): All the training sequences’ names</p></li>
+<li><p><strong>validation_samples</strong> (list): All the validation sequences’ names</p></li>
+<li><p><strong>testing samples</strong> (list): All the testing sequences’ names</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.models.h5_pytorch_dataset">
+<span id="src-models-h5-pytorch-dataset-module"></span><h2>src.models.h5_pytorch_dataset module<a class="headerlink" href="#module-src.models.h5_pytorch_dataset" title="Permalink to this headline">¶</a></h2>
+<p>Custom PyTorch dataset that reads from the h5 datasets (see src.data module for more infos).</p>
+<dl class="class">
+<dt id="src.models.h5_pytorch_dataset.TorchDataset">
+<em class="property">class </em><code class="sig-prename descclassname">src.models.h5_pytorch_dataset.</code><code class="sig-name descname">TorchDataset</code><span class="sig-paren">(</span><em class="sig-param">model_type</em>, <em class="sig-param">use_pose</em>, <em class="sig-param">use_ir</em>, <em class="sig-param">use_cropped_IR</em>, <em class="sig-param">data_path</em>, <em class="sig-param">sub_sequence_length</em>, <em class="sig-param">augment_data</em>, <em class="sig-param">samples_names</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.h5_pytorch_dataset.TorchDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.dataset.Dataset</span></code></p>
+<p>This custom PyTorch lazy loads from the h5 datasets. This means that it does not load the entire dataset in
+memory, which would be impossible for the IR sequences. Instead, it opens and reads from the h5 file. This is a bit
+slower, but very memory efficient. Additionally, the lost time is mitigated when using multiple workers for the
+data loaders.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><ul class="simple">
+<li><p><strong>data_path</strong> (str): Path containing the h5 files (default <em>./data/processed/</em>).</p></li>
+<li><p><strong>model_type</strong> (str): “FUSION” only for now.</p></li>
+<li><p><strong>use_pose</strong> (bool): Include skeleton data</p></li>
+<li><p><strong>use_ir</strong> (bool): Include IR data</p></li>
+<li><p><strong>use_cropped_IR</strong> (bool): Type of IR dataset</p></li>
+<li><p><strong>sub_sequence_length</strong> (str): Number of frames to subsample from full IR sequences</p></li>
+<li><p><strong>augment_data</strong> (bool): Choose to augment data by geometric transformation (skeleton data) or horizontal
+flip (IR data)</p></li>
+<li><p><strong>samples_names</strong> (list): Contains the sequences names of the dataset (ie. train, validation, test)</p></li>
+</ul>
+</dd>
+<dt>Methods:</dt><dd><ul class="simple">
+<li><p><em>__getitem__(index)</em>: Returns the processed sequence (skeleton and/or IR) and its label</p></li>
+<li><p><em>__len__()</em>: Returns the number of elements in dataset.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.models.h5_pytorch_dataset.TorchDataset.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.h5_pytorch_dataset.TorchDataset.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a processed sequence and label given an index.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>index</strong> (int): Used as an index for <strong>samples_names</strong> list which will yield a sequence
+name that will be used to address the h5 files.</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><ul class="simple">
+<li><p><strong>skeleton_image</strong> (np array): Skeleton sequence mapped to an image of shape <cite>(3, 224, 224)</cite>.
+Equals -1 if <strong>use_pose</strong> is False.</p></li>
+<li><p><strong>ir_sequence</strong> (np array): Subsampled IR sequence of shape <cite>(sub_sequence_length, 112, 112)</cite>.
+Equals -1 if <strong>use_ir</strong> is False.</p></li>
+<li><p><strong>y</strong> (int): Class label of sequence.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.models.h5_pytorch_dataset.TorchDataset.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.models.h5_pytorch_dataset.TorchDataset.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of elements in dataset</p>
+<dl class="simple">
+<dt>Outputs:</dt><dd><ul class="simple">
+<li><p><strong>length</strong> (int): Number of elements in dataset.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.models.plot_confusion_matrix">
+<span id="src-models-plot-confusion-matrix-module"></span><h2>src.models.plot_confusion_matrix module<a class="headerlink" href="#module-src.models.plot_confusion_matrix" title="Permalink to this headline">¶</a></h2>
+<p>Computes the confusion matrix for a trained model. Takes as input important parameters such as the benchmark studied.
+A confusion matrix in .png format is saved in the trained model folder provided.</p>
+<p>Plotting the confusion matrix is best called using the provided Makefile provided.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">make</span> <span class="n">train</span> \
+<span class="go">    PROCESSED_DATA_PATH=X \</span>
+<span class="go">    MODEL_FOLDER=X \</span>
+<span class="go">    EVALUATION_TYPE=X \</span>
+<span class="go">    MODEL_TYPE=X \</span>
+<span class="go">    USE_POSE=X \</span>
+<span class="go">    USE_IR=X \</span>
+<span class="go">    PRETRAINED=X \</span>
+<span class="go">    USE_CROPPED_IR=X \</span>
+<span class="go">    LEARNING_RATE=X \</span>
+<span class="go">    WEIGHT_DECAY=X \</span>
+<span class="go">    GRADIENT_THRESHOLD=X \</span>
+<span class="go">    EPOCHS=X \</span>
+<span class="go">    BATCH_SIZE=X \</span>
+<span class="go">    ACCUMULATION_STEPS=X \</span>
+<span class="go">    SUB_SEQUENCE_LENGTH=X \</span>
+<span class="go">    AUGMENT_DATA=X \</span>
+<span class="go">    EVALUATE_TEST=X \</span>
+<span class="go">    SEED=X</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>With the parameters taking from the following values :</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>DATA_PATH:</dt><dd><p>Path to h5 files. Default location is <em>./data/processed/</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MODEL_FOLDER:</dt><dd><p>Output path to save models and log files. A folder inside that path will be automatically created. Default
+location is <em>./models/</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>EVALUATION_TYPE:</dt><dd><p>[cross_subject | cross_view]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MODEL_TYPE:</dt><dd><p>[FUSION]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>USE_POSE:</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>USE_IR:</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>USE_CROPPED_IR:</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>BATCH_SIZE:</dt><dd><p>Whole positive number above 1.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>SUB_SEQUENCE_LENGTH:</dt><dd><p>[1 .. 20]
+Specifies the number of frames to take from a complete IR sequence.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="module-src.models.pose_ir_fusion">
+<span id="src-models-pose-ir-fusion-module"></span><h2>src.models.pose_ir_fusion module<a class="headerlink" href="#module-src.models.pose_ir_fusion" title="Permalink to this headline">¶</a></h2>
+<p>Contains a PyTorch model fusing IR and pose data for improved classification. Also contains a helper function which
+normalizes pose and IR tensors.</p>
+<dl class="class">
+<dt id="src.models.pose_ir_fusion.FUSION">
+<em class="property">class </em><code class="sig-prename descclassname">src.models.pose_ir_fusion.</code><code class="sig-name descname">FUSION</code><span class="sig-paren">(</span><em class="sig-param">use_pose</em>, <em class="sig-param">use_ir</em>, <em class="sig-param">pretrained</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.pose_ir_fusion.FUSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>This model is built on three submodules. The first is called a “pose module”, which takes a skeleton sequence
+mapped to an image an outputs a 512-long feature vector. The second one is an “IR module”, which takes an IR sequence
+and outputs a 512-long feature vector. The third one is a “classification module”, which combines the 2 feature
+vectors (concatenation) and predicts a class via an MLP. This model can achieve over 90% accuracy on both
+benchmarks of the NTU RGB+D (60) dataset.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><ul class="simple">
+<li><p><strong>use_pose</strong> (bool): Include skeleton data</p></li>
+<li><p><strong>use_ir</strong> (bool): Include IR data</p></li>
+<li><p><strong>pose_net</strong> (PyTorch model): Pretrained ResNet-18. Only exists if <strong>use_pose</strong> is True.</p></li>
+<li><p><strong>ir_net</strong> (PyTorch model): Pretrained R(2+1)D-18. Only exists if <strong>use_ir</strong> is True.</p></li>
+<li><p><strong>class_mlp</strong> (PyTorch model): Classification MLP. Input size is adjusted depending on the modules used.
+Input size is 512 if only one module is used, 1024 for two modules.</p></li>
+</ul>
+</dd>
+<dt>Methods:</dt><dd><p><em>forward(X)</em>: Forward step. X contains pose/IR data</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="src.models.pose_ir_fusion.FUSION.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.pose_ir_fusion.FUSION.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward step of the FUSION model. Input X contains a list of 2 tensors containing pose and IR data. The
+input is already normalized as specified in the PyTorch pretrained vision models documentation, using the
+<em>prime_X_fusion</em> function. Each tensor is then passed to its corresponding module. The 2 feature vectors are
+concatenated, then fed to the classification module (MLP) which then outputs a prediction.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><dl class="simple">
+<dt><strong>X</strong> (list of PyTorch tensors): Contains the following tensors:</dt><dd><ul class="simple">
+<li><p><strong>X_skeleton</strong> (PyTorch tensor): pose images of shape <cite>(batch_size, 3, 224, 224)</cite> if <strong>use_pose</strong> is
+True. Else, tensor = None.</p></li>
+<li><p><strong>X_ir</strong> (PyTorch tensor): IR sequences of shape <cite>(batch_size, 3, seq_len, 112, 112)</cite> if <strong>use_ir</strong> is
+True. Else, tensor = None</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Outputs:</dt><dd><p><strong>pred</strong> (PyTorch tensor): Contains the the log-Softmax normalized predictions of shape
+<cite>(batch_size, n_classes=60)</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.pose_ir_fusion.prime_X_fusion">
+<code class="sig-prename descclassname">src.models.pose_ir_fusion.</code><code class="sig-name descname">prime_X_fusion</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">use_pose</em>, <em class="sig-param">use_ir</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.pose_ir_fusion.prime_X_fusion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes X (list of tensors) as defined in the pretrained Torchvision models documentation. <strong>Note</strong> that
+<strong>X_ir</strong> is reshaped in this function.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt><strong>X</strong> (list of PyTorch tensors): Contains the following tensors:</dt><dd><ul>
+<li><p><strong>X_skeleton</strong> (PyTorch tensor): pose images of shape <cite>(batch_size, 3, 224, 224)</cite> if <strong>use_pose</strong> is
+True. Else, tensor = -1.</p></li>
+<li><p><strong>X_ir</strong> (PyTorch tensor): IR sequences of shape <cite>(batch_size, seq_len, 3, 112, 112)</cite> if <strong>use_ir</strong> is
+True. Else, tensor = -1</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><strong>use_pose</strong> (bool): Include skeleton data</p></li>
+<li><p><strong>use_ir</strong> (bool): Include IR data</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><dl class="simple">
+<dt><strong>X</strong> (list of PyTorch tensors): Contains the following tensors:</dt><dd><ul class="simple">
+<li><p><strong>X_skeleton</strong> (PyTorch tensor): pose images of shape <cite>(batch_size, 3, 224, 224)</cite> if <strong>use_pose</strong> is
+True. Else, tensor = None.</p></li>
+<li><p><strong>X_ir</strong> (PyTorch tensor): IR sequences of shape <cite>(batch_size, 3, seq_len, 112, 112)</cite> if <strong>use_ir</strong> is
+True. Else, tensor = None</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.models.torchvision_models">
+<span id="src-models-torchvision-models-module"></span><h2>src.models.torchvision_models module<a class="headerlink" href="#module-src.models.torchvision_models" title="Permalink to this headline">¶</a></h2>
+<p>This module is a copy taken from the official Torchvision documentation of a greater release. The reason it is
+included is because we use an older version of Torchvision, as it is the latest available on our cluster. Will update
+in the future.</p>
+<dl class="function">
+<dt id="src.models.torchvision_models.r3d_18">
+<code class="sig-prename descclassname">src.models.torchvision_models.</code><code class="sig-name descname">r3d_18</code><span class="sig-paren">(</span><em class="sig-param">pretrained=False</em>, <em class="sig-param">progress=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.torchvision_models.r3d_18" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct 18 layer Resnet3D model as in
+<a class="reference external" href="https://arxiv.org/abs/1711.11248">https://arxiv.org/abs/1711.11248</a></p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>pretrained (bool): If True, returns a model pre-trained on Kinetics-400
+progress (bool): If True, displays a progress bar of the download to stderr</p>
+</dd>
+<dt>Returns:</dt><dd><p>nn.Module: R3D-18 network</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.torchvision_models.mc3_18">
+<code class="sig-prename descclassname">src.models.torchvision_models.</code><code class="sig-name descname">mc3_18</code><span class="sig-paren">(</span><em class="sig-param">pretrained=False</em>, <em class="sig-param">progress=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.torchvision_models.mc3_18" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor for 18 layer Mixed Convolution network as in
+<a class="reference external" href="https://arxiv.org/abs/1711.11248">https://arxiv.org/abs/1711.11248</a></p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>pretrained (bool): If True, returns a model pre-trained on Kinetics-400
+progress (bool): If True, displays a progress bar of the download to stderr</p>
+</dd>
+<dt>Returns:</dt><dd><p>nn.Module: MC3 Network definition</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.torchvision_models.r2plus1d_18">
+<code class="sig-prename descclassname">src.models.torchvision_models.</code><code class="sig-name descname">r2plus1d_18</code><span class="sig-paren">(</span><em class="sig-param">pretrained=False</em>, <em class="sig-param">progress=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.torchvision_models.r2plus1d_18" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor for the 18 layer deep R(2+1)D network as in
+<a class="reference external" href="https://arxiv.org/abs/1711.11248">https://arxiv.org/abs/1711.11248</a></p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>pretrained (bool): If True, returns a model pre-trained on Kinetics-400
+progress (bool): If True, displays a progress bar of the download to stderr</p>
+</dd>
+<dt>Returns:</dt><dd><p>nn.Module: R(2+1)D-18 network</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.models.train_model">
+<span id="src-models-train-model-module"></span><h2>src.models.train_model module<a class="headerlink" href="#module-src.models.train_model" title="Permalink to this headline">¶</a></h2>
+<p>The main file for the <em>src.models</em> module. Takes as input the different hyperparameters and starts training the model.
+The model is saved after every epoch. A <cite>batch_log.txt</cite> keeps the record of the accuracy and loss of each batch.
+A <cite>log.txt</cite> keeps a record of the accuracy of the train-val-test sets after each epoch.</p>
+<p><strong>Note</strong> that although we compute the test set at each epoch, we take the final decision based on the validation set
+only.</p>
+<p>Training is best called using the provided Makefile provided.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">make</span> <span class="n">train</span> \
+<span class="go">    PROCESSED_DATA_PATH=X \</span>
+<span class="go">    MODEL_FOLDER=X \</span>
+<span class="go">    EVALUATION_TYPE=X \</span>
+<span class="go">    MODEL_TYPE=X \</span>
+<span class="go">    USE_POSE=X \</span>
+<span class="go">    USE_IR=X \</span>
+<span class="go">    PRETRAINED=X \</span>
+<span class="go">    USE_CROPPED_IR=X \</span>
+<span class="go">    LEARNING_RATE=X \</span>
+<span class="go">    WEIGHT_DECAY=X \</span>
+<span class="go">    GRADIENT_THRESHOLD=X \</span>
+<span class="go">    EPOCHS=X \</span>
+<span class="go">    BATCH_SIZE=X \</span>
+<span class="go">    ACCUMULATION_STEPS=X \</span>
+<span class="go">    SUB_SEQUENCE_LENGTH=X \</span>
+<span class="go">    AUGMENT_DATA=X \</span>
+<span class="go">    EVALUATE_TEST=X \</span>
+<span class="go">    SEED=X</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>With the parameters taking from the following values :</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>PROCESSED_DATA_PATH:</dt><dd><p>Path to h5 files. Default location is <em>./data/processed/</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MODEL_FOLDER:</dt><dd><p>Output path to save models and log files. A folder inside that path will be automatically created. Default
+location is <em>./models/</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>EVALUATION_TYPE:</dt><dd><p>[cross_subject | cross_view]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MODEL_TYPE:</dt><dd><p>[FUSION]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>USE_POSE:</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>USE_IR:</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>PRETRAINED:</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>USE_CROPPED_IR:</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>LEARNING_RATE:</dt><dd><p>Real positive number.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>WEIGHT_DECAY:</dt><dd><p>Real positive number. If 0, then no weight decay is applied.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>EPOCHS:</dt><dd><p>Whole positive number above 1.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>BATCH_SIZE:</dt><dd><p>Whole positive number above 1.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>GRADIENT_THRESHOLD:</dt><dd><p>Real positive number. If 0, then no threshold is applied</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>ACCUMULATION_STEPS:</dt><dd><p>Accumulate gradient across batches. This is a trick to virtually train larger batches on modest architectures.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>SUB_SEQUENCE_LENGTH:</dt><dd><p>[1 .. 20]
+Specifies the number of frames to take from a complete IR sequence.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>AUGMENT_DATA</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>EVALUATE_TEST</dt><dd><p>[True, False]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>SEED</dt><dd><p>Positive whole number. Used to make training replicable.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="module-src.models.train_utils">
+<span id="src-models-train-utils-module"></span><h2>src.models.train_utils module<a class="headerlink" href="#module-src.models.train_utils" title="Permalink to this headline">¶</a></h2>
+<p>Contains helper function to train a network, evaluate its accuracy score, and plot a confusion matrix.</p>
+<dl class="simple">
+<dt>The following functions are provided:</dt><dd><ul class="simple">
+<li><p><em>plot_confusion_matrix</em>: Given a prediction and a ground truth vector, returns a plot of the confusion matrix.</p></li>
+<li><p><em>calculate_accuracy</em>: Calculates accuracy score between 2 PyTorch tensors</p></li>
+<li><p><em>evaluate_set</em>: Computes accuracy for a given set (train-val-test)</p></li>
+<li><p><em>train_model</em>: Trains a model with the given hyperparameters.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="function">
+<dt id="src.models.train_utils.calculate_accuracy">
+<code class="sig-prename descclassname">src.models.train_utils.</code><code class="sig-name descname">calculate_accuracy</code><span class="sig-paren">(</span><em class="sig-param">Y_hat</em>, <em class="sig-param">Y</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.train_utils.calculate_accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates accuracy score for prediction tensor given its ground truh.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>Y_hat</strong> (PyTorch tensor): Predictions scores (Softmax/log-Softmax) of shape <cite>(batch_size, n_classes)</cite></p></li>
+<li><p><strong>Y</strong> (PyTorch tensor): Ground truth vector of shape <cite>(batch_size, n_classes)</cite></p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><ul class="simple">
+<li><p><strong>accuracy</strong> (int): Accuracy score</p></li>
+<li><p><strong>Y_hat</strong> (np array): Numpy version of <strong>Y_hat</strong> of shape <cite>(batch_size, n_classes)</cite></p></li>
+<li><p><strong>Y</strong> (np array): Numpy version of <strong>Y</strong> of shape <cite>(batch_size, n_classes)</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.train_utils.evaluate_set">
+<code class="sig-prename descclassname">src.models.train_utils.</code><code class="sig-name descname">evaluate_set</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">model_type</em>, <em class="sig-param">data_loader</em>, <em class="sig-param">output_folder</em>, <em class="sig-param">set_name</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.train_utils.evaluate_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates accuracy score over a given set (train-test-val) and returns two vectors with all predictions and
+all ground truths.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>model</strong> (PyTorch model): Evaluated PyTorch model.</p></li>
+<li><p><strong>model_type</strong> (str): “FUSION” only for now.</p></li>
+<li><p><strong>data_loader</strong> (PyTorch data loader): Data loader of evaluated set</p></li>
+<li><p><strong>output_folder</strong> (str): Path of output folder</p></li>
+<li><p><strong>set_name</strong> (str): Name of the evaluated set [ie. “TRAIN” | “VAL” | “TEST”]</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><ul class="simple">
+<li><p><strong>accuracy</strong> (int): Accuracy over set</p></li>
+<li><p><strong>y_true</strong> (list of np arrays): Lists of all ground truths vectors. Each index of the list yields the ground
+truths for a given batch.</p></li>
+<li><p><strong>y_pred</strong> (list of np arrays): Lists of all predictions vectors. Each index of the list yields the
+predictions for a given batch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.train_utils.plot_confusion_matrix">
+<code class="sig-prename descclassname">src.models.train_utils.</code><code class="sig-name descname">plot_confusion_matrix</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">classes</em>, <em class="sig-param">normalize=False</em>, <em class="sig-param">title=None</em>, <em class="sig-param">cmap=&lt;matplotlib.colors.LinearSegmentedColormap object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.train_utils.plot_confusion_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is taken from the sklearn website. It is slightly modified. Given a prediction vector, a ground
+truth vector and a list containing the names of the classes, it returns a confusion matrix plot.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>y_true</strong> (np.int32 array): 1D array of predictions</p></li>
+<li><p><strong>y_pred</strong> (np.int32 array): 1D array of ground truths</p></li>
+<li><p><strong>classes</strong> (list): List of action names</p></li>
+<li><p><strong>normalize</strong> (bool): Use percentages instead of totals</p></li>
+<li><p><strong>title</strong> (str): Title of the plot</p></li>
+<li><p><strong>cmap</strong> (matplotlib cmap): Plot color style</p></li>
+</ul>
+</dd>
+<dt>Outputs:</dt><dd><p><strong>ax</strong> (matplotlib plot): Confusion matrix plot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="src.models.train_utils.train_model">
+<code class="sig-prename descclassname">src.models.train_utils.</code><code class="sig-name descname">train_model</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">model_type</em>, <em class="sig-param">optimizer</em>, <em class="sig-param">learning_rate</em>, <em class="sig-param">weight_decay</em>, <em class="sig-param">gradient_threshold</em>, <em class="sig-param">epochs</em>, <em class="sig-param">accumulation_steps</em>, <em class="sig-param">evaluate_test</em>, <em class="sig-param">output_folder</em>, <em class="sig-param">train_generator</em>, <em class="sig-param">test_generator</em>, <em class="sig-param">validation_generator=None</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.train_utils.train_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains a model in batches fashion. At each epoch, the entire training set is studied, then the validation and
+the test sets are evaluated. <strong>Note</strong> that we only use the validation set to select which model to keep. Files
+<em>log.txt</em> and <em>batch_log.txt</em> are used to debug and record training progress.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>model</strong> (PyTorch model): Model to train.</p></li>
+<li><p><strong>model_type</strong> (str): “FUSION” only for now.</p></li>
+<li><p><strong>optimizer</strong> (str): Name of the optimizer to use (“ADAM” of “SGD” only for now)</p></li>
+<li><p><strong>learning_rate</strong> (float): Learning rate</p></li>
+<li><p><strong>weight_decay</strong> (float): Weight decay</p></li>
+<li><p><strong>gradient_threshold</strong> (float): Clip gradient by this value. If 0, no threshold is applied.</p></li>
+<li><p><strong>epochs</strong> (int): Number of epochs to train.</p></li>
+<li><p><strong>accumulation_steps</strong> (int): Accumulate gradient across batches. This is a trick to virtually train larger
+batches on modest architectures.</p></li>
+<li><p><strong>evaluate_test</strong> (bool): Choose to evaluate test set or not at each epoch.</p></li>
+<li><p><strong>output_folder</strong> (str): Entire path in which log files and models are saved.
+By default: ./models/automatically_created_folder/</p></li>
+<li><p><strong>train_generator</strong> (PyTorch data loader): Training set data loader</p></li>
+<li><p><strong>validation_generator</strong> (PyTorch data loader): Validation set data loader</p></li>
+<li><p><strong>test_generator</strong> (PyTorch data loader): Test set data loader</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.models.utils">
+<span id="src-models-utils-module"></span><h2>src.models.utils module<a class="headerlink" href="#module-src.models.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="src.models.utils.set_parameter_requires_grad">
+<code class="sig-prename descclassname">src.models.utils.</code><code class="sig-name descname">set_parameter_requires_grad</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">feature_extracting</em><span class="sig-paren">)</span><a class="headerlink" href="#src.models.utils.set_parameter_requires_grad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets model to feature extraction mode or not. If <strong>feature_extracting</strong> is True, the gradients are frozen in the
+model. Else, the gradients are activated.</p>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><strong>model</strong> (PyTorch model): Model to set</p></li>
+<li><p><strong>feature_extracting</strong> (bool): If true, freezes model gradients. If not, activates model gradients.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-src.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src.models" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="src.utils.html" class="btn btn-neutral float-right" title="src.utils package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="src.data.html" class="btn btn-neutral float-left" title="src.data package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
