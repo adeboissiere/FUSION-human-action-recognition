@@ -24,6 +24,7 @@ Project Organization
     │       ├── nturgb+d_skeletons  <- Raw skeleton files (*.skeleton)    
     │
     ├── docs               <- Sphinx generated documentation
+    │   ├── source         <- The final, canonical data sets for modeling.
     │
     ├── models             <- Trained models and paper results.
     │
@@ -115,7 +116,7 @@ Our FUSION model uses both pose and IR data. It is modular, so it is possible to
     `make data DATASET_TYPE=IR_CROPPED_MOVING DATA_PATH="./data/processed/"`
 
 
-It is not mandatory to keep raw and processed data in the *./data/* folder, though highly encouraged. They could be in a different location (ie. an external drive). However, **it is crucial to keep the h5 files names the same**. Should the data be in a different folder, you will have to specify the input (DATA_PATH) and output path (PROCESSED_DATA_PATH). Check the project documentation (**src.data** module) for details.
+It is not mandatory to keep raw and processed data in the *./data/* folder, though highly encouraged. They could be in a different location (ie. an external drive). However, **it is crucial to keep the h5 files names the same**. Should the data be in a different folder, you will have to specify the input (DATA_PATH) and output path (PROCESSED_DATA_PATH). Check the project [documentation](https://adeboissiere.github.io/FUSION-human-action-recognition/) (**src.data** module) for details.
 
 
 Train model
@@ -144,9 +145,9 @@ After the necessary h5 have been generated, it is time to test our FUSION model.
         SEED=0
     
 
-If the h5 files are not in the default location, you need to specify the `PROCESSED_DATA_PATH` variable. If you would like to save the model else where (default is *./data/models/*), you need to specify the `MODEL_FOLDER` variable.
+If the h5 files are not in the default location, you need to specify the `PROCESSED_DATA_PATH` variable. If you would like to save the model elsewhere (default is *./data/models/*), you need to specify the `MODEL_FOLDER` variable.
 
-Check the documentation for more infos on the **src.model** module and the make train command.
+Check the [documentation](https://adeboissiere.github.io/FUSION-human-action-recognition/) for more infos on the **src.model** module and the make train command.
 
 
 Plot confusion matrix
@@ -170,6 +171,20 @@ Results
 Below is a summary of the results from the paper. We achieve state-of-the-art results. The log files of the trainings can be found in the *./models/fusion_test_tube_seed=0/* folder.
 
 ![Summary of results](./reports/figures/results_summary.png)
+
+
+Documentation
+-------------
+The project's code documentation is available [here](https://adeboissiere.github.io/FUSION-human-action-recognition/). Alternatively, should you need the documentation locally or update it, follow these steps (from root directory):
+
+    cd docs
+    make clean  # Remove previous build
+    rm -f source/modules.rst source/src.*  # Remove previous generated .rst files
+    sphinx-apidoc -o ./source ../src  # Generate .rst files from .py source files
+    sphinx-build -b html ./source build  # Build html files
+
+
+
 
 --------
 
