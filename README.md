@@ -30,6 +30,8 @@ Project Organization
     ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
     │                         the creator's initials, and a short `-` delimited description, e.g.
     │                         `1.0-jqp-initial-data-exploration`.
+    │  
+    ├── paper_cmds.txt     <- All commands used to replicate paper results
     │
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
@@ -38,6 +40,9 @@ Project Organization
     │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
+    │  
+    ├── run_cc.sh          <- Shell script to train on Compute Canada cluster   
+    |
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
     ├── src                <- Source code for use in this project.
@@ -52,6 +57,7 @@ Project Organization
     │       └── train_model.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
+
 
 
 Getting started
@@ -161,8 +167,7 @@ Once the model is trained, the confusion matrix is a greater information to unde
 
 Results
 -------
-
-Below is a summary of the results from the paper. We achieve state-of-the-art results. 
+Below is a summary of the results from the paper. We achieve state-of-the-art results. The log files of the trainings can be found in the *./models/fusion_test_tube_seed=0/* folder.
 
 ![Summary of results](./reports/figures/results_summary.png)
 
