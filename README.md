@@ -24,7 +24,7 @@ Project Organization
     │       ├── nturgb+d_skeletons  <- Raw skeleton files (*.skeleton)    
     │
     ├── docs               <- Sphinx generated documentation
-    │   ├── source         <- The final, canonical data sets for modeling.
+    │   ├── source         <- .rst and conf.py to generate project documentation
     │
     ├── models             <- Trained models and paper results.
     │
@@ -44,7 +44,6 @@ Project Organization
     │  
     ├── run_cc.sh          <- Shell script to train on Compute Canada cluster   
     |
-    │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
@@ -123,7 +122,7 @@ Train model
 -----------
 After the necessary h5 have been generated, it is time to test our FUSION model. To do so, use the `make train` command with the different hyperparameters. Below is an example of how to use the command, assuming the Project Organization is kept. For the commands used to obtain the results from the paper, check *paper_cmds.txt* in the root folder. 
 
-**Note** that a folder with a unique name will be created.
+**Note** that a folder with a unique name will be created upon calling the command.
 
     
     make train \
@@ -152,7 +151,7 @@ Check the [documentation](https://adeboissiere.github.io/FUSION-human-action-rec
 
 Plot confusion matrix
 ---------------------
-Once the model is trained, the confusion matrix is a greater information to understand where the model struggles. We provide a command to generate a .png image from a trained model. Below is an example of how to do so.
+Once the model is trained, the confusion matrix is a great tool to understand where the model struggles. We provide a command to generate a .png image from a trained model. Below is an example of how to do so.
 
     make confusion_matrix \
         MODEL_FOLDER="./models/fusion_test_tube_seed=0/fusion_20/cross_subject/aug=True/" \

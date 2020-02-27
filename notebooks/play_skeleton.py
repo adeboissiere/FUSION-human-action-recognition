@@ -28,6 +28,7 @@ def animateJointCoordinates(joint_coordinates, connexion_tuples):
         
         # Camera coordinate system
         axis_length = 0.2
+        
         ax.scatter([0], [0], [0], color="red")
         ax.scatter([axis_length, 0, 0], [0, axis_length, 0], [0, 0, axis_length], marker="v", color="red")
         
@@ -45,6 +46,7 @@ def animateJointCoordinates(joint_coordinates, connexion_tuples):
         x_spine_mid = joint_coordinates[1, x, 0]
         y_spine_mid = joint_coordinates[1, y, 0]
         z_spine_mid = joint_coordinates[1, z, 0]
+        
         ax.scatter(x_spine_mid, y_spine_mid, z_spine_mid, color="green")
         ax.scatter([x_spine_mid + axis_length, x_spine_mid, x_spine_mid], 
                    [y_spine_mid, y_spine_mid + axis_length, y_spine_mid], 
@@ -82,8 +84,9 @@ def animateJointCoordinates(joint_coordinates, connexion_tuples):
             
             ax.add_line(joint_line)
         
-        ax.view_init(10, 10)
+        ax.view_init(10, 50)
         
         fig.canvas.draw()
         plt.pause(.001)
+        # plt.savefig(str(t) + '.png')
         # time.sleep(0.01)
