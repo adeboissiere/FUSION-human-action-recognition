@@ -1,7 +1,7 @@
 Infrared and 3D skeleton feature fusion for RGB-D action recognition (submitted to IEEE Access)
 ===============================================================================================
 
-We propose a novel deep network fusing skeleton and infrared data for Human Action Recognition. The network is tested on the largest RGB+D dataset to date, NTU RGB+D. We report state of the art performances with over 90% accuracy on both cross-subject and cross-view benchmarks. 
+We propose a novel deep network fusing skeleton and infrared data for Human Action Recognition. The network is tested on the largest RGB+D dataset to date, NTU RGB+D. We report state-of-the-art performances with over 90% accuracy on both cross-subject and cross-view benchmarks. 
 
 Project Organization
 --------------------
@@ -68,7 +68,7 @@ A video presentation accompanies the project.
 
 Getting started
 ---------------
-The first step to replicate our results is to clone the project and create a virtual environment using the Makefile. After that, the raw data should be downloaded and placed according to the default Project Organization provided above. Then various h5 datasets will have to be created using the Makefile. This will take a while but is a more practical way of handling data. Once the h5 files are created, you are ready to replicate our results or use them to implement your own models!
+The first step to replicate our results is to clone the project and create a virtual environment using the Makefile. After that, the raw data should be downloaded and placed according to the default Project Organization provided above. Then various h5 datasets will have to be created using the Makefile. This will take a while, but is a more practical way of handling data. Once the h5 files are created, you are ready to replicate our results or use them to implement your own models!
 
 The data used comes from the [NTU RGB+D dataset](http://rose1.ntu.edu.sg/datasets/actionrecognition.asp).
 
@@ -121,7 +121,7 @@ Our FUSION model uses both pose and IR data. It is modular, so it is possible to
     `make data DATASET_TYPE=IR_CROPPED_MOVING DATA_PATH="./data/processed/"`
 
 
-It is not mandatory to keep raw and processed data in the *./data/* folder, though highly encouraged. They could be in a different location (ie. an external drive). However, **it is crucial to keep the h5 files names the same**. Should the data be in a different folder, you will have to specify the input (DATA_PATH) and output path (PROCESSED_DATA_PATH). Check the project [documentation](https://adeboissiere.github.io/FUSION-human-action-recognition/) (**src.data** module) for details.
+It is not mandatory to keep raw and processed data in the *./data/* folder, though highly encouraged. They could be in a different location (ie. an external drive). However, **it is crucial to keep the h5 files names the same**. Should the data be in a different folder, you will have to specify the input (DATA_PATH) and the output path (PROCESSED_DATA_PATH). Check the project [documentation](https://adeboissiere.github.io/FUSION-human-action-recognition/) (**src.data** module) for details.
 
 
 Train model
