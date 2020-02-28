@@ -1,5 +1,5 @@
-FUSION: Full Use of Skeleton and Infrared in Optimized Network for Human Action Recognition
-===========================================================================================
+Infrared and 3D skeleton feature fusion for RGB-D action recognition (submitted to IEEE Access)
+===============================================================================================
 
 We propose a novel deep network fusing skeleton and infrared data for Human Action Recognition. The network is tested on the largest RGB+D dataset to date, NTU RGB+D. We report state of the art performances with over 90% accuracy on both cross-subject and cross-view benchmarks. 
 
@@ -58,6 +58,12 @@ Project Organization
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.testrun.org
 
+
+Project presentation
+--------------------
+A video presentation accompanies the project. 
+
+[![Video presentation](./reports/figures/video_thumbnail.png)](https://www.youtube.com/watch?v=Y3WtGIbr6DQ&feature=youtu.be "Infrared and 3D skeleton feature fusion for RGB-D action recognition")
 
 
 Getting started
