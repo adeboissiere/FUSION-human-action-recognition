@@ -65,6 +65,19 @@ A video presentation accompanies the project.
 
 [![Video presentation](./reports/figures/video_thumbnail.png)](https://www.youtube.com/watch?v=Y3WtGIbr6DQ&feature=youtu.be "Infrared and 3D skeleton feature fusion for RGB-D action recognition")
 
+The paper was submitted to IEEE Access but a pre-print can be found on arXiv : [paper](https://arxiv.org/abs/2002.12886)
+
+Please use the following bibtex to cite our work:
+
+	@misc{boissiere2020infrared,
+    title={Infrared and 3D skeleton feature fusion for RGB-D action recognition},
+    author={Alban {Main de Boissiere} and Rita Noumeir},
+    year={2020},
+    eprint={2002.12886},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+	}
+
 
 Getting started
 ---------------
