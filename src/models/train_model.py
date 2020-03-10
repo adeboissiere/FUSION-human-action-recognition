@@ -90,6 +90,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_ir', default=False)
     parser.add_argument('--pretrained', default=False)
     parser.add_argument('--use_cropped_IR', default=False)
+    parser.add_argument('--fusion_scheme', default="CONCAT")
     parser.add_argument('--optimizer', default="ADAM")
     parser.add_argument('--learning_rate', default=1e-4)
     parser.add_argument('--weight_decay', default=0)
@@ -112,6 +113,7 @@ if __name__ == '__main__':
     use_ir = arg.use_ir == "True"
     pretrained = arg.pretrained == "True"
     use_cropped_IR = arg.use_cropped_IR == "True"
+    fusion_scheme = arg.fusion_scheme
     optimizer = arg.optimizer
     learning_rate = float(arg.learning_rate)
     weight_decay = float(arg.weight_decay)
@@ -142,6 +144,7 @@ if __name__ == '__main__':
         print("-> use ir : " + str(use_ir))
         print("-> pretrained : " + str(pretrained))
         print("-> use cropped ir : " + str(use_cropped_IR))
+        print("-> fusion scheme : " + str(fusion_scheme))
     print("-> optimizer : " + optimizer)
     print("-> learning rate : " + str(learning_rate))
     print("-> weight decay : " + str(weight_decay))
@@ -177,9 +180,9 @@ if __name__ == '__main__':
 
     # Create model
     if model_type == "FUSION":
-        model = FUSION(use_pose, use_ir, pretrained)
+        model = FUSION(use_pose, use_ir, pretrained, fusion_scheme)
     else:
-        print("Model type not recognized. Exiting")
+        print("Model type not recognized. Exiting ...")
         exit()
 
     # If multiple GPUs are available (not guaranteed to work)
@@ -209,7 +212,8 @@ if __name__ == '__main__':
         output_folder += "_pose=" + str(use_pose) + \
                          "_ir=" + str(use_ir) + \
                          "_pretrained=" + str(pretrained) + \
-                         "_cropped_IR=" + str(use_cropped_IR)
+                         "_cropped_IR=" + str(use_cropped_IR) + \
+                         "_fusion_scheme=" + str(fusion_scheme)
 
     output_folder += '_' + evaluation_type + '_' + str(optimizer) + \
                      '_lr=' + str(learning_rate) + \

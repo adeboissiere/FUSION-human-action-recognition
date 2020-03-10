@@ -25,6 +25,7 @@ USE_POSE=False
 USE_IR=False
 PRETRAINED=False
 USE_CROPPED_IR=False
+FUSION_SCHEME=CONCAT
 OPTIMIZER=ADAM
 LEARNING_RATE=1e-4
 WEIGHT_DECAY=0
@@ -75,6 +76,7 @@ train:
 	--use_ir=$(USE_IR) \
 	--pretrained=$(PRETRAINED) \
 	--use_cropped_IR=$(USE_CROPPED_IR) \
+	--fusion_scheme=$(FUSION_SCHEME) \
 	--optimizer=$(OPTIMIZER) \
 	--learning_rate=$(LEARNING_RATE) \
 	--weight_decay=$(WEIGHT_DECAY) \

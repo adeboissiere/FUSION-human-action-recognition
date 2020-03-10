@@ -32,12 +32,13 @@ class FUSION(nn.Module):
         *forward(X)*: Forward step. X contains pose/IR data
 
     """
-    def __init__(self, use_pose, use_ir, pretrained):
+    def __init__(self, use_pose, use_ir, pretrained, fusion_scheme):
         super(FUSION, self).__init__()
 
         # Parts of the network to activate
         self.use_pose = use_pose
         self.use_ir = use_ir
+        self.fusion_scheme = fusion_scheme
 
         # Pretrained pose network
         if use_pose:
@@ -47,10 +48,24 @@ class FUSION(nn.Module):
         if use_ir:
             self.ir_net = nn.Sequential(*list(r2plus1d_18(pretrained=pretrained).children())[:-1])
 
+        # Compute number of classification MLP input features
+        if use_ir and use_pose:
+            if self.fusion_scheme == "CONCAT":
+                mlp_input_features = 2 * 512
+            elif self.fusion_scheme == "SUM":
+                mlp_input_features = 512
+            elif self.fusion_scheme == "MULT":
+                mlp_input_features = 512
+            elif self.fusion_scheme == "AVG":
+                mlp_input_features = 512
+            else:
+                print("Fusion scheme not recognized. Exiting ...")
+                exit()
+
         # Classification MLP
         self.class_mlp = nn.Sequential(
-            nn.BatchNorm1d((int(use_pose) + int(use_ir)) * 512),
-            nn.Linear((int(use_pose) + int(use_ir)) * 512, 256),
+            nn.BatchNorm1d(mlp_input_features),
+            nn.Linear(mlp_input_features, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
             nn.Linear(256, 128),
@@ -92,7 +107,14 @@ class FUSION(nn.Module):
         elif not self.use_pose and self.use_ir:
             features = out_ir
         elif self.use_pose and self.use_ir:
-            features = torch.cat([out_pose, out_ir], dim=1)
+            if self.fusion_scheme == "CONCAT":
+                features = torch.cat([out_pose, out_ir], dim=1)
+            elif self.fusion_scheme == "SUM":
+                features = out_pose + out_ir
+            elif self.fusion_scheme == "MULT":
+                features = out_pose * out_ir
+            elif self.fusion_scheme == "AVG":
+                features = out_pose + out_ir / 2
 
         pred = self.class_mlp(features)  # shape (batch_size, 60)
         pred = F.softmax(pred, dim=1)
