@@ -11,7 +11,8 @@ source $SLURM_TMPDIR/env/bin/activate
 pip install --upgrade pip
 
 make requirements
-make train NTU_RGBD_DATA_PATH="/home/albanmdb/scratch/datasets/" EVALUATION_TYPE=cross_view \
+make train NTU_RGBD_DATA_PATH="/home/albanmdb/scratch/datasets/NTU_RGB+D/" 
+			EVALUATION_TYPE=cross_view \
 			MODEL_TYPE=FUSION \
 			USE_POSE=True \
 			USE_IR=False \

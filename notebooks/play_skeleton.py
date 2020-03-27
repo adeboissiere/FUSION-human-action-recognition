@@ -66,6 +66,7 @@ def animateJointCoordinates(joint_coordinates, connexion_tuples):
         trans_vec = plt3d.art3d.Line3D([0, x_spine_mid], [0, y_spine_mid], [0, z_spine_mid], linestyle='--', color="black")
         ax.add_line(trans_vec)
         
+        
         # Subject coordinates
         ax.set_xlim3d(min(np.amin(joint_coordinates[:, x, :]),-axis_length), max(np.amax(joint_coordinates[:, x, :]), axis_length))
         ax.set_ylim3d(min(np.amin(joint_coordinates[:, y, :]),-axis_length), max(np.amax(joint_coordinates[:, y, :]), axis_length))
@@ -85,8 +86,9 @@ def animateJointCoordinates(joint_coordinates, connexion_tuples):
             ax.add_line(joint_line)
         
         ax.view_init(10, 50)
-        
+        # ax.set_axis_off()
         fig.canvas.draw()
+        
         plt.pause(.001)
         # plt.savefig(str(t) + '.png')
         # time.sleep(0.01)

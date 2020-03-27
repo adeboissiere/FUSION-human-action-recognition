@@ -58,6 +58,11 @@ class FUSION(nn.Module):
                 mlp_input_features = 512
             elif self.fusion_scheme == "AVG":
                 mlp_input_features = 512
+            elif self.fusion_scheme == "MAX":
+                mlp_input_features = 512
+            elif self.fusion_scheme == "CONV":
+                mlp_input_features = 512
+                self.conv_features = nn.Conv2d(1, 1, kernel_size=(1, 2))		
             else:
                 print("Fusion scheme not recognized. Exiting ...")
                 exit()
@@ -115,6 +120,11 @@ class FUSION(nn.Module):
                 features = out_pose * out_ir
             elif self.fusion_scheme == "AVG":
                 features = out_pose + out_ir / 2
+            elif self.fusion_scheme == "MAX":
+                features = torch.max(out_pose, out_ir)
+            elif self.fusion_scheme == "CONV":
+                features = torch.stack([out_pose, out_ir], dim=2).unsqueeze(1)
+                features = self.conv_features(features).squeeze(1).squeeze(2)
 
         pred = self.class_mlp(features)  # shape (batch_size, 60)
         pred = F.softmax(pred, dim=1)

@@ -123,7 +123,7 @@ def create_data_loaders(data_path,
                                          batch_size=batch_size,
                                          shuffle=True,
                                          pin_memory=True,
-                                         num_workers=8)
+                                         num_workers=4)
 
     # Create validation dataset
     validation_set = TorchDataset(model_type,
@@ -140,7 +140,7 @@ def create_data_loaders(data_path,
                                            batch_size=batch_size,
                                            shuffle=True,
                                            pin_memory=True,
-                                           num_workers=8)
+                                           num_workers=4)
 
     # Create test dataset
     testing_set = TorchDataset(model_type,
@@ -157,6 +157,6 @@ def create_data_loaders(data_path,
                                         batch_size=batch_size,
                                         shuffle=True,
                                         pin_memory=True,
-                                        num_workers=8)
+                                        num_workers=4)
 
     return training_generator, validation_generator, testing_generator
