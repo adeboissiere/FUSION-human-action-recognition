@@ -65,18 +65,20 @@ A video presentation accompanies the project.
 
 [![Video presentation](./reports/figures/video_thumbnail.png)](https://www.youtube.com/watch?v=Y3WtGIbr6DQ&feature=youtu.be "Infrared and 3D skeleton feature fusion for RGB-D action recognition")
 
-The paper was submitted to IEEE Access but a pre-print can be found on arXiv : [paper](https://arxiv.org/abs/2002.12886)
+The paper was accepted to IEEE Access : [paper](https://ieeexplore.ieee.org/document/9194767)
 
 Please use the following bibtex to cite our work:
 
-	@misc{boissiere2020infrared,
-    title={Infrared and 3D skeleton feature fusion for RGB-D action recognition},
-    author={Alban {Main de Boissiere} and Rita Noumeir},
-    year={2020},
-    eprint={2002.12886},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
-	}
+	@ARTICLE{9194767,
+	  author={A. M. {De Boissiere} and R. {Noumeir}},
+	  journal={IEEE Access}, 
+	  title={Infrared and 3D Skeleton Feature Fusion for RGB-D Action Recognition}, 
+	  year={2020},
+	  volume={8},
+	  number={},
+	  pages={168297-168308},
+	  doi={10.1109/ACCESS.2020.3023599}}
+
 
 
 Getting started
@@ -166,6 +168,11 @@ After the necessary h5 have been generated, it is time to test our FUSION model.
 If the h5 files are not in the default location, you need to specify the `PROCESSED_DATA_PATH` variable. If you would like to save the model elsewhere (default is *./data/models/*), you need to specify the `MODEL_FOLDER` variable.
 
 Check the [documentation](https://adeboissiere.github.io/FUSION-human-action-recognition/) for more infos on the **src.model** module and the make train command.
+
+
+Trained models
+---------------------
+You can find the trained following [this link](https://etsmtl365-my.sharepoint.com/:f:/g/personal/alban_main-de-boissiere_1_ens_etsmtl_ca/EkE2Uzx0YTtFlPZbY4mZvQYBfYPDL-RoLkgO6584aKmnlg?e=sy45Ab). Only the models using SEED=0 are included. The link automatically expires after 30 days, open a new issue if this is the case and I will reupload them.
 
 
 Confusion matrix
